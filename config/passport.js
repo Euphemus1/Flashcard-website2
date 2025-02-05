@@ -1,6 +1,3 @@
-// config/passport.js
-const passport = require('passport');
-const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const User = require('../models/User');  // Make sure your User model is correctly defined
 
