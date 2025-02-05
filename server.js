@@ -7,10 +7,20 @@ const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/authRoutes');
 const path = require('path');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 
 const app = express();
+
+// Nodemailer setup for sending emails
+const transporter = nodemailer.createTransport({
+  service: 'Gmail', // Use your email service (e.g., Gmail, SendGrid)
+  auth: {
+    user: process.env.EMAIL_USER, // Your email
+    pass: process.env.EMAIL_PASS, // Your email password
+  },
+});
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,7 +30,7 @@ app.use(passport.initialize());
 require('./config/passport'); // Load passport configuration
 
 // Validate environment variables
-const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
 requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
@@ -126,8 +136,14 @@ app.get('/api/health-check', (req, res) => {
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
   console.error(err.stack);
+
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+
   res.status(500).json({ error: 'Internal Server Error' });
 });
+
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
