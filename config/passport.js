@@ -1,37 +1,25 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const User = require('../models/User'); // Adjust path if your User model is elsewhere
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const User = require('../models/User'); // Adjust the path to your User model
 
-// Configure the "local" strategy (username/password login)
-passport.use(
-  new LocalStrategy(
-    { usernameField: 'email' },
-    async (email, password, done) => {
-      try {
-        const user = await User.findOne({ email });
-        if (!user) return done(null, false, { message: 'Credenciales inválidas' });
+// JWT strategy for token authentication
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET
+};
 
-        const isValid = await user.comparePassword(password);
-        if (!isValid) return done(null, false, { message: 'Credenciales inválidas' });
-
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
-    }
-  )
-);
-
-// Configure how users are serialized/deserialized (for sessions)
-passport.serializeUser((user, done) => {
-  done(null, user.id); // Store user ID in the session
-});
-
-passport.deserializeUser(async (id, done) => {
+passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
   try {
-    const user = await User.findById(id);
-    done(null, user); // Attach user object to `req.user`
+    const user = await User.findById(jwt_payload.sub);
+    if (user) {
+      return done(null, user);
+    } else {
+      return done(null, false);
+    }
   } catch (err) {
-    done(err);
+    return done(err, false);
   }
-});
+}));
+
+module.exports = passport;
