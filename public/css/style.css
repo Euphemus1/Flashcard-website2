@@ -1,0 +1,642 @@
+:root {
+    --primary-color: #9FE7F8;
+    --secondary-color: #053F5C;
+    --accent-color: #FF6B6B;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    padding-top: 70px;
+    background: #f8f9fa;
+}
+
+nav {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.logo {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+
+.carousel-section {
+    padding: 6rem 2rem 4rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.carousel-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.carousel-slides {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+    min-width: 100%;
+    padding: 5rem 2rem;
+    text-align: center;
+    background: transparent;
+    color: white;
+}
+
+.carousel-slide h2 {
+    font-size: 2.8rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.carousel-slide p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 1rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.carousel-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.carousel-prev {
+    left: 1rem;
+}
+
+.carousel-next {
+    right: 1rem;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.8rem;
+}
+
+.carousel-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+    background: white;
+    transform: scale(1.3);
+}
+
+.about-section {
+    padding: 4rem 2rem;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+    color: #555;
+    font-size: 1.1rem;
+}
+
+.about-content p {
+    margin-bottom: 1.5rem;
+}
+
+.deck-section {
+    padding: 4rem 2rem;
+    background: #F8F9FA;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #053F5C;
+    margin-bottom: 3rem;
+}
+
+.deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.deck-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    border: 2px solid #429edb;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.deck-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.deck-card h2 {
+    color: #000000;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.deck-btn {
+    background: #fff;
+    color: #429edb;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.deck-btn:hover {
+    background: #9fe7fb;
+}
+
+.pricing-section {
+    padding: 4rem 2rem;
+    background: #fff;
+}
+
+.pricing-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.plan-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+    border: 2px solid #429edb;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.plan-card:nth-child(2) {
+    border: 2px solid #429edb;
+}
+
+.plan-card h3 {
+    color: #000000; 
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.price {
+    font-size: 2.5rem;
+    color: #000000;
+    margin: 1.5rem 0;
+    font-weight: bold;
+}
+
+.plan-card ul {
+    list-style: none;
+    margin: 2rem 0;
+    padding: 0;
+}
+
+.plan-card li {
+    margin: 1rem 0;
+    font-size: 1rem;
+}
+
+.plan-btn {
+    background: #ff8300;
+    color: #000000;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.plan-btn:hover {
+    transform: scale(1.05);
+    background: #ff8300;
+    border: none;
+}
+
+.contact-section {
+    padding: 4rem 2rem;
+    background: #f8f9fa;
+    scroll-margin-top: 70px;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+}
+
+.contact-icon1 {
+    font-size: 2.5rem;
+    color: #00FF00;
+    margin-bottom: 1rem;
+}
+
+.contact-icon2 {
+    font-size: 2.5rem;
+    color: #278ecf;
+    margin-bottom: 1rem;
+}
+
+.contact-icon3 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    background: linear-gradient(45deg, #515BD4, #8134AF, #DD2A7B, #FEDA77, #F58529);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.contact-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+.contact-card p {
+    color: #666;
+    font-size: 1rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.close-btn {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #666;
+}
+
+.auth-form input {
+    display: block;
+    width: 100%;
+    padding: 0.8rem;
+    margin: 1rem 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.user-status {
+    color: white;
+    margin-right: 1rem;
+    display: none;
+    font-size: 1rem;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+/* Flashcard System Section */
+.flashcard-system-section {
+    padding: 6rem 2rem 4rem;
+    background: #F8F9FA;
+    scroll-margin-top: 70px;
+}
+
+.flashcard-system {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.card-pair {
+    width: 100%;
+    max-width: 600px;
+    flex: 1 1 400px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-height: 300px;
+    min-width: 420px;
+}
+
+.question {
+    border-left: 4px solid #429edb;
+}
+
+.answer {
+    border-left: 4px solid #FF6B6B; /* Example style for answer cards */
+}
+
+.drug-tag {
+    background: #429edb;
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    font-weight: 600;
+}
+
+h3 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+h1.mechanism {
+    color: #7f8c8d;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem; /* Add margin to create space below h1 */
+}
+
+.mechanism, .answer-text {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    margin-top: 1.5rem; /* Add margin to create space above p */
+}
+
+p.question-look, p.answer-text {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    margin-top: 1.5rem; /* Add margin to create space above p */
+}
+
+.revisar-btn {
+    background: #429edb;
+    color: white;
+    border: none;
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    height: 40px;
+    margin-top: 1.5rem;
+}
+
+.revisar-btn:hover {
+    background: #1e90ff;
+}
+
+.srs-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem; /* Added margin to separate from the card */
+    height: 40px;
+}
+
+.srs-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.difficulty {
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s ease; /* Add transition for smooth hover effect */
+}
+
+.difficulty:hover {
+    opacity: 0.9; /* Slightly lighter on hover */
+    transform: translateY(-2px); /* Add a slight lift effect */
+}
+
+.interval {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+.denuevo { background: #ff4757; }
+.díficil { background: #ffa502; }
+.bueno { background: #2ed573; }
+.fácil { background: #1e90ff; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .carousel-slide {
+        padding: 3rem 1rem;
+    }
+
+    .deck-card, .plan-card {
+        padding: 1.5rem;
+    }
+
+    .price {
+        font-size: 2rem;
+    }
+
+    .flashcard-system-section {
+        padding: 2rem 1rem;
+    }
+
+    .flashcard-system {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    .card-pair {
+        max-width: 100%;
+        flex: 1 1 auto;
+    }
+
+    .card {
+        min-height: auto;
+    }
+
+    .srs-controls {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .nav-buttons {
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-buttons {
+        gap: 0.5rem;
+    }
+
+    .nav-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .carousel-section {
+        padding: 4rem 1rem 2rem;
+    }
+
+    .carousel-slide h2 {
+        font-size: 1.5rem;
+    }
+
+    .carousel-slide p {
+        font-size: 0.9rem;
+        padding: 0 1rem;
+    }
+
+    .deck-grid, .pricing-plans, .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .flashcard-system-section {
+        padding: 2rem 0.5rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .srs-controls {
+        gap: 0.3rem;
+    }
+}

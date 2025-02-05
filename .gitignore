@@ -1,0 +1,22 @@
+# .gitignore
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Logs and temp files
+logs/
+*.log
+*.pid
+*.pid.lock
+
+# macOS files
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Decks - Material de Estudio Médico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<!-- Navigation Bar -->
+    <nav>
+        <div class="logo">MEDDECKS</div>
+        <div class="nav-buttons">
+            <span class="user-status"></span>
+            <button class="nav-btn" onclick="scrollToInicio()">Inicio</button>
+            <button class="nav-btn" onclick="scrollToContenido()">Contenido</button>
+            <button class="nav-btn" onclick="scrollToPlanes()">Planes</button>
+            <button class="nav-btn" onclick="scrollToContact()">Contacto</button>
+            <button class="nav-btn" id="authBtn">Login</button>
+        </div>
+    </nav>
+
+    <!-- Auth Modals -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="authForms">
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form" action="/login" method="POST">
+                    <h2>Iniciar Sesión</h2>
+                    <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                    <div class="error-message"></div>
+                    <button type="submit" class="plan-btn">Acceder</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        ¿No tienes cuenta? <a href="#" onclick="showSignup()">Regístrate</a>
+                    </p>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signupForm" class="auth-form" action="/signup" method="POST" style="display: none;">
+                    <h2>Crear Cuenta</h2>
+                    <input type="email" id="signupEmail" placeholder="Correo electrónico" required>
+                    <input type="password" id="signupPassword" placeholder="Contraseña (mínimo 6 caracteres)" minlength="6" required>
+                    <div class="error-message"></div>
+                    <button type="submit" class="plan-btn">Registrarse</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        ¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Iniciar sesión</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section class="about-section" id="inicio">
+        <h2 class="section-title">Material de Estudio para la UBA</h2>
+        <div class="about-content">
+            <p>Somos tu recurso principal para flashcards dirigidas a estudiantes de medicina de la Universidad de Buenos Aires. Nuestros decks están diseñados específicamente para el plan de estudios de la UBA, utilizando el método de <strong>repetición espaciada</strong>.</p>
+            <p>La repetición espaciada es una técnica de aprendizaje que optimiza el tiempo de estudio, mostrando los conceptos en intervalos crecientes para mejorar la retención a largo plazo. ¡Aprovecha esta metodología respaldada por la ciencia para maximizar tu eficiencia en el estudio!</p>
+        </div>
+    </section>
+
+       <!-- Carousel Section -->
+<section class="carousel-section">
+    <div class="carousel-container">
+        <div class="carousel-slides">
+            <!-- New Welcome Slide -->
+            <div class="carousel-slide">
+                <h2>Welcome to the Medical Decks app!</h2>
+                <p>Your medical study companion</p>
+            </div>
+
+            <!-- Existing Slides -->
+            <div class="carousel-slide">
+                <h2>Aprendizaje Adaptativo</h2>
+                <p>Nuestro sistema ajusta automáticamente la dificultad de las tarjetas según tu progreso de aprendizaje.</p>
+            </div>
+            <div class="carousel-slide">
+                <h2>Contenido Actualizado</h2>
+                <p>Material educativo revisado y actualizado constantemente por profesionales médicos.</p>
+            </div>
+            <div class="carousel-slide">
+                <h2>Compatible con dispositivos móviles</h2>
+                <p>Accede a tus decks desde cualquier dispositivo y estudia donde quieras.</p>
+            </div>
+        </div>
+		<button class="carousel-btn carousel-prev" aria-label="Previous slide">❮</button>
+		<button class="carousel-btn carousel-next" aria-label="Next slide">❯</button>
+        <div class="carousel-dots"></div>
+    </div>
+</section>
+
+       <!-- Flashcard sample Section -->
+<section class="flashcard-system-section">
+<div class="flashcard-system">
+    <!-- Question Card -->
+    <div class="card-pair">
+        <div class="card question">
+            <div class="card-content">
+                <h3>Dolutegravir</h3>
+                <h1 class="mechanism">Mecanismo de acción:</h1>
+                <p class="question-look">"..."</p>
+            </div>
+        </div>
+        <button class="revisar-btn">Revisar</button>
+    </div>
+
+    <!-- Answer Card -->
+    <div class="card-pair">
+        <div class="card answer">
+            <div class="card-content">
+                <h3>Dolutegravir</h3>
+                <h1 class="mechanism">Mecanismo de acción:</h1>
+                <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
+            </div>
+        </div>
+        <div class="srs-controls">
+            <div class="srs-option">
+                <button class="difficulty denuevo">De nuevo</button>
+                <span class="interval">1d</span>
+            </div>
+            <div class="srs-option">
+                <button class="difficulty díficil">Díficil</button>
+                <span class="interval">2d</span>
+            </div>
+            <div class="srs-option">
+                <button class="difficulty bueno">Bueno</button>
+                <span class="interval">4d</span>
+            </div>
+            <div class="srs-option">
+                <button class="difficulty fácil">Fácil</button>
+                <span class="interval">8d</span>
+            </div>
+        </div>
+    </div>
+</div>
+    </section>
+
+    <!-- Decks Section -->
+    <section class="deck-section" id="contenido">
+        <h2 class="section-title">Nuestros Decks de Estudio</h2>
+        <div class="deck-grid">
+            <div class="deck-card">
+                <h2>Microbiología</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+            <div class="deck-card">
+                <h2>Patología</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+            <div class="deck-card">
+                <h2>Semiología</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+            <div class="deck-card">
+                <h2>Farmacología</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+            <div class="deck-card">
+                <h2>Terapéutica 1</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+            <div class="deck-card">
+                <h2>Medicina Interna 1</h2>
+                <button class="deck-btn">Ver Contenido</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="planes">
+        <h2 class="section-title">Planes de Suscripción</h2>
+        <div class="pricing-plans">
+            <div class="plan-card">
+                <h3>1 mes</h3>
+                <p class="price">ARS 1.999/mes</p>
+                <p class="price">R$ 79,99/mes</p>
+                <ul>
+                    <li>✔️ Acceso completo</li>
+                    <li>✔️ Actualizaciones constantes</li>
+                </ul>
+                <button class="plan-btn">Comenzar</button>
+            </div>
+            <div class="plan-card">
+                <h3>3 meses</h3>
+                <p class="price">ARS 1.799/mes</p>
+                <p class="price">R$ 69,99/mes</p>
+                <ul>
+                    <li>✔️ Acceso completo</li>
+                    <li>✔️ Acceso a nuestra comunidad en Discord</li>
+                </ul>
+                <button class="plan-btn">Comenzar</button>
+            </div>
+            <div class="plan-card">
+                <h3>6 meses</h3>
+                <p class="price">ARS 1.499/mes</p>
+                <p class="price">R$ 59,99/mes</p>
+                <ul>
+                    <li>✔️ Acceso completo</li>
+                    <li>✔️ Acceso prioritario a nuevos decks</li>
+                </ul>
+                <button class="plan-btn">Comenzar</button>
+            </div>
+            <div class="plan-card">
+                <h3>12 meses</h3>
+                <p class="price">ARS 1.799/mes</p>
+                <p class="price">R$ 49,99/mes</p>
+                <ul>
+                    <li>✔️ Acceso completo</li>
+                    <li>✔️ Acceso a nuestra comunidad en Discord</li>
+                </ul>
+                <button class="plan-btn">Comenzar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contacto">
+        <h2 class="section-title">Contáctanos</h2>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <i class="fab fa-whatsapp contact-icon1"></i>
+                <h3>WhatsApp</h3>
+                <p>+54 11 1234-5678</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-envelope contact-icon2"></i>
+                <h3>Email</h3>
+                <p>contacto@meddecks.com</p>
+            </div>
+            <div class="contact-card">
+                <i class="fab fa-instagram contact-icon3"></i>
+                <h3>Instagram</h3>
+                <p>@meddecks_uba</p>
+            </div>
+        </div>
+    </section>
+	<script src="js/app.js"></script>
+</body>
+</html>
