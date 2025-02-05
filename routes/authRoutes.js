@@ -30,25 +30,28 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-// Login route using passport
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) return next(err);
+// Login
+router.post('/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-
-    req.login(user, { session: false }, (err) => {
-      if (err) return next(err);
-
-      const token = jwt.sign(
-        { sub: user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
-
-      res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-      res.redirect('/dashboard'); // Redirect to dashboard
-    });
-  })(req, res, next);
+    
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    
+    const token = jwt.sign(
+      { sub: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    res.redirect('/dashboard'); // Redirect to dashboard
+  } catch (err) {
+    next(err); // Pass errors to the error handler
+  }
 });
 
 module.exports = router;

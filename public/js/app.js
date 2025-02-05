@@ -1,23 +1,13 @@
-        // User Management (current User and Users list)
+        // User Management
         let currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
         let users = JSON.parse(localStorage.getItem('users')) || [];
         let autoSlideInterval;
-        try {
-            users = JSON.parse(localStorage.getItem('users')) || [];
-        } catch (error) {
-            console.error('Error parsing users from localStorage:', error);
-            users = [];
-        }
 
         // Carousel Functionality
         const carouselSlides = document.querySelector('.carousel-slides');
         const slides = document.querySelectorAll('.carousel-slide');
         const dotsContainer = document.querySelector('.carousel-dots');
         let currentIndex = 0;
-        if (!carouselSlides || !slides || !dotsContainer) {
-            console.error('Carousel elements not found in the DOM.');
-            return;
-        }
 
         // Create dots
         slides.forEach((_, index) => {
@@ -45,9 +35,7 @@
         }
 
         function startAutoSlide() {
-            stopAutoSlide(); // Clear any existing interval
             autoSlideInterval = setInterval(nextSlide, 5000);
-
         }
 
         function stopAutoSlide() {
@@ -87,7 +75,7 @@
             });
         }
 
-        // Login Form, authentication logic
+        // Login Form
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             clearErrors();
@@ -208,9 +196,3 @@ fetch(`${BACKEND_URL}/api/health-check`)
     document.getElementById('status').textContent = data.message; // Update UI
   })
   .catch(error => console.error('Connection failed:', error));
-  const statusElement = document.getElementById('status');
-if (statusElement) {
-    statusElement.textContent = data.message;
-} else {
-    console.error('Element with id "status" not found.');
-}
