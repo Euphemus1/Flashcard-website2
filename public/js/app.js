@@ -3,6 +3,17 @@
         let users = JSON.parse(localStorage.getItem('users')) || []; // 
         let autoSlideInterval;
 
+        // Check for token on page load
+        window.addEventListener('load', () => {
+          const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Check both localStorage and sessionStorage
+          const storedUser = localStorage.getItem('currentUser');
+        
+          if (token && storedUser) {
+            currentUser = JSON.parse(storedUser);
+            updateAuthUI();
+          }
+        });
+
         // Carousel Functionality
         const carouselSlides = document.querySelector('.carousel-slides');
         const slides = document.querySelectorAll('.carousel-slide');
@@ -52,6 +63,7 @@
         const authBtn = document.getElementById('authBtn');
         const userStatus = document.querySelector('.user-status');
 
+        // Update the Auth UI based on the current user
         function updateAuthUI() {
             if(currentUser) {
                 userStatus.textContent = `Bienvenido, ${currentUser.email.split('@')[0]}`;
@@ -63,6 +75,7 @@
             }
         }
 
+        // Show error message
         function showError(formId, message) {
             const form = document.getElementById(formId);
             const errorElement = form.querySelector('.error-message');
@@ -70,12 +83,30 @@
             errorElement.style.display = 'block';
         }
 
+        // Clear error messages
         function clearErrors() {
             document.querySelectorAll('.error-message').forEach(el => {
                 el.style.display = 'none';
             });
         }
 
+        // Improved fetch function with error handling
+async function fetchWithErrorHandling(url, options) {
+  try {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Request failed');
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error('Fetch error:', err);
+    throw err;
+  }
+}
+        
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -83,9 +114,10 @@
           
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked;
           
             try {
-              const response = await fetch(`${BACKEND_URL}/auth/login`, {
+              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -93,20 +125,20 @@
                 body: JSON.stringify({ email, password }),
               });
           
-              const data = await response.json();
-          
-              if (response.ok) {
-                localStorage.setItem('token', data.token); // Store the JWT token
-                localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
-                currentUser = { email }; // Update current user
-                updateAuthUI();
-                closeModal();
+              if (rememberMe) {
+                localStorage.setItem('token', data.token); // Store token in localStorage
               } else {
-                showError('loginForm', data.error || 'Invalid credentials');
+                sessionStorage.setItem('token', data.token); // Store token in sessionStorage
               }
+          
+              localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
+              currentUser = { email }; // Update current user
+              updateAuthUI();
+              closeModal();
             } catch (err) {
-              showError('loginForm', 'An error occurred. Please try again.');
+              showError('loginForm', err.message || 'An error occurred. Please try again.');
             }
+            // ==================== END OF CHANGE 3 ====================
           });
 
         // Signup Form
@@ -123,7 +155,7 @@
             }
           
             try {
-              const response = await fetch(`${BACKEND_URL}/auth/register`, {
+              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -131,16 +163,10 @@
                 body: JSON.stringify({ email, password }),
               });
           
-              const data = await response.json();
-          
-              if (response.ok) {
-                alert('Registro exitoso! Por favor inicia sesión');
-                showLogin();
-              } else {
-                showError('signupForm', data.error || 'Registration failed');
-              }
+              alert('Registro exitoso! Por favor inicia sesión');
+              showLogin();
             } catch (err) {
-              showError('signupForm', 'An error occurred. Please try again.');
+              showError('signupForm', err.message || 'An error occurred. Please try again.');
             }
           });
 
@@ -165,11 +191,15 @@
         }
 
         function logout() {
+          const confirmLogout = confirm('Are you sure you want to log out?');
+          if (confirmLogout) {
             localStorage.removeItem('token'); // Remove the JWT token
+            sessionStorage.removeItem('token'); // Remove the session token
             localStorage.removeItem('currentUser'); // Remove the currentUser object
             currentUser = null; // Reset the currentUser variable
             updateAuthUI(); // Update the UI
           }
+        }
         
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
