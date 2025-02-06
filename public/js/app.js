@@ -91,22 +91,36 @@
         }
 
         // Improved fetch function with error handling
-async function fetchWithErrorHandling(url, options) {
-  try {
-    const response = await fetch(url, options);
+        async function fetchWithErrorHandling(url, options) {
+          try {
+            const response = await fetch(url, options);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Request failed');
-    }
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Request failed');
+            }
 
-    return await response.json();
-  } catch (err) {
-    console.error('Fetch error:', err);
-    throw err;
-  }
-}
-        
+            return await response.json();
+          } catch (err) {
+            console.error('Fetch error:', err);
+            throw err;
+          }
+        }
+
+        // Add a loading state
+        function setLoading(formId, isLoading) {
+          const form = document.getElementById(formId);
+          const button = form.querySelector('button[type="submit"]');
+
+          if (isLoading) {
+            button.disabled = true;
+            button.textContent = 'Loading...';
+          } else {
+            button.disabled = false;
+            button.textContent = 'Submit';
+          }
+        }
+
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -190,12 +204,25 @@ async function fetchWithErrorHandling(url, options) {
             document.getElementById('loginForm').style.display = 'block';
         }
 
+        // Check if the token is expired
+function isTokenExpired(token) {
+  const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
+  return payload.exp * 1000 < Date.now(); // Check if the token is expired
+}
+
+// Example: Check token expiration before making a request
+const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (token && isTokenExpired(token)) {
+  logout(); // Log out the user if the token is expired
+}
+
         function logout() {
           const confirmLogout = confirm('Are you sure you want to log out?');
           if (confirmLogout) {
             localStorage.removeItem('token'); // Remove the JWT token
             sessionStorage.removeItem('token'); // Remove the session token
             localStorage.removeItem('currentUser'); // Remove the currentUser object
+            localStorage.removeItem('users'); // Clear the users array (if used locally)
             currentUser = null; // Reset the currentUser variable
             updateAuthUI(); // Update the UI
           }
