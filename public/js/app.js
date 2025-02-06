@@ -76,48 +76,72 @@
         }
 
         // Login Form
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             clearErrors();
-
+          
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-
-            const user = users.find(u => u.email === email && u.password === password);
-            if(user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                closeModal();
+          
+            try {
+              const response = await fetch(`${BACKEND_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+              });
+          
+              const data = await response.json();
+          
+              if (response.ok) {
+                localStorage.setItem('token', data.token); // Store the JWT token
+                localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
+                currentUser = { email }; // Update current user
                 updateAuthUI();
-            } else {
-                showError('loginForm', 'Credenciales incorrectas');
+                closeModal();
+              } else {
+                showError('loginForm', data.error || 'Invalid credentials');
+              }
+            } catch (err) {
+              showError('loginForm', 'An error occurred. Please try again.');
             }
-        });
+          });
 
         // Signup Form
-        document.getElementById('signupForm').addEventListener('submit', (e) => {
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             clearErrors();
-
+          
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-
-            if(users.some(u => u.email === email)) {
-                showError('signupForm', 'El usuario ya existe');
-                return;
+          
+            if (password.length < 6) {
+              showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
+              return;
             }
-
-            if(password.length < 6) {
-                showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
-                return;
+          
+            try {
+              const response = await fetch(`${BACKEND_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+              });
+          
+              const data = await response.json();
+          
+              if (response.ok) {
+                alert('Registro exitoso! Por favor inicia sesión');
+                showLogin();
+              } else {
+                showError('signupForm', data.error || 'Registration failed');
+              }
+            } catch (err) {
+              showError('signupForm', 'An error occurred. Please try again.');
             }
-
-            const newUser = { email, password };
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-            alert('Registro exitoso! Por favor inicia sesión');
-            showLogin();
-        });
+          });
 
         // Auth Modal Controls
         function openModal() {
@@ -140,10 +164,12 @@
         }
 
         function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            updateAuthUI();
-        }
+            localStorage.removeItem('token'); // Remove the JWT token
+            localStorage.removeItem('currentUser'); // Remove the currentUser object
+            currentUser = null; // Reset the currentUser variable
+            updateAuthUI(); // Update the UI
+          }
+        
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
             e.preventDefault();
