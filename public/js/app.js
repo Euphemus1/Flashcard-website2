@@ -1,6 +1,6 @@
         // User Management
         let currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
-        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let users = JSON.parse(localStorage.getItem('users')) || []; // 
         let autoSlideInterval;
 
         // Carousel Functionality
@@ -18,6 +18,7 @@
             dotsContainer.appendChild(dot);
         });
 
+        // Carousel controls
         function showSlide(index) {
             currentIndex = (index + slides.length) % slides.length;
             carouselSlides.style.transform = `translateX(-${currentIndex * 100}%)`;
