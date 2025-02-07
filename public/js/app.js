@@ -153,7 +153,7 @@
 
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
+          e.preventDefault(); // Prevent default form submission
           clearErrors();
         
           const email = document.getElementById('loginEmail').value;
