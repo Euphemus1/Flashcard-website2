@@ -93,145 +93,96 @@
         // Improved fetch function with error handling
         async function fetchWithErrorHandling(url, options) {
           try {
-            console.log('Making request to:', url); // Log the URL
-            console.log('Request options:', options); // Log the request options
             const response = await fetch(url, options);
-        
+
             if (!response.ok) {
               const errorData = await response.json();
-              console.error('Error response:', errorData); // Log the error response
               throw new Error(errorData.error || 'Request failed');
             }
-        
+
             return await response.json();
           } catch (err) {
-            console.error('Fetch error:', err); // Log the error
+            console.error('Fetch error:', err);
             throw err;
           }
         }
-        
-        // Add a loading state with a spinner
+
+        // Add a loading state
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
-          const button = form.querySelector('button[type="submit"]')
+          const button = form.querySelector('button[type="submit"]');
 
           if (isLoading) {
             button.disabled = true;
-            button.innerHTML = '<span class="spinner"></span> Loading...'; // Add a spinner
+            button.textContent = 'Loading...';
           } else {
             button.disabled = false;
-            button.textContent = 'submit';
+            button.textContent = 'Submit';
           }
-        }
-
-        // Toggle password visibility
-        function togglePasswordVisibility(inputId) {
-          const input = document.getElementById(inputId);
-          const toggle = document.getElementById(`${inputId}-toggle`);
-
-          if (input.type === 'password') {
-            input.type = 'text';
-            toggle.textContent = 'Hide';
-          } else {
-            input.type = 'password';
-            toggle.textContent = 'Show';
-          }
-        }
-
-        // Add password visibility toggle to login form
-        document.getElementById('loginPassword-toggle')?.addEventListener('click', () => {
-          togglePasswordVisibility('loginPassword');
-        });
-
-        // Add password visibility toggle to signup form
-        document.getElementById('signupPassword-toggle')?.addEventListener('click', () => {
-          togglePasswordVisibility('signupPassword');
-        });
-
-        function validateEmail(email) {
-          const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return regex.test(email);
         }
 
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-          e.preventDefault(); // Prevent default form submission
-          clearErrors();
-        
-          const email = document.getElementById('loginEmail').value;
-          const password = document.getElementById('loginPassword').value;
-          const rememberMe = document.getElementById('rememberMe').checked; // Get the "Remember Me" value
-        
-          if (!validateEmail(email)) {
-            showError('loginForm', 'Please enter a valid email address.');
-            return;
-          }
-        
-          setLoading('loginForm', true); // Enable loading state
-        
-          try {
-            const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email, password, rememberMe }), // Include rememberMe in the request
-            });
-        
-            if (rememberMe) {
-              localStorage.setItem('token', data.token); // Store token in localStorage
-            } else {
-              sessionStorage.setItem('token', data.token); // Store token in sessionStorage
+            e.preventDefault();
+            clearErrors();
+          
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked;
+          
+            try {
+              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+              });
+          
+              if (rememberMe) {
+                localStorage.setItem('token', data.token); // Store token in localStorage
+              } else {
+                sessionStorage.setItem('token', data.token); // Store token in sessionStorage
+              }
+          
+              localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
+              currentUser = { email }; // Update current user
+              updateAuthUI();
+              closeModal();
+            } catch (err) {
+              showError('loginForm', err.message || 'An error occurred. Please try again.');
             }
-        
-            localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
-            currentUser = { email }; // Update current user
-            updateAuthUI();
-            closeModal();
-          } catch (err) {
-            showError('loginForm', err.message || 'An error occurred. Please try again.');
-          } finally {
-            setLoading('loginForm', false); // Disable loading state
-          }
-        });
+            // ==================== END OF CHANGE 3 ====================
+          });
 
         // Signup Form
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          clearErrors();
-        
-          const email = document.getElementById('signupEmail').value;
-          const password = document.getElementById('signupPassword').value;
-        
-          if (!validateEmail(email)) {
-            showError('signupForm', 'Please enter a valid email address.');
-            return;
-          }
-        
-          if (password.length < 6) {
-            showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
-            return;
-          }
-        
-          setLoading('signupForm', true); // Enable loading state
-        
-          try {
-            const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email, password }),
-            });
-        
-            alert('Registro exitoso! Por favor inicia sesión');
-            showLogin();
-          } catch (err) {
-            showError('signupForm', err.message || 'An error occurred. Please try again.');
-          } finally {
-            setLoading('signupForm', false); // Disable loading state
-          }
-        });
+            e.preventDefault();
+            clearErrors();
+          
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+          
+            if (password.length < 6) {
+              showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
+              return;
+            }
+          
+            try {
+              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+              });
+          
+              alert('Registro exitoso! Por favor inicia sesión');
+              showLogin();
+            } catch (err) {
+              showError('signupForm', err.message || 'An error occurred. Please try again.');
+            }
+          });
 
         // Auth Modal Controls
         function openModal() {
@@ -254,16 +205,16 @@
         }
 
         // Check if the token is expired
-        function isTokenExpired(token) {
-          const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
-          return payload.exp * 1000 < Date.now(); // Check if the token is expired
-        }
+function isTokenExpired(token) {
+  const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
+  return payload.exp * 1000 < Date.now(); // Check if the token is expired
+}
 
-        // Example: Check token expiration before making a request
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (token && isTokenExpired(token)) {
-          logout(); // Log out the user if the token is expired
-        }
+// Example: Check token expiration before making a request
+const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (token && isTokenExpired(token)) {
+  logout(); // Log out the user if the token is expired
+}
 
         function logout() {
           const confirmLogout = confirm('Are you sure you want to log out?');
