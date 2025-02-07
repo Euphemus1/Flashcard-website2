@@ -107,14 +107,14 @@
           }
         }
 
-        // Add a loading state
+        // Add a loading state with a spinner
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
           const button = form.querySelector('button[type="submit"]');
 
           if (isLoading) {
             button.disabled = true;
-            button.textContent = 'Loading...';
+            button.innerHTML = '<span class="spinner"></span> Loading...'; // Add a spinner
           } else {
             button.disabled = false;
             button.textContent = 'Submit';
