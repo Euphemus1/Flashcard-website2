@@ -555,78 +555,34 @@ p.question-look, p.answer-text {
         font-size: 2rem;
     }
 
-    .flashcard-system-section {
-        padding: 2rem 1rem;
-    }
-
     .flashcard-system {
         flex-direction: column;
-        gap: 1rem;
-        padding: 0;
+        align-items: center;
     }
 
     .card-pair {
         max-width: 100%;
-        flex: 1 1 auto;
     }
 
     .card {
-        min-height: auto;
-    }
-
-    .srs-controls {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    body {
-        padding-top: 60px; /* Adjusting for smaller screens */
-    }
-
-    nav {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 0.8rem;
-    }
-
-    .nav-buttons {
-        flex-direction: column;
-        gap: 0.8rem;
-    }
-
-    .carousel-section {
-        padding: 4rem 1rem;
-    }
-
-    .carousel-slide h2 {
-        font-size: 2rem;
-    }
-
-    .carousel-slide p {
-        font-size: 1rem;
-    }
-
-    .deck-grid {
-        grid-template-columns: 1fr; /* Stack items vertically */
-    }
-
-    .flashcard-system {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card {
-        min-width: 100%; /* Ensure cards are responsive */
+        width: 100%;
+        min-width: auto;
     }
 
     .srs-controls {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .contact-grid {
-        grid-template-columns: 1fr; /* Single column layout */
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .nav-buttons {
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
 
