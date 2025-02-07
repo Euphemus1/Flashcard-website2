@@ -117,7 +117,7 @@
             button.innerHTML = '<span class="spinner"></span> Loading...'; // Add a spinner
           } else {
             button.disabled = false;
-            button.textContent = 'Acceder';
+            button.textContent = 'submit';
           }
         }
 
