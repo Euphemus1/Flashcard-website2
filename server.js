@@ -118,6 +118,7 @@ app.use('/auth', authRoutes);
 
 // Serve the dashboard.html file
 app.get('/dashboard', (req, res) => {
+  console.log('Serving dashboard.html from:', path.join(__dirname, 'protected', 'dashboard.html'));
   res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
 });
 
