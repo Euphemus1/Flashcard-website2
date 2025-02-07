@@ -1,18 +1,7 @@
         // User Management
         let currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
-        let users = JSON.parse(localStorage.getItem('users')) || []; // 
+        let users = JSON.parse(localStorage.getItem('users')) || [];
         let autoSlideInterval;
-
-        // Check for token on page load
-        window.addEventListener('load', () => {
-          const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Check both localStorage and sessionStorage
-          const storedUser = localStorage.getItem('currentUser');
-        
-          if (token && storedUser) {
-            currentUser = JSON.parse(storedUser);
-            updateAuthUI();
-          }
-        });
 
         // Carousel Functionality
         const carouselSlides = document.querySelector('.carousel-slides');
@@ -29,7 +18,6 @@
             dotsContainer.appendChild(dot);
         });
 
-        // Carousel controls
         function showSlide(index) {
             currentIndex = (index + slides.length) % slides.length;
             carouselSlides.style.transform = `translateX(-${currentIndex * 100}%)`;
@@ -63,7 +51,6 @@
         const authBtn = document.getElementById('authBtn');
         const userStatus = document.querySelector('.user-status');
 
-        // Update the Auth UI based on the current user
         function updateAuthUI() {
             if(currentUser) {
                 userStatus.textContent = `Bienvenido, ${currentUser.email.split('@')[0]}`;
@@ -75,7 +62,6 @@
             }
         }
 
-        // Show error message
         function showError(formId, message) {
             const form = document.getElementById(formId);
             const errorElement = form.querySelector('.error-message');
@@ -83,106 +69,55 @@
             errorElement.style.display = 'block';
         }
 
-        // Clear error messages
         function clearErrors() {
             document.querySelectorAll('.error-message').forEach(el => {
                 el.style.display = 'none';
             });
         }
 
-        // Improved fetch function with error handling
-        async function fetchWithErrorHandling(url, options) {
-          try {
-            const response = await fetch(url, options);
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || 'Request failed');
-            }
-
-            return await response.json();
-          } catch (err) {
-            console.error('Fetch error:', err);
-            throw err;
-          }
-        }
-
-        // Add a loading state
-        function setLoading(formId, isLoading) {
-          const form = document.getElementById(formId);
-          const button = form.querySelector('button[type="submit"]');
-
-          if (isLoading) {
-            button.disabled = true;
-            button.textContent = 'Loading...';
-          } else {
-            button.disabled = false;
-            button.textContent = 'Submit';
-          }
-        }
-
         // Login Form
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             clearErrors();
-          
+
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            const rememberMe = document.getElementById('rememberMe')?.checked;
-          
-            try {
-              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-              });
-          
-              if (rememberMe) {
-                localStorage.setItem('token', data.token); // Store token in localStorage
-              } else {
-                sessionStorage.setItem('token', data.token); // Store token in sessionStorage
-              }
-          
-              localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
-              currentUser = { email }; // Update current user
-              updateAuthUI();
-              closeModal();
-            } catch (err) {
-              showError('loginForm', err.message || 'An error occurred. Please try again.');
+
+            const user = users.find(u => u.email === email && u.password === password);
+            if(user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                closeModal();
+                updateAuthUI();
+            } else {
+                showError('loginForm', 'Credenciales incorrectas');
             }
-            // ==================== END OF CHANGE 3 ====================
-          });
+        });
 
         // Signup Form
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        document.getElementById('signupForm').addEventListener('submit', (e) => {
             e.preventDefault();
             clearErrors();
-          
+
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-          
-            if (password.length < 6) {
-              showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
-              return;
+
+            if(users.some(u => u.email === email)) {
+                showError('signupForm', 'El usuario ya existe');
+                return;
             }
-          
-            try {
-              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-              });
-          
-              alert('Registro exitoso! Por favor inicia sesión');
-              showLogin();
-            } catch (err) {
-              showError('signupForm', err.message || 'An error occurred. Please try again.');
+
+            if(password.length < 6) {
+                showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
+                return;
             }
-          });
+
+            const newUser = { email, password };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Registro exitoso! Por favor inicia sesión');
+            showLogin();
+        });
 
         // Auth Modal Controls
         function openModal() {
@@ -204,30 +139,11 @@
             document.getElementById('loginForm').style.display = 'block';
         }
 
-        // Check if the token is expired
-function isTokenExpired(token) {
-  const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
-  return payload.exp * 1000 < Date.now(); // Check if the token is expired
-}
-
-// Example: Check token expiration before making a request
-const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-if (token && isTokenExpired(token)) {
-  logout(); // Log out the user if the token is expired
-}
-
         function logout() {
-          const confirmLogout = confirm('Are you sure you want to log out?');
-          if (confirmLogout) {
-            localStorage.removeItem('token'); // Remove the JWT token
-            sessionStorage.removeItem('token'); // Remove the session token
-            localStorage.removeItem('currentUser'); // Remove the currentUser object
-            localStorage.removeItem('users'); // Clear the users array (if used locally)
-            currentUser = null; // Reset the currentUser variable
-            updateAuthUI(); // Update the UI
-          }
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateAuthUI();
         }
-        
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
             e.preventDefault();
