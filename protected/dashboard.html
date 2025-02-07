@@ -3,181 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Study App</title>
-    <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar Section */
-        #sidebar {
-            background-color: #2c3e50;
-            color: white;
-            width: 250px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        #sidebar h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        #deck-list {
-            list-style-type: none;
-            padding: 0;
-            width: 100%;
-        }
-
-        #deck-list li {
-            margin: 10px 0;
-        }
-
-        #deck-list button {
-            width: 100%;
-            padding: 12px;
-            text-align: left;
-            border: none;
-            background-color: #34495e;
-            color: white;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #deck-list button:hover {
-            background-color: #16a085;
-        }
-
-        /* Main Content Section */
-        #main-content {
-            flex-grow: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Flashcard Styling */
-        #flashcard {
-            width: 400px;
-            height: 250px;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            transition: transform 0.4s ease;
-            cursor: pointer;
-        }
-
-        #flashcard.flipped {
-            transform: rotateY(180deg);
-        }
-
-        #card-front, #card-back {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            padding: 20px;
-            color: #2c3e50;
-            background-color: #ecf0f1;
-            position: absolute;
-            backface-visibility: hidden;
-            text-align: center;
-        }
-
-        #card-back {
-            transform: rotateY(180deg);
-            background-color: #f1c40f;
-            color: white;
-        }
-
-        /* Buttons Styling */
-        button {
-            padding: 12px 20px;
-            margin: 10px;
-            font-size: 16px;
-            color: white;
-            background-color: #3498db;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        #review-buttons {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 10px 0;
-            display: none;
-        }
-
-        .review-btn {
-            width: 48%;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            background-color: #8e44ad;
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .review-btn:hover {
-            background-color: #9b59b6;
-        }
-
-        #card-status {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #2c3e50;
-        }
-
-        #review-actions {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 10px 0;
-        }
-
-        #review-actions button {
-            width: 48%;
-            background-color: #e67e22;
-        }
-
-        #review-actions button:hover {
-            background-color: #d35400;
-        }
-    </style>
+    <title>Dashboard - Flashcard Study App</title>
+    <link rel="stylesheet" href="dashboard-style.css"> <!-- Link to dashboard-specific CSS -->
 </head>
 <body>
 
@@ -185,14 +12,14 @@
     <div id="sidebar">
         <h2>Study Decks</h2>
         <ul id="deck-list">
-            <li><button onclick="switchDeck('Microbiología')">Microbiología</button></li>
-            <li><button onclick="switchDeck('Semiología')">Semiología</button></li>
+            <li><button id="microbiology-btn">Microbiología</button></li>
+            <li><button id="semiology-btn">Semiología</button></li>
         </ul>
     </div>
 
     <!-- Main Content Section -->
     <div id="main-content">
-        <div id="flashcard" onclick="flipCard()">
+        <div id="flashcard">
             <div id="card-front">
                 <p>What is the cause of Necrotizing Fasciitis?</p>
             </div>
@@ -203,15 +30,15 @@
 
         <!-- Review Options -->
         <div id="review-actions">
-            <button onclick="showReviewOptions()" id="review-button">Review</button>
-            <button onclick="skipCard()" id="skip-button">Skip</button>
+            <button id="review-button">Review</button>
+            <button id="skip-button">Skip</button>
         </div>
 
         <div id="review-buttons">
-            <button class="review-btn" onclick="rateCard(10)">10 min</button>
-            <button class="review-btn" onclick="rateCard(60)">1 hour</button>
-            <button class="review-btn" onclick="rateCard(1440)">1 day</button>
-            <button class="review-btn" onclick="rateCard(2880)">2 days</button>
+            <button class="review-btn" id="10-min-btn">10 min</button>
+            <button class="review-btn" id="1-hour-btn">1 hour</button>
+            <button class="review-btn" id="1-day-btn">1 day</button>
+            <button class="review-btn" id="2-days-btn">2 days</button>
         </div>
 
         <!-- Card Status -->
@@ -220,78 +47,6 @@
         </div>
     </div>
 
-    <script>
-        let currentDeck = 'Microbiología';
-        let flashcards = [
-            {
-                question: "What is the cause of Necrotizing Fasciitis?",
-                answer: "Streptococcus pyogenes and Staphylococcus aureus",
-                interval: 1,
-                lastReview: new Date().getTime()
-            },
-            {
-                question: "What is the most common cause of bacterial pneumonia?",
-                answer: "Streptococcus pneumoniae",
-                interval: 1,
-                lastReview: new Date().getTime()
-            }
-        ];
-
-        let currentCardIndex = 0;
-
-        function flipCard() {
-            const card = document.getElementById('flashcard');
-            card.classList.toggle('flipped');
-        }
-
-        function rateCard(minutes) {
-            const currentCard = flashcards[currentCardIndex];
-            const newReviewTime = new Date().getTime() + minutes * 60000;
-            currentCard.lastReview = newReviewTime;
-            currentCard.interval *= 1.5;
-            showStatus('Due card updated!');
-            setTimeout(() => loadNextCard(), 1000);
-        }
-
-        function showStatus(status) {
-            const statusElement = document.getElementById('status');
-            statusElement.textContent = status;
-        }
-
-        function showReviewOptions() {
-            document.getElementById('review-buttons').style.display = 'flex';
-            document.getElementById('review-actions').style.display = 'none';
-        }
-
-        function skipCard() {
-            showStatus('Card skipped.');
-            loadNextCard();
-        }
-
-        function loadNextCard() {
-            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
-            const currentCard = flashcards[currentCardIndex];
-            document.getElementById('card-front').innerHTML = currentCard.question;
-            document.getElementById('card-back').innerHTML = currentCard.answer;
-            showStatus(currentCard.interval > 1 ? 'Due card' : 'New card');
-            document.getElementById('review-buttons').style.display = 'none';
-            document.getElementById('review-actions').style.display = 'flex';
-        }
-
-        function switchDeck(deckName) {
-            currentDeck = deckName;
-            flashcards = getDeckData(deckName);
-            loadNextCard();
-        }
-
-        function getDeckData(deckName) {
-            return [
-                { question: "Sample question", answer: "Sample answer", interval: 1, lastReview: new Date().getTime() }
-            ];
-        }
-
-        window.onload = loadNextCard;
-    </script>
-
+    <script src="dashboard-script.js"></script> <!-- Link to dashboard-specific JS -->
 </body>
 </html>
