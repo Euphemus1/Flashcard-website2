@@ -122,6 +122,10 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
 });
 
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
+});
+
 // Protected route example
 app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.json({ message: 'Protected route accessed', user: req.user });
