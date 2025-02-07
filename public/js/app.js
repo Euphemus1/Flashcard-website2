@@ -121,6 +121,30 @@
           }
         }
 
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId) {
+          const input = document.getElementById(inputId);
+          const toggle = document.getElementById(`${inputId}-toggle`);
+
+          if (input.type === 'password') {
+            input.type = 'text';
+            toggle.textContent = 'Hide';
+          } else {
+            input.type = 'password';
+            toggle.textContent = 'Show';
+          }
+        }
+
+        // Add password visibility toggle to login form
+        document.getElementById('loginPassword-toggle')?.addEventListener('click', () => {
+          togglePasswordVisibility('loginPassword');
+        });
+
+        // Add password visibility toggle to signup form
+        document.getElementById('signupPassword-toggle')?.addEventListener('click', () => {
+          togglePasswordVisibility('signupPassword');
+        });
+
         function validateEmail(email) {
           const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           return regex.test(email);
