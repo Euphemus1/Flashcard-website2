@@ -135,10 +135,10 @@
             const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe')?.checked;
           
-            if (!validateEmail(email)) {
-              showError('loginForm', 'Please enter a valid email address.');
-              return;
-            }
+              if (!validateEmail(email)) {
+                showError('loginForm', 'Please enter a valid email address.');
+                return;
+              }
             
             try {
               const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
@@ -238,28 +238,28 @@
         }
         
         // Add password visibility toggle
-function togglePasswordVisibility(inputId) {
-  const input = document.getElementById(inputId);
-  const toggle = document.getElementById(`${inputId}-toggle`);
+        function togglePasswordVisibility(inputId) {
+          const input = document.getElementById(inputId);
+          const toggle = document.getElementById(`${inputId}-toggle`);
 
-  if (input.type === 'password') {
-    input.type = 'text';
-    toggle.textContent = 'Hide';
-  } else {
-    input.type = 'password';
-    toggle.textContent = 'Show';
-  }
-}
+          if (input.type === 'password') {
+            input.type = 'text';
+            toggle.textContent = 'Hide';
+          } else {
+            input.type = 'password';
+            toggle.textContent = 'Show';
+          }
+        }
 
-// Add to login form
-document.getElementById('loginPassword-toggle').addEventListener('click', () => {
-  togglePasswordVisibility('loginPassword');
-});
+        // Add to login form
+        document.getElementById('loginPassword-toggle').addEventListener('click', () => {
+          togglePasswordVisibility('loginPassword');
+        });
 
-// Add to signup form
-document.getElementById('signupPassword-toggle').addEventListener('click', () => {
-  togglePasswordVisibility('signupPassword');
-});
+        // Add to signup form
+        document.getElementById('signupPassword-toggle').addEventListener('click', () => {
+          togglePasswordVisibility('signupPassword');
+        });
 
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
