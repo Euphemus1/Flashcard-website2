@@ -130,11 +130,6 @@
             const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe')?.checked;
           
-            if (!validateEmail(email)) {
-              showError('loginForm', 'Please enter a valid email address.');
-              return;
-            }
-            
             try {
               const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
                 method: 'POST',
@@ -157,6 +152,7 @@
             } catch (err) {
               showError('loginForm', err.message || 'An error occurred. Please try again.');
             }
+            // ==================== END OF CHANGE 3 ====================
           });
 
         // Signup Form
@@ -209,16 +205,16 @@
         }
 
         // Check if the token is expired
-        function isTokenExpired(token) {
-          const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
-          return payload.exp * 1000 < Date.now(); // Check if the token is expired
-        }
+function isTokenExpired(token) {
+  const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
+  return payload.exp * 1000 < Date.now(); // Check if the token is expired
+}
 
-        // Example: Check token expiration before making a request
-          const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-          if (token && isTokenExpired(token)) {
-            logout(); // Log out the user if the token is expired
-        }
+// Example: Check token expiration before making a request
+const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (token && isTokenExpired(token)) {
+  logout(); // Log out the user if the token is expired
+}
 
         function logout() {
           const confirmLogout = confirm('Are you sure you want to log out?');
@@ -232,30 +228,6 @@
           }
         }
         
-        // Add password visibility toggle
-function togglePasswordVisibility(inputId) {
-  const input = document.getElementById(inputId);
-  const toggle = document.getElementById(`${inputId}-toggle`);
-
-  if (input.type === 'password') {
-    input.type = 'text';
-    toggle.textContent = 'Hide';
-  } else {
-    input.type = 'password';
-    toggle.textContent = 'Show';
-  }
-}
-
-// Add to login form
-document.getElementById('loginPassword-toggle').addEventListener('click', () => {
-  togglePasswordVisibility('loginPassword');
-});
-
-// Add to signup form
-document.getElementById('signupPassword-toggle').addEventListener('click', () => {
-  togglePasswordVisibility('signupPassword');
-});
-
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
             e.preventDefault();
