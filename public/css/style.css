@@ -580,15 +580,61 @@ p.question-look, p.answer-text {
 }
 
 @media (max-width: 600px) {
+    :root {
+        --primary-color: #9FE7F8;
+        --secondary-color: #053F5C;
+        --accent-color: #FF6B6B;
+    }
+
+    body {
+        padding-top: 60px;
+    }
+
     nav {
         flex-direction: column;
+        align-items: center;
         padding: 1rem;
+        text-align: center;
     }
 
     .nav-buttons {
-        margin-top: 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .carousel-slide h2 {
+        font-size: 2rem;
+    }
+
+    .carousel-slide p {
+        font-size: 1rem;
+    }
+
+    .deck-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-plans {
+        grid-template-columns: 1fr;
+    }
+
+    .flashcard-system {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .srs-controls {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
