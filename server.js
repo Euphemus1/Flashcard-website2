@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === 'development') {
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:10000', // Local development
-  'http://localhost:3000',
+  'http://localhost:3000', // frontend origin? 
   'https://euphemus2.github.io/Flashcard-website/', // Production (GitHub Pages)
 ];
 

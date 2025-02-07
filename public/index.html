@@ -27,17 +27,20 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <div id="authForms">
                 <!-- Login Form -->
-                <form id="loginForm" class="auth-form" action="/login" method="POST">
+                <form id="loginForm" class="auth-form">
                     <h2>Iniciar Sesión</h2>
                     <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
                     <input type="password" id="loginPassword" placeholder="Contraseña" required>
                     <div class="error-message"></div>
+                    <label>
+                        <input type="checkbox" id="rememberMe"> Remember Me
+                    </label>
                     <button type="submit" class="plan-btn">submit</button>
                     <p style="text-align: center; margin-top: 1rem;">
                         ¿No tienes cuenta? <a href="#" onclick="showSignup()">Regístrate</a>
                     </p>
                 </form>
-
+                
                 <!-- Signup Form -->
                 <form id="signupForm" class="auth-form" action="/signup" method="POST" style="display: none;">
                     <h2>Crear Cuenta</h2>

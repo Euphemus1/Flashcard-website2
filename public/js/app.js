@@ -94,6 +94,7 @@
         async function fetchWithErrorHandling(url, options) {
           try {
             console.log('Making request to:', url); // Log the URL
+            console.log('Request options:', options); // Log the request options
             const response = await fetch(url, options);
         
             if (!response.ok) {
@@ -108,6 +109,7 @@
             throw err;
           }
         }
+        
         // Add a loading state with a spinner
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
@@ -153,11 +155,12 @@
 
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
+          e.preventDefault(); // Prevent default form submission
           clearErrors();
         
           const email = document.getElementById('loginEmail').value;
           const password = document.getElementById('loginPassword').value;
+          const rememberMe = document.getElementById('rememberMe').checked; // Get the "Remember Me" value
         
           if (!validateEmail(email)) {
             showError('loginForm', 'Please enter a valid email address.');
@@ -172,7 +175,7 @@
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ email, password }),
+              body: JSON.stringify({ email, password, rememberMe }), // Include rememberMe in the request
             });
         
             if (rememberMe) {
