@@ -25,6 +25,9 @@ const transporter = nodemailer.createTransport({
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve static files from the 'protected' directory for the /dashboard route
+app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
+
 // Initialize passport
 app.use(passport.initialize());
 require('./config/passport'); // Load passport configuration
@@ -112,7 +115,11 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
+
+// Serve the dashboard.html file
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 
 // Protected route example
 app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
