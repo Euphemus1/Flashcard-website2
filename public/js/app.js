@@ -110,14 +110,14 @@
         // Add a loading state with a spinner
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
-          const button = form.querySelector('button[type="submit"]');
+          const button = form.querySelector('button[type="Acceder"]')
 
           if (isLoading) {
             button.disabled = true;
             button.innerHTML = '<span class="spinner"></span> Loading...'; // Add a spinner
           } else {
             button.disabled = false;
-            button.textContent = 'Submit';
+            button.textContent = 'Acceder';
           }
         }
 
@@ -151,7 +151,7 @@
         }
 
         // Login Form
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('Acceder', async (e) => {
           e.preventDefault();
           clearErrors();
         
@@ -192,7 +192,7 @@
         });
 
         // Signup Form
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        document.getElementById('signupForm').addEventListener('Acceder', async (e) => {
           e.preventDefault();
           clearErrors();
         
