@@ -110,7 +110,7 @@
         // Add a loading state with a spinner
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
-          const button = form.querySelector('button[type="Acceder"]')
+          const button = form.querySelector('button[type="submit"]')
 
           if (isLoading) {
             button.disabled = true;
@@ -151,7 +151,7 @@
         }
 
         // Login Form
-        document.getElementById('loginForm').addEventListener('Acceder', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
           e.preventDefault();
           clearErrors();
         
@@ -192,7 +192,7 @@
         });
 
         // Signup Form
-        document.getElementById('signupForm').addEventListener('Acceder', async (e) => {
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
           e.preventDefault();
           clearErrors();
         
