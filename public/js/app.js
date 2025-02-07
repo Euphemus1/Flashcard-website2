@@ -89,6 +89,8 @@
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 closeModal();
                 updateAuthUI();
+
+                window.location.href = 'dashboard.html';
             } else {
                 showError('loginForm', 'Credenciales incorrectas');
             }
