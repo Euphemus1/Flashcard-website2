@@ -157,32 +157,41 @@
 
         // Signup Form
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearErrors();
-          
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-          
-            if (password.length < 6) {
-              showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
-              return;
-            }
-          
-            try {
-              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-              });
-          
-              alert('Registro exitoso! Por favor inicia sesión');
-              showLogin();
-            } catch (err) {
-              showError('signupForm', err.message || 'An error occurred. Please try again.');
-            }
-          });
+          e.preventDefault();
+          clearErrors();
+        
+          const email = document.getElementById('signupEmail').value;
+          const password = document.getElementById('signupPassword').value;
+        
+          if (!validateEmail(email)) {
+            showError('signupForm', 'Please enter a valid email address.');
+            return;
+          }
+        
+          if (password.length < 6) {
+            showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
+            return;
+          }
+        
+          setLoading('signupForm', true); // Enable loading state
+        
+          try {
+            const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email, password }),
+            });
+        
+            alert('Registro exitoso! Por favor inicia sesión');
+            showLogin();
+          } catch (err) {
+            showError('signupForm', err.message || 'An error occurred. Please try again.');
+          } finally {
+            setLoading('signupForm', false); // Disable loading state
+          }
+        });
 
         // Auth Modal Controls
         function openModal() {
@@ -205,16 +214,16 @@
         }
 
         // Check if the token is expired
-function isTokenExpired(token) {
-  const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
-  return payload.exp * 1000 < Date.now(); // Check if the token is expired
-}
+        function isTokenExpired(token) {
+          const payload = JSON.parse(atob(token.split('.')[1])); // Decode the token payload
+          return payload.exp * 1000 < Date.now(); // Check if the token is expired
+        }
 
-// Example: Check token expiration before making a request
-const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-if (token && isTokenExpired(token)) {
-  logout(); // Log out the user if the token is expired
-}
+        // Example: Check token expiration before making a request
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token && isTokenExpired(token)) {
+          logout(); // Log out the user if the token is expired
+        }
 
         function logout() {
           const confirmLogout = confirm('Are you sure you want to log out?');
