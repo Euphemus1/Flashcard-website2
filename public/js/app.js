@@ -123,37 +123,44 @@
 
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearErrors();
-          
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const rememberMe = document.getElementById('rememberMe')?.checked;
-          
-            try {
-              const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-              });
-          
-              if (rememberMe) {
-                localStorage.setItem('token', data.token); // Store token in localStorage
-              } else {
-                sessionStorage.setItem('token', data.token); // Store token in sessionStorage
-              }
-          
-              localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
-              currentUser = { email }; // Update current user
-              updateAuthUI();
-              closeModal();
-            } catch (err) {
-              showError('loginForm', err.message || 'An error occurred. Please try again.');
+          e.preventDefault();
+          clearErrors();
+        
+          const email = document.getElementById('loginEmail').value;
+          const password = document.getElementById('loginPassword').value;
+        
+          if (!validateEmail(email)) {
+            showError('loginForm', 'Please enter a valid email address.');
+            return;
+          }
+        
+          setLoading('loginForm', true); // Enable loading state
+        
+          try {
+            const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email, password }),
+            });
+        
+            if (rememberMe) {
+              localStorage.setItem('token', data.token); // Store token in localStorage
+            } else {
+              sessionStorage.setItem('token', data.token); // Store token in sessionStorage
             }
-            // ==================== END OF CHANGE 3 ====================
-          });
+        
+            localStorage.setItem('currentUser', JSON.stringify({ email })); // Store the currentUser object
+            currentUser = { email }; // Update current user
+            updateAuthUI();
+            closeModal();
+          } catch (err) {
+            showError('loginForm', err.message || 'An error occurred. Please try again.');
+          } finally {
+            setLoading('loginForm', false); // Disable loading state
+          }
+        });
 
         // Signup Form
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
