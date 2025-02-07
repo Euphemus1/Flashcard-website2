@@ -121,6 +121,31 @@
           }
         }
 
+        // Add password visibility toggle
+        function togglePasswordVisibility(inputId) {
+          const input = document.getElementById(inputId);
+          const toggle = document.getElementById(`${inputId}-toggle`);
+
+          if (input.type === 'password') {
+            input.type = 'text';
+            toggle.textContent = 'Hide';
+          } else {
+            input.type = 'password';
+            toggle.textContent = 'Show';
+          }
+        }
+
+        // Add to login form
+        document.getElementById('loginPassword-toggle').addEventListener('click', () => {
+          togglePasswordVisibility('loginPassword');
+        });
+
+        // Add to signup form
+        document.getElementById('signupPassword-toggle').addEventListener('click', () => {
+          togglePasswordVisibility('signupPassword');
+        });
+
+        // Validate email format
         function validateEmail(email) {
           const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           return regex.test(email);
@@ -135,10 +160,12 @@
             const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe')?.checked;
           
-              if (!validateEmail(email)) {
-                showError('loginForm', 'Please enter a valid email address.');
-                return;
-              }
+            setLoading('loginForm', true); // Enable loading state
+
+            if (!validateEmail(email)) {
+              showError('loginForm', 'Please enter a valid email address.');
+              return;
+            }
             
             try {
               const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/login`, {
@@ -161,6 +188,8 @@
               closeModal();
             } catch (err) {
               showError('loginForm', err.message || 'An error occurred. Please try again.');
+            } finally {
+              setLoading('loginForm', false); // Disable loading state
             }
           });
 
@@ -172,11 +201,18 @@
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
           
+            if (!validateEmail(email)) {
+              showError('signupForm', 'Please enter a valid email address.');
+              return;
+            }
+
             if (password.length < 6) {
               showError('signupForm', 'La contraseña debe tener al menos 6 caracteres');
               return;
             }
           
+            setLoading('signupForm', true); // Enable loading state
+
             try {
               const data = await fetchWithErrorHandling(`${BACKEND_URL}/auth/register`, {
                 method: 'POST',
@@ -190,6 +226,8 @@
               showLogin();
             } catch (err) {
               showError('signupForm', err.message || 'An error occurred. Please try again.');
+            } finally {
+              setLoading('signupForm', false); // Disable loading state
             }
           });
 
@@ -236,30 +274,6 @@
             updateAuthUI(); // Update the UI
           }
         }
-        
-        // Add password visibility toggle
-        function togglePasswordVisibility(inputId) {
-          const input = document.getElementById(inputId);
-          const toggle = document.getElementById(`${inputId}-toggle`);
-
-          if (input.type === 'password') {
-            input.type = 'text';
-            toggle.textContent = 'Hide';
-          } else {
-            input.type = 'password';
-            toggle.textContent = 'Show';
-          }
-        }
-
-        // Add to login form
-        document.getElementById('loginPassword-toggle').addEventListener('click', () => {
-          togglePasswordVisibility('loginPassword');
-        });
-
-        // Add to signup form
-        document.getElementById('signupPassword-toggle').addEventListener('click', () => {
-          togglePasswordVisibility('signupPassword');
-        });
 
         // Event Listeners
         authBtn.addEventListener('click', (e) => {
