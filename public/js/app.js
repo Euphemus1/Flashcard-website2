@@ -93,20 +93,21 @@
         // Improved fetch function with error handling
         async function fetchWithErrorHandling(url, options) {
           try {
+            console.log('Making request to:', url); // Log the URL
             const response = await fetch(url, options);
-
+        
             if (!response.ok) {
               const errorData = await response.json();
+              console.error('Error response:', errorData); // Log the error response
               throw new Error(errorData.error || 'Request failed');
             }
-
+        
             return await response.json();
           } catch (err) {
-            console.error('Fetch error:', err);
+            console.error('Fetch error:', err); // Log the error
             throw err;
           }
         }
-
         // Add a loading state with a spinner
         function setLoading(formId, isLoading) {
           const form = document.getElementById(formId);
