@@ -24,14 +24,14 @@ function flipCard() {
     const srsControls = document.querySelector('.srs-controls');
 
     // Hide the question card and show the answer card
-    questionCard.style.display = 'none';
-    answerCard.style.display = 'block';
+    questionCard.classList.add('hidden');
+    answerCard.classList.remove('hidden');
 
     // Hide the Skip and Revisar buttons
-    reviewActions.style.display = 'none';
+    reviewActions.classList.add('hidden');
 
     // Show the review options
-    srsControls.style.display = 'grid';
+    srsControls.classList.remove('hidden');
 }
 
 function rateCard(minutes) {
@@ -61,10 +61,10 @@ function loadNextCard() {
     showStatus(currentCard.interval > 1 ? 'Due card' : 'New card');
 
     // Reset card display
-    document.querySelector('.question').style.display = 'block';
-    document.querySelector('.answer').style.display = 'none';
-    document.querySelector('.srs-controls').style.display = 'none';
-    document.getElementById('review-actions').style.display = 'flex';
+    document.querySelector('.question').classList.remove('hidden');
+    document.querySelector('.answer').classList.add('hidden');
+    document.querySelector('.srs-controls').classList.add('hidden');
+    document.getElementById('review-actions').classList.remove('hidden');
 }
 
 function switchDeck(deckName) {

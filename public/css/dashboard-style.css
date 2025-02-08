@@ -235,6 +235,11 @@ p.question-look, p.answer-text {
 .bueno { background: #2ed573; }
 .fácil { background: #1e90ff; }
 
+/* Hidden Class */
+.hidden {
+    display: none;
+}
+
 /* Card Status */
 #card-status {
     margin-top: 20px;
