@@ -79,10 +79,10 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 // Add event listeners for deck switching
 document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
 document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
-document.getElementById('Patología-btn').addEventListener('click', () => switchDeck('Patología'));
-document.getElementById('Farmacología-btn').addEventListener('click', () => switchDeck('Farmacoíalogía'))
-document.getElementById('Terapéutica 1-btn').addEventListener('click', () => switchDeck('Terapéutica 1')
-document.getElementById('Medicina Interna 1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'))
+document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
+document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacoíalogía'));
+document.getElementById('terapéutica 1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
+document.getElementById('medicina interna 1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'));
 document.getElementById('flashcard').addEventListener('click', flipCard);
 document.getElementById('review-button').addEventListener('click', showReviewOptions);
 document.getElementById('skip-button').addEventListener('click', skipCard);
