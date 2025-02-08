@@ -23,6 +23,8 @@ function flipCard() {
     const reviewActions = document.getElementById('review-actions');
     const srsControls = document.querySelector('.srs-controls');
 
+    console.log("Flipping card...");
+
     // Hide the question card and show the answer card
     questionCard.classList.add('hidden');
     answerCard.classList.remove('hidden');
@@ -90,6 +92,8 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const topNav = document.getElementById('top-nav');
     const mainContent = document.getElementById('main-content');
+
+    console.log("Toggling sidebar...");
 
     sidebar.classList.toggle('collapsed');
     topNav.classList.toggle('collapsed');
