@@ -79,6 +79,12 @@ function getDeckData(deckName) {
     ];
 }
 
+// Show the main content when a deck or subdeck is clicked
+function showMainContent() {
+    const mainContent = document.getElementById('main-content');
+    mainContent.classList.remove('hidden');
+}
+
 // Add event listeners for dropdown functionality
 document.querySelectorAll('.deck-btn').forEach(button => {
     button.addEventListener('click', function() {
@@ -87,13 +93,13 @@ document.querySelectorAll('.deck-btn').forEach(button => {
     });
 });
 
-// Add event listeners for deck switching
-document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
-document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
-document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
-document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacología'));
-document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
-document.getElementById('medicinainterna1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'));
+// Add event listeners for deck and subdeck buttons
+document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        showMainContent();
+        loadNextCard();
+    });
+});
 
 // Add event listeners for flashcard actions
 document.getElementById('revisar-button').addEventListener('click', flipCard);
@@ -103,5 +109,7 @@ document.querySelector('.díficil').addEventListener('click', () => rateCard(60)
 document.querySelector('.bueno').addEventListener('click', () => rateCard(1440));
 document.querySelector('.fácil').addEventListener('click', () => rateCard(2880));
 
-// Load the first card when the page loads
-window.onload = loadNextCard;
+// FAQ Button
+document.getElementById('faq-button').addEventListener('click', () => {
+    alert("FAQ content goes here.");
+});

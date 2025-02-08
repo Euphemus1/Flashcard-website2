@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Flashcard Study App</title>
     <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Top Navigation Bar -->
+    <div id="top-nav">
+        <div class="logo">Flashcard App</div>
+        <div class="nav-buttons">
+            <button id="faq-button">FAQ</button>
+        </div>
+    </div>
+
     <!-- Sidebar Section -->
     <div id="sidebar">
         <h2>Meus Decks</h2>
@@ -16,10 +25,10 @@
                     Microbiología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>Bacterias</button></li>
-                    <li><button>Hongos</button></li>
-                    <li><button>Parásitos</button></li>
-                    <li><button>Virus</button></li>
+                    <li><button class="subdeck-btn">Bacterias</button></li>
+                    <li><button class="subdeck-btn">Hongos</button></li>
+                    <li><button class="subdeck-btn">Parásitos</button></li>
+                    <li><button class="subdeck-btn">Virus</button></li>
                 </ul>
             </li>
             <li>
@@ -27,15 +36,15 @@
                     Semiología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>Historía clínica</button></li>
-                    <li><button>Piel y faneras</button></li>
-                    <li><button>Cabeza y cuello</button></li>
-                    <li><button>Respiratorio</button></li>
-                    <li><button>Cardiovascular</button></li>
-                    <li><button>Digestivo</button></li>
-                    <li><button>Urinario</button></li>
-                    <li><button>Neurología</button></li>
-                    <li><button>Osteoarticular</button></li>
+                    <li><button class="subdeck-btn">Historía clínica</button></li>
+                    <li><button class="subdeck-btn">Piel y faneras</button></li>
+                    <li><button class="subdeck-btn">Cabeza y cuello</button></li>
+                    <li><button class="subdeck-btn">Respiratorio</button></li>
+                    <li><button class="subdeck-btn">Cardiovascular</button></li>
+                    <li><button class="subdeck-btn">Digestivo</button></li>
+                    <li><button class="subdeck-btn">Urinario</button></li>
+                    <li><button class="subdeck-btn">Neurología</button></li>
+                    <li><button class="subdeck-btn">Osteoarticular</button></li>
                 </ul>
             </li>
             <li>
@@ -43,9 +52,9 @@
                     Patología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>ERA1</button></li>
-                    <li><button>ERA2</button></li>
-                    <li><button>ERA3</button></li>
+                    <li><button class="subdeck-btn">ERA1</button></li>
+                    <li><button class="subdeck-btn">ERA2</button></li>
+                    <li><button class="subdeck-btn">ERA3</button></li>
                 </ul>
             </li>
             <li>
@@ -53,8 +62,8 @@
                     Farmacología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>ERA1</button></li>
-                    <li><button>ERA2</button></li>
+                    <li><button class="subdeck-btn">ERA1</button></li>
+                    <li><button class="subdeck-btn">ERA2</button></li>
                 </ul>
             </li>
             <li>
@@ -62,10 +71,10 @@
                     Terapéutica 1 <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>Virus</button></li>
-                    <li><button>Bacterias</button></li>
-                    <li><button>Hongos</button></li>
-                    <li><button>Parásitos</button></li>
+                    <li><button class="subdeck-btn">Virus</button></li>
+                    <li><button class="subdeck-btn">Bacterias</button></li>
+                    <li><button class="subdeck-btn">Hongos</button></li>
+                    <li><button class="subdeck-btn">Parásitos</button></li>
                 </ul>
             </li>
             <li>
@@ -73,19 +82,19 @@
                     Medicina Interna 1 <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button>Neumonología</button></li>
-                    <li><button>Cardiovascular</button></li>
-                    <li><button>Tubo digestivo alto</button></li>
-                    <li><button>Tubo digestivo bajo</button></li>
-                    <li><button>Neurología</button></li>
-                    <li><button>Anexos</button></li>
+                    <li><button class="subdeck-btn">Neumonología</button></li>
+                    <li><button class="subdeck-btn">Cardiovascular</button></li>
+                    <li><button class="subdeck-btn">Tubo digestivo alto</button></li>
+                    <li><button class="subdeck-btn">Tubo digestivo bajo</button></li>
+                    <li><button class="subdeck-btn">Neurología</button></li>
+                    <li><button class="subdeck-btn">Anexos</button></li>
                 </ul>
             </li>
         </ul>
     </div>
 
     <!-- Main Content Section -->
-    <div id="main-content">
+    <div id="main-content" class="hidden">
         <!-- Flashcard Section -->
         <div id="flashcard-system">
             <div class="card-pair">
