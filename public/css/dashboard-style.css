@@ -60,19 +60,19 @@ body {
 /* Dropdown styles */
 .subdeck-list {
     list-style-type: none;
-    padding-left: 20px;
-    margin-top:2px;
+    padding-left: 10px;
+    margin-top: 2px;
     display: none; /* Hidden by default */
 }
 
 .subdeck-list li {
-    margin: 2px 0;
+    margin: 1px 0;
 }
 
 .subdeck-list button {
     background-color: #FF6B6B !important; /* Different color for dropdown buttons */
-    padding: 8px;
-    font-size: 14px;
+    padding: 6px;
+    font-size: 12px;
     width: 100%;
     text-align: left;
     border: none;
