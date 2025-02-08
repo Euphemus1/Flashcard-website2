@@ -130,8 +130,10 @@ function setLoadingState(formId, isLoading) {
 function showError(formId, message) {
     const form = document.getElementById(formId);
     const errorElement = form.querySelector('.error-message');
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
 }
 
 // Clear Errors
@@ -160,7 +162,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     setLoadingState('loginForm', true);
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/login`, {
+        const response = await fetch(`${BACKEND_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -225,7 +227,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     setLoadingState('signupForm', true);
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/register`, {
+        const response = await fetch(`${BACKEND_URL}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -352,6 +354,9 @@ fetch(`${BACKEND_URL}/api/health-check`)
     .then(response => response.json())
     .then(data => {
         console.log('Backend status:', data);
-        document.getElementById('status').textContent = data.message; // Update UI
+        const statusElement = document.getElementById('status');
+        if (statusElement) {
+            statusElement.textContent = data.message; // Update UI
+        }
     })
     .catch(error => console.error('Connection failed:', error));
