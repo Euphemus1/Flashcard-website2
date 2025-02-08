@@ -68,7 +68,15 @@ function getDeckData(deckName) {
     ];
 }
 
-// Add event listeners
+// Add event listeners for dropdown functionality
+document.querySelectorAll('.deck-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const subdeckList = this.nextElementSibling;
+        subdeckList.style.display = subdeckList.style.display === 'block' ? 'none' : 'block';
+    });
+});
+
+// Add event listeners for deck switching
 document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
 document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
 document.getElementById('flashcard').addEventListener('click', flipCard);
