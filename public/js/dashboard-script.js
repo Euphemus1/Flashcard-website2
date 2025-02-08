@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function flipCard() {
         const card = document.getElementById('flashcard');
-        card.classList.toggle('flipped');
+        if (card) {
+            card.classList.toggle('flipped');
+        }
     }
 
     function rateCard(minutes) {
@@ -34,12 +36,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showStatus(status) {
         const statusElement = document.getElementById('status');
-        statusElement.textContent = status;
+        if (statusElement) {
+            statusElement.textContent = status;
+        }
     }
 
     function showReviewOptions() {
-        document.getElementById('review-buttons').style.display = 'flex';
-        document.getElementById('review-actions').style.display = 'none';
+        const reviewButtons = document.getElementById('review-buttons');
+        const reviewActions = document.getElementById('review-actions');
+        if (reviewButtons && reviewActions) {
+            reviewButtons.style.display = 'flex';
+            reviewActions.style.display = 'none';
+        }
     }
 
     function skipCard() {
@@ -50,11 +58,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadNextCard() {
         currentCardIndex = (currentCardIndex + 1) % flashcards.length;
         const currentCard = flashcards[currentCardIndex];
-        document.getElementById('card-front').innerHTML = currentCard.question;
-        document.getElementById('card-back').innerHTML = currentCard.answer;
+        const cardFront = document.getElementById('card-front');
+        const cardBack = document.getElementById('card-back');
+        if (cardFront && cardBack) {
+            cardFront.innerHTML = currentCard.question;
+            cardBack.innerHTML = currentCard.answer;
+        }
         showStatus(currentCard.interval > 1 ? 'Due card' : 'New card');
-        document.getElementById('review-buttons').style.display = 'none';
-        document.getElementById('review-actions').style.display = 'flex';
+        const reviewButtons = document.getElementById('review-buttons');
+        const reviewActions = document.getElementById('review-actions');
+        if (reviewButtons && reviewActions) {
+            reviewButtons.style.display = 'none';
+            reviewActions.style.display = 'flex';
+        }
     }
 
     function switchDeck(deckName) {
@@ -73,24 +89,77 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.deck-btn').forEach(button => {
         button.addEventListener('click', function() {
             const subdeckList = this.nextElementSibling;
-            subdeckList.style.display = subdeckList.style.display === 'block' ? 'none' : 'block';
+            if (subdeckList) {
+                subdeckList.style.display = subdeckList.style.display === 'block' ? 'none' : 'block';
+            }
         });
     });
 
     // Add event listeners for deck switching
-    document.getElementById('microbiología-btn').addEventListener('click', () => switchDeck('Microbiología'));
-    document.getElementById('semiología-btn').addEventListener('click', () => switchDeck('Semiología'));
-    document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
-    document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacoíalogía'));
-    document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
-    document.getElementById('medicinainterna1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'));
-    document.getElementById('flashcard').addEventListener('click', flipCard);
-    document.getElementById('review-button').addEventListener('click', showReviewOptions);
-    document.getElementById('skip-button').addEventListener('click', skipCard);
-    document.getElementById('10-min-btn').addEventListener('click', () => rateCard(10));
-    document.getElementById('1-hour-btn').addEventListener('click', () => rateCard(60));
-    document.getElementById('1-day-btn').addEventListener('click', () => rateCard(1440));
-    document.getElementById('2-days-btn').addEventListener('click', () => rateCard(2880));
+    const microbiologyBtn = document.getElementById('microbiology-btn');
+    if (microbiologyBtn) {
+        microbiologyBtn.addEventListener('click', () => switchDeck('Microbiología'));
+    }
+
+    const semiologyBtn = document.getElementById('semiology-btn');
+    if (semiologyBtn) {
+        semiologyBtn.addEventListener('click', () => switchDeck('Semiología'));
+    }
+
+    const patologiaBtn = document.getElementById('patología-btn');
+    if (patologiaBtn) {
+        patologiaBtn.addEventListener('click', () => switchDeck('Patología'));
+    }
+
+    const farmacologiaBtn = document.getElementById('farmacología-btn');
+    if (farmacologiaBtn) {
+        farmacologiaBtn.addEventListener('click', () => switchDeck('Farmacoíalogía'));
+    }
+
+    const terapéutica1Btn = document.getElementById('terapéutica1-btn');
+    if (terapéutica1Btn) {
+        terapéutica1Btn.addEventListener('click', () => switchDeck('Terapéutica 1'));
+    }
+
+    const medicinaInterna1Btn = document.getElementById('medicinainterna1-btn');
+    if (medicinaInterna1Btn) {
+        medicinaInterna1Btn.addEventListener('click', () => switchDeck('Medicina Interna 1'));
+    }
+
+    const flashcard = document.getElementById('flashcard');
+    if (flashcard) {
+        flashcard.addEventListener('click', flipCard);
+    }
+
+    const reviewButton = document.getElementById('review-button');
+    if (reviewButton) {
+        reviewButton.addEventListener('click', showReviewOptions);
+    }
+
+    const skipButton = document.getElementById('skip-button');
+    if (skipButton) {
+        skipButton.addEventListener('click', skipCard);
+    }
+
+    const tenMinBtn = document.getElementById('10-min-btn');
+    if (tenMinBtn) {
+        tenMinBtn.addEventListener('click', () => rateCard(10));
+    }
+
+    const oneHourBtn = document.getElementById('1-hour-btn');
+    if (oneHourBtn) {
+        oneHourBtn.addEventListener('click', () => rateCard(60));
+    }
+
+    const oneDayBtn = document.getElementById('1-day-btn');
+    if (oneDayBtn) {
+        oneDayBtn.addEventListener('click', () => rateCard(1440));
+    }
+
+    const twoDaysBtn = document.getElementById('2-days-btn');
+    if (twoDaysBtn) {
+        twoDaysBtn.addEventListener('click', () => rateCard(2880));
+    }
 
     // Load the first card when the page loads
     loadNextCard();
