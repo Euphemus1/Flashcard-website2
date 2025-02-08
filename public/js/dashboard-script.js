@@ -90,6 +90,7 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const topNav = document.getElementById('top-nav');
     const mainContent = document.getElementById('main-content');
+
     sidebar.classList.toggle('collapsed');
     topNav.classList.toggle('collapsed');
     mainContent.classList.toggle('full-width');
@@ -126,3 +127,6 @@ document.getElementById('faq-button').addEventListener('click', () => {
 
 // Sidebar Toggle Button
 document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+
+// Load the first card when the page loads
+window.onload = loadNextCard;
