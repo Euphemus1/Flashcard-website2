@@ -88,8 +88,10 @@ function showMainContent() {
 // Toggle sidebar collapse
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
+    const topNav = document.getElementById('top-nav');
     const mainContent = document.getElementById('main-content');
     sidebar.classList.toggle('collapsed');
+    topNav.classList.toggle('collapsed');
     mainContent.classList.toggle('full-width');
 }
 
