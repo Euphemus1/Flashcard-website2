@@ -69,9 +69,6 @@ body {
 
 /* Sidebar Section */
 #sidebar {
-    position: fixed;
-    top: 60px; /* Height of the top nav bar */
-    left: 0;
     background-color: #429edd;
     color: white;
     width: 250px;
@@ -80,10 +77,10 @@ body {
     flex-direction: column;
     align-items: flex-start;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-    height: calc(100vh - 60px); /* Full height minus the top nav bar */
+    margin-top: 60px; /* To account for the top nav bar */
+    height: calc(100vh - 60px);
     overflow-y: auto;
     transition: transform 0.3s ease;
-    z-index: 999; /* Ensure sidebar is below the top nav bar */
 }
 
 #sidebar.collapsed {
