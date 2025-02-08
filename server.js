@@ -8,8 +8,8 @@ const authRoutes = require('./routes/authRoutes');
 const path = require('path');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto'); // For generating tokens
 require('dotenv').config();
-
 
 const app = express();
 
@@ -33,7 +33,7 @@ app.use(passport.initialize());
 require('./config/passport'); // Load passport configuration
 
 // Validate environment variables
-const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'CAPTCHA_SECRET', 'FRONTEND_URL'];
 requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === 'development') {
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:10000', // Local development
-  'http://localhost:3000', // frontend origin? 
+  'http://localhost:3000', // Frontend origin
   'https://euphemus2.github.io/Flashcard-website/', // Production (GitHub Pages)
 ];
 
@@ -116,6 +116,116 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/auth', authRoutes);
 
+// Email Verification Endpoint
+app.post('/auth/send-verification-email', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const token = crypto.randomBytes(20).toString('hex');
+    user.verificationToken = token;
+    await user.save();
+
+    const verificationLink = `${process.env.FRONTEND_URL}/verify?token=${token}`;
+
+    await transporter.sendMail({
+      from: 'no-reply@meddecks.com',
+      to: email,
+      subject: 'Verify Your Email Address',
+      html: `<p>Please click the link below to verify your email address:</p>
+             <a href="${verificationLink}">${verificationLink}</a>`,
+    });
+
+    res.json({ message: 'Verification email sent' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to send verification email' });
+  }
+});
+
+// Verify Email Endpoint
+app.post('/auth/verify-email', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const user = await User.findOne({ verificationToken: token });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    await user.save();
+
+    res.json({ message: 'Email verified successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Password Reset Endpoint
+app.post('/auth/request-password-reset', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const token = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    await transporter.sendMail({
+      from: 'no-reply@meddecks.com',
+      to: email,
+      subject: 'Password Reset Request',
+      html: `<p>Please click the link below to reset your password:</p>
+             <a href="${resetLink}">${resetLink}</a>`,
+    });
+
+    res.json({ message: 'Password reset email sent' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to send password reset email' });
+  }
+});
+
+// Reset Password Endpoint
+app.post('/auth/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 // Serve the dashboard.html file
 app.get('/dashboard', (req, res) => {
   console.log('Serving dashboard.html from:', path.join(__dirname, 'protected', 'dashboard.html'));
@@ -156,7 +266,6 @@ app.use((err, req, res, next) => {
 
   res.status(500).json({ error: 'Internal Server Error' });
 });
-
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
