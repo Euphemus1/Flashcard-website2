@@ -30,22 +30,32 @@
                 <form id="loginForm" class="auth-form">
                     <h2>Iniciar Sesión</h2>
                     <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
-                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                    <div class="password-container">
+                        <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                        <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">👁️</span>
+                    </div>
                     <div class="error-message"></div>
                     <label>
-                        <input type="checkbox" id="rememberMe"> Remember Me
+                        <input type="checkbox" id="rememberMe"> Recordarme
                     </label>
-                    <button type="submit" class="plan-btn">submit</button>
+                    <button type="submit" class="plan-btn">Iniciar Sesión</button>
                     <p style="text-align: center; margin-top: 1rem;">
                         ¿No tienes cuenta? <a href="#" onclick="showSignup()">Regístrate</a>
                     </p>
                 </form>
                 
                 <!-- Signup Form -->
-                <form id="signupForm" class="auth-form" action="/signup" method="POST" style="display: none;">
+                <form id="signupForm" class="auth-form" style="display: none;">
                     <h2>Crear Cuenta</h2>
                     <input type="email" id="signupEmail" placeholder="Correo electrónico" required>
-                    <input type="password" id="signupPassword" placeholder="Contraseña (mínimo 6 caracteres)" minlength="6" required>
+                    <div class="password-container">
+                        <input type="password" id="signupPassword" placeholder="Contraseña (mínimo 6 caracteres)" minlength="6" required>
+                        <span class="toggle-password" onclick="togglePasswordVisibility('signupPassword')">👁️</span>
+                    </div>
+                    <div class="password-container">
+                        <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" required>
+                        <span class="toggle-password" onclick="togglePasswordVisibility('confirmPassword')">👁️</span>
+                    </div>
                     <div class="error-message"></div>
                     <button type="submit" class="plan-btn">Registrarse</button>
                     <p style="text-align: center; margin-top: 1rem;">
