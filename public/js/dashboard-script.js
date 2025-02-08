@@ -86,8 +86,8 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 });
 
 // Add event listeners for deck switching
-document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
-document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
+document.getElementById('microbiología-btn').addEventListener('click', () => switchDeck('Microbiología'));
+document.getElementById('semiología-btn').addEventListener('click', () => switchDeck('Semiología'));
 document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
 document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacología'));
 document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
