@@ -33,7 +33,7 @@ app.use(passport.initialize());
 require('./config/passport'); // Load passport configuration
 
 // Validate environment variables
-const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'CAPTCHA_SECRET', 'FRONTEND_URL'];
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'FRONTEND_URL'];
 requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
