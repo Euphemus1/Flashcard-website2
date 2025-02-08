@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Flashcard Study App</title>
-    <link rel="stylesheet" href="/css/dashboard-style.css"> <!-- Link to CSS in the same folder -->
+    <link rel="stylesheet" href="/css/dashboard-style.css">
 </head>
 <body>
     <!-- Sidebar Section -->
@@ -86,26 +86,50 @@
 
     <!-- Main Content Section -->
     <div id="main-content">
-        <div id="flashcard">
-            <div id="card-front">
-                <p>What is the cause of Necrotizing Fasciitis?</p>
+        <!-- Flashcard Section -->
+        <div id="flashcard-system">
+            <div class="card-pair">
+                <div class="card question">
+                    <div class="card-content">
+                        <h3 id="card-front">What is the cause of Necrotizing Fasciitis?</h3>
+                        <h1 class="mechanism">Mecanismo de acción:</h1>
+                        <p class="question-look">"..."</p>
+                    </div>
+                </div>
+                <div class="card answer" style="display: none;">
+                    <div class="card-content">
+                        <h3 id="card-back">Streptococcus pyogenes and Staphylococcus aureus</h3>
+                        <h1 class="mechanism">Mecanismo de acción:</h1>
+                        <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
+                    </div>
+                </div>
+                <button class="revisar-btn">Revisar</button>
             </div>
-            <div id="card-back">
-                <p>Streptococcus pyogenes and Staphylococcus aureus</p>
+
+            <!-- Review Options -->
+            <div class="srs-controls" style="display: none;">
+                <div class="srs-option">
+                    <button class="difficulty denuevo">De nuevo</button>
+                    <span class="interval">1d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty díficil">Díficil</button>
+                    <span class="interval">2d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty bueno">Bueno</button>
+                    <span class="interval">4d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty fácil">Fácil</button>
+                    <span class="interval">8d</span>
+                </div>
             </div>
         </div>
 
-        <!-- Review Options -->
+        <!-- Skip Button -->
         <div id="review-actions">
-            <button id="review-button">Review</button>
             <button id="skip-button">Skip</button>
-        </div>
-
-        <div id="review-buttons">
-            <button class="review-btn" id="10-min-btn">10 min</button>
-            <button class="review-btn" id="1-hour-btn">1 hour</button>
-            <button class="review-btn" id="1-day-btn">1 day</button>
-            <button class="review-btn" id="2-days-btn">2 days</button>
         </div>
 
         <!-- Card Status -->
@@ -114,6 +138,6 @@
         </div>
     </div>
 
-    <script src="/js/dashboard-script.js"></script> <!-- Link to JS in the same folder -->
+    <script src="/js/dashboard-script.js"></script>
 </body>
 </html>
