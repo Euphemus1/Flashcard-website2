@@ -79,6 +79,7 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 // Add event listeners for deck switching
 document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
 document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
+document.getElementById('Patología-btn').addEventListener('click', () => switchDeck('Patología'));
 document.getElementById('flashcard').addEventListener('click', flipCard);
 document.getElementById('review-button').addEventListener('click', showReviewOptions);
 document.getElementById('skip-button').addEventListener('click', skipCard);
