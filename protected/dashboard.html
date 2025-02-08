@@ -12,7 +12,7 @@
         <h2>Meus Decks</h2>
         <ul id="deck-list">
             <li>
-                <button id="microbiología-btn" class="deck-btn">
+                <button id="microbiology-btn" class="deck-btn">
                     Microbiología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
@@ -23,7 +23,7 @@
                 </ul>
             </li>
             <li>
-                <button id="semiología-btn" class="deck-btn">
+                <button id="semiology-btn" class="deck-btn">
                     Semiología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
@@ -89,6 +89,7 @@
         <!-- Flashcard Section -->
         <div id="flashcard-system">
             <div class="card-pair">
+                <!-- Question Card -->
                 <div class="card question">
                     <div class="card-content">
                         <h3 id="card-front">What is the cause of Necrotizing Fasciitis?</h3>
@@ -96,6 +97,8 @@
                         <p class="question-look">"..."</p>
                     </div>
                 </div>
+
+                <!-- Answer Card (Hidden by Default) -->
                 <div class="card answer" style="display: none;">
                     <div class="card-content">
                         <h3 id="card-back">Streptococcus pyogenes and Staphylococcus aureus</h3>
@@ -103,10 +106,12 @@
                         <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
                     </div>
                 </div>
+
+                <!-- Review Button -->
                 <button class="revisar-btn">Revisar</button>
             </div>
 
-            <!-- Review Options -->
+            <!-- Review Options (Hidden by Default) -->
             <div class="srs-controls" style="display: none;">
                 <div class="srs-option">
                     <button class="difficulty denuevo">De nuevo</button>
