@@ -53,6 +53,20 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+#sidebar-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+#sidebar-toggle:hover {
+    transform: scale(1.1);
+}
+
 /* Sidebar Section */
 #sidebar {
     background-color: #429edd;
@@ -66,6 +80,11 @@ body {
     margin-top: 60px; /* To account for the top nav bar */
     height: calc(100vh - 60px);
     overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+#sidebar.collapsed {
+    transform: translateX(-100%);
 }
 
 #sidebar h2 {
@@ -147,10 +166,16 @@ body {
     margin-top: 60px; /* To account for the top nav bar */
     height: calc(100vh - 60px);
     overflow-y: auto;
+    margin-left: 250px; /* To account for the sidebar */
+    transition: margin-left 0.3s ease;
 }
 
 #main-content.hidden {
     display: none;
+}
+
+#main-content.full-width {
+    margin-left: 0;
 }
 
 /* Flashcard System Section */

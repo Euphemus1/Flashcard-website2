@@ -85,6 +85,14 @@ function showMainContent() {
     mainContent.classList.remove('hidden');
 }
 
+// Toggle sidebar collapse
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('full-width');
+}
+
 // Add event listeners for dropdown functionality
 document.querySelectorAll('.deck-btn').forEach(button => {
     button.addEventListener('click', function() {
@@ -113,3 +121,6 @@ document.querySelector('.fácil').addEventListener('click', () => rateCard(2880)
 document.getElementById('faq-button').addEventListener('click', () => {
     alert("FAQ content goes here.");
 });
+
+// Sidebar Toggle Button
+document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
