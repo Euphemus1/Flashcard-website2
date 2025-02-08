@@ -66,12 +66,12 @@ body {
 }
 
 .subdeck-list li {
-    margin: 2px 0;
+    margin: 1px 0;
 }
 
 .subdeck-list button {
     background-color: #FF6B6B; /* Different color for dropdown buttons */
-    padding: 8px;
+    padding: 4px;
     font-size: 14px;
     width: 100%;
     text-align: left;
