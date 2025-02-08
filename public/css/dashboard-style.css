@@ -157,24 +157,43 @@ p.question-look, p.answer-text {
     margin-top: 1.5rem;
 }
 
-.revisar-btn {
-    background: #429edb;
-    color: white;
-    border: none;
-    padding: 0.7rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    display: block;
+/* Skip and Revisar Buttons */
+#review-actions {
+    display: flex;
+    justify-content: space-between;
     width: 100%;
-    height: 40px;
     margin-top: 1.5rem;
 }
 
-.revisar-btn:hover {
-    background: #1e90ff;
+#skip-button, #revisar-button {
+    width: 48%;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
+#skip-button {
+    background-color: #e67e22;
+    color: white;
+}
+
+#skip-button:hover {
+    background-color: #d35400;
+}
+
+#revisar-button {
+    background-color: #429edb;
+    color: white;
+}
+
+#revisar-button:hover {
+    background-color: #1e90ff;
+}
+
+/* Review Options */
 .srs-controls {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -215,25 +234,6 @@ p.question-look, p.answer-text {
 .díficil { background: #ffa502; }
 .bueno { background: #2ed573; }
 .fácil { background: #1e90ff; }
-
-/* Skip Button */
-#review-actions {
-    margin-top: 1rem;
-}
-
-#skip-button {
-    background-color: #e67e22;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#skip-button:hover {
-    background-color: #d35400;
-}
 
 /* Card Status */
 #card-status {

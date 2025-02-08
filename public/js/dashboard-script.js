@@ -20,11 +20,17 @@ let currentCardIndex = 0;
 function flipCard() {
     const questionCard = document.querySelector('.question');
     const answerCard = document.querySelector('.answer');
+    const reviewActions = document.getElementById('review-actions');
     const srsControls = document.querySelector('.srs-controls');
 
     // Hide the question card and show the answer card
     questionCard.style.display = 'none';
     answerCard.style.display = 'block';
+
+    // Hide the Skip and Revisar buttons
+    reviewActions.style.display = 'none';
+
+    // Show the review options
     srsControls.style.display = 'grid';
 }
 
@@ -58,6 +64,7 @@ function loadNextCard() {
     document.querySelector('.question').style.display = 'block';
     document.querySelector('.answer').style.display = 'none';
     document.querySelector('.srs-controls').style.display = 'none';
+    document.getElementById('review-actions').style.display = 'flex';
 }
 
 function switchDeck(deckName) {
@@ -89,7 +96,7 @@ document.getElementById('terapéutica1-btn').addEventListener('click', () => swi
 document.getElementById('medicinainterna1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'));
 
 // Add event listeners for flashcard actions
-document.querySelector('.revisar-btn').addEventListener('click', flipCard);
+document.getElementById('revisar-button').addEventListener('click', flipCard);
 document.getElementById('skip-button').addEventListener('click', skipCard);
 document.querySelector('.denuevo').addEventListener('click', () => rateCard(10));
 document.querySelector('.díficil').addEventListener('click', () => rateCard(60));
