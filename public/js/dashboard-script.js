@@ -22,15 +22,10 @@ function flipCard() {
     const answerCard = document.querySelector('.answer');
     const srsControls = document.querySelector('.srs-controls');
 
-    if (questionCard.style.display === 'none') {
-        questionCard.style.display = 'block';
-        answerCard.style.display = 'none';
-        srsControls.style.display = 'none';
-    } else {
-        questionCard.style.display = 'none';
-        answerCard.style.display = 'block';
-        srsControls.style.display = 'grid';
-    }
+    // Hide the question card and show the answer card
+    questionCard.style.display = 'none';
+    answerCard.style.display = 'block';
+    srsControls.style.display = 'grid';
 }
 
 function rateCard(minutes) {
@@ -86,8 +81,8 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 });
 
 // Add event listeners for deck switching
-document.getElementById('microbiología-btn').addEventListener('click', () => switchDeck('Microbiología'));
-document.getElementById('semiología-btn').addEventListener('click', () => switchDeck('Semiología'));
+document.getElementById('microbiology-btn').addEventListener('click', () => switchDeck('Microbiología'));
+document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
 document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
 document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacología'));
 document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
