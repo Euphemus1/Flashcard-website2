@@ -102,106 +102,142 @@ body {
     justify-content: center;
 }
 
-/* Flashcard Styling */
-#flashcard {
-    width: 400px;
-    height: 250px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
+/* Flashcard System Section */
+#flashcard-system {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    position: relative;
-    transition: transform 0.4s ease;
-    cursor: pointer;
+    gap: 1rem;
 }
 
-#flashcard.flipped {
-    transform: rotateY(180deg);
-}
-
-#card-front, #card-back {
+.card-pair {
     width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    padding: 20px;
+    max-width: 600px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 300px;
+    min-width: 420px;
+}
+
+.question {
+    border-left: 4px solid #429edb;
+}
+
+.answer {
+    border-left: 4px solid #FF6B6B;
+}
+
+h3 {
     color: #2c3e50;
-    background-color: #ecf0f1;
-    position: absolute;
-    backface-visibility: hidden;
-    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
 }
 
-#card-back {
-    transform: rotateY(180deg);
-    background-color: #f1c40f;
+h1.mechanism {
+    color: #7f8c8d;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.mechanism, .answer-text {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+}
+
+p.question-look, p.answer-text {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+}
+
+.revisar-btn {
+    background: #429edb;
     color: white;
+    border: none;
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    height: 40px;
+    margin-top: 1.5rem;
 }
 
-/* Buttons Styling */
-button {
+.revisar-btn:hover {
+    background: #1e90ff;
+}
+
+.srs-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    height: 40px;
+}
+
+.srs-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.difficulty {
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s ease;
+}
+
+.difficulty:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.interval {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+.denuevo { background: #ff4757; }
+.díficil { background: #ffa502; }
+.bueno { background: #2ed573; }
+.fácil { background: #1e90ff; }
+
+/* Skip Button */
+#review-actions {
+    margin-top: 1rem;
+}
+
+#skip-button {
+    background-color: #e67e22;
+    color: white;
     padding: 12px 20px;
-    margin: 10px;
-    font-size: 16px;
-    color: white;
-    background-color: #3498db;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #2980b9;
+#skip-button:hover {
+    background-color: #d35400;
 }
 
-#review-buttons {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 0;
-    display: none;
-}
-
-.review-btn {
-    width: 48%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: #8e44ad;
-    color: white;
-    transition: all 0.3s ease;
-}
-
-.review-btn:hover {
-    background-color: #9b59b6;
-}
-
+/* Card Status */
 #card-status {
     margin-top: 20px;
     font-size: 18px;
     color: #2c3e50;
-}
-
-#review-actions {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 0;
-}
-
-#review-actions button {
-    width: 48%;
-    background-color: #e67e22;
-}
-
-#review-actions button:hover {
-    background-color: #d35400;
 }
