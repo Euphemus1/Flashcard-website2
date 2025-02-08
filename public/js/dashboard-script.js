@@ -81,8 +81,8 @@ document.getElementById('microbiology-btn').addEventListener('click', () => swit
 document.getElementById('semiology-btn').addEventListener('click', () => switchDeck('Semiología'));
 document.getElementById('patología-btn').addEventListener('click', () => switchDeck('Patología'));
 document.getElementById('farmacología-btn').addEventListener('click', () => switchDeck('Farmacoíalogía'));
-document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica1'));
-document.getElementById('medicinainterna1-btn').addEventListener('click', () => switchDeck('MedicinaInterna1'));
+document.getElementById('terapéutica1-btn').addEventListener('click', () => switchDeck('Terapéutica 1'));
+document.getElementById('medicinainterna1-btn').addEventListener('click', () => switchDeck('Medicina Interna 1'));
 document.getElementById('flashcard').addEventListener('click', flipCard);
 document.getElementById('review-button').addEventListener('click', showReviewOptions);
 document.getElementById('skip-button').addEventListener('click', skipCard);
