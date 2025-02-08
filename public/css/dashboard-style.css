@@ -70,7 +70,7 @@ body {
 }
 
 .subdeck-list button {
-    background-color: #FF6B6B; /* Different color for dropdown buttons */
+    background-color: #FF6B6B !important; /* Different color for dropdown buttons */
     padding: 8px;
     font-size: 14px;
     width: 100%;
@@ -83,7 +83,7 @@ body {
 }
 
 .subdeck-list button:hover {
-    background-color: #3c538a; /* Darker shade for hover */
+    background-color: #3c538a !important; /* Darker shade for hover */
 }
 
 .plus {
