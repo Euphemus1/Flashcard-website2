@@ -61,18 +61,18 @@ body {
 .subdeck-list {
     list-style-type: none;
     padding-left: 20px;
-    margin-top: 5px;
+    margin-top:2px;
     display: none; /* Hidden by default */
 }
 
 .subdeck-list li {
-    margin: 1px 0;
+    margin: 0,5px 0;
 }
 
 .subdeck-list button {
     background-color: #FF6B6B; /* Different color for dropdown buttons */
-    padding: 4px;
-    font-size: 7px;
+    padding: 2px;
+    font-size: 14px;
     width: 100%;
     text-align: left;
     border: none;
