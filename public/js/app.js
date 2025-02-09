@@ -163,12 +163,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     try {
         console.log('Sending login request...');
+        const payload = { email, password };
+        console.log('Payload:', payload);
+
         const response = await fetch(`${BACKEND_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify(payload),
         });
 
         console.log('Response received:', response);
@@ -191,7 +194,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             updateAuthUI();
             window.location.href = '/dashboard.html';
         } else {
-            showError('loginForm', data.message || 'Credenciales incorrectas.');
+            showError('loginForm', data.error || 'Credenciales incorrectas.');
         }
     } catch (error) {
         console.error('Login failed:', error);
