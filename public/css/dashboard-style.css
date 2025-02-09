@@ -146,7 +146,7 @@ body {
 .subdeck-list button {
     background-color: #FF6B6B !important; /* Different color for dropdown buttons */
     padding: 6px;
-    font-size: 6px;
+    font-size: 14px;
     width: 100%;
     text-align: left;
     border: none;
@@ -198,6 +198,8 @@ body {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: calc(100vh - 120px); /* Adjust height to fit within the viewport */
 }
 
 #overview-section table {
