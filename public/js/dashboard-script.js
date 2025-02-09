@@ -86,6 +86,33 @@ function generateOverviewTable() {
     return tableBody;
 }
 
+// Function to toggle subdeck visibility
+function toggleSubdecks(event) {
+    const toggleButton = event.target;
+    const deckRow = toggleButton.closest('tr');
+    const subdeckRows = deckRow.nextElementSibling.querySelectorAll('.subdeck-row');
+
+    // Toggle visibility of subdeck rows
+    subdeckRows.forEach(row => {
+        row.classList.toggle('hidden');
+    });
+
+    // Toggle the plus/minus sign
+    if (toggleButton.textContent === '+') {
+        toggleButton.textContent = '-';
+    } else {
+        toggleButton.textContent = '+';
+    }
+}
+
+// Add event listeners for toggle buttons in the overview table
+function addToggleListeners() {
+    const toggleButtons = document.querySelectorAll('.toggle-deck');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', toggleSubdecks);
+    });
+}
+
 // Function to show the overview section
 function showOverview() {
     const overviewSection = document.getElementById('overview-section');
@@ -98,6 +125,9 @@ function showOverview() {
     // Generate and append the new table content
     const newTableBody = generateOverviewTable();
     overviewSection.querySelector('table').appendChild(newTableBody);
+
+    // Add event listeners for toggle buttons
+    addToggleListeners();
 
     // Show the overview section and hide the flashcard system
     overviewSection.classList.remove('hidden');
