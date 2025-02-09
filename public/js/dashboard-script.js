@@ -64,7 +64,7 @@ function generateOverviewTable() {
         const deckStats = calculateCards(deckName);
         const deckRow = document.createElement('tr');
         deckRow.innerHTML = `
-            <td>+ ${deckName}</td>
+            <td><span class="toggle-deck">+</span> ${deckName}</td>
             <td>${deckStats.newCards}</td>
             <td>${deckStats.dueCards}</td>
         `;
@@ -74,6 +74,7 @@ function generateOverviewTable() {
         subdecks.forEach(subdeck => {
             const subdeckStats = calculateCards(deckName, subdeck);
             const subdeckRow = document.createElement('tr');
+            subdeckRow.classList.add('subdeck-row'); // Add a class for subdeck rows
             subdeckRow.innerHTML = `
                 <td>- ${subdeck}</td>
                 <td>${subdeckStats.newCards}</td>
