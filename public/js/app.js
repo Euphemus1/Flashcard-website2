@@ -227,6 +227,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     setLoadingState('signupForm', true);
 
     try {
+        console.log('Sending registration request...');
         const response = await fetch(`${BACKEND_URL}/auth/register`, {
             method: 'POST',
             headers: {
@@ -235,7 +236,10 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
             body: JSON.stringify({ email, password }),
         });
 
+        console.log('Response received:', response);
+
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (response.ok) {
             alert('Registro exitoso! Por favor inicia sesión.');
@@ -244,6 +248,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
             showError('signupForm', data.message || 'Error en el registro.');
         }
     } catch (error) {
+        console.error('Registration failed:', error);
         showError('signupForm', 'Error de conexión. Inténtalo de nuevo.');
     } finally {
         setLoadingState('signupForm', false);
