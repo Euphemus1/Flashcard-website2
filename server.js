@@ -25,9 +25,6 @@ const transporter = nodemailer.createTransport({
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files from the 'protected' directory for the /dashboard route
-app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
-
 // Initialize passport
 app.use(passport.initialize());
 require('./config/passport'); // Load passport configuration
