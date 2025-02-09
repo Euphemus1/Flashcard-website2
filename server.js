@@ -72,6 +72,8 @@ const allowedOrigins = [
   'http://localhost:10000', // Local development
   'http://localhost:3000', // Frontend origin
   'https://euphemus2.github.io/Flashcard-website/', // Production (GitHub Pages)
+  'https://medical-decks-backend.onrender.com' // Production (Render)
+
 ];
 
 app.use(cors({
