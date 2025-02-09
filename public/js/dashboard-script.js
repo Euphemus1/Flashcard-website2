@@ -251,6 +251,15 @@ document.getElementById('faq-button').addEventListener('click', () => {
     alert("FAQ content goes here.");
 });
 
+document.getElementById('logout').addEventListener('click', () => {
+    // currentUser = null;
+    localStorage.removeItem('currentUser');
+    // alert('You have been logged out due to inactivity.');
+    // re=route to /
+    window.location.href = "/";
+    
+});
+
 // Sidebar Toggle Button
 document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
 

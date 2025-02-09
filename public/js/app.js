@@ -1,5 +1,11 @@
 // User Management
-let currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
+let currentUser;
+try {
+    curentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
+} catch (error) {
+    console.error(error);
+    localStorage.removeItem('currentUser');
+}
 let users = JSON.parse(localStorage.getItem('users')) || [];
 let autoSlideInterval;
 
@@ -166,7 +172,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const payload = { email, password };
         console.log('Payload:', payload);
 
-        const response = await fetch(`${BACKEND_URL}/auth/login`, {
+        const response = await fetch(`/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -181,7 +187,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         if (response.ok) {
             currentUser = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            if (currentUser){
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            else {
+                localStorage.removeItem('currentUser');
+            }
 
             // Remember Me Functionality
             if (rememberMe) {

@@ -114,7 +114,7 @@ body {
     margin: 10px 0;
 }
 
-#deck-list button {
+.deck-btn {
     width: 100%;
     padding: 12px;
     text-align: left;
@@ -127,24 +127,17 @@ body {
     transition: background-color 0.3s ease;
 }
 
-#deck-list button:hover {
+.deck-btn:hover {
     background-color: #16a085;
 }
 
-/* Dropdown styles */
-.subdeck-list {
-    list-style-type: none;
-    padding-left: 10px;
-    margin-top: 2px;
-    display: none; /* Hidden by default */
-}
-
-.subdeck-list li {
-    margin: 1px 0;
-}
-
-.subdeck-list button {
-    background-color: #FF6B6B !important; /* Different color for dropdown buttons */
+.subdeck-btn {
+    /* display: block;
+    position: relative;
+    width: 70%;
+    height: 1.5rem;
+    padding: 0 9px; */
+    background-color: #FF6B6B; 
     padding: 6px;
     font-size: 14px;
     width: 100%;
@@ -156,9 +149,42 @@ body {
     transition: background-color 0.3s ease;
 }
 
-.subdeck-list button:hover {
+.subdeck-btn:hover {
     background-color: #3c538a !important; /* Darker shade for hover */
 }
+
+/* #deck-list button:hover {
+    background-color: #16a085;
+} */
+
+/* Dropdown styles */
+.subdeck-list {
+    list-style-type: none;
+    padding-left: 10px;
+    margin-top: 2px;
+    display: none; /* Hidden by default */
+}
+
+.subdeck-list > li {
+    margin: 1px 0;
+}
+
+/* .subdeck-list button {
+    background-color: #FF6B6B !important; /* Different color for dropdown buttons 
+    padding: 6px;
+    font-size: 14px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+} */
+
+/* .subdeck-list button:hover {
+    background-color: #3c538a !important; /* Darker shade for hover 
+} */
 
 .plus {
     float: right;
@@ -376,7 +402,7 @@ p.question-look, p.answer-text {
 
 /* Hidden Class */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* Card Status */

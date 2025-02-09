@@ -52,7 +52,6 @@ router.post('/login', (req, res, next) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) return next(err);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    return res.status(404).json({ error: 'User not found' });
 
     // Generate JWT token
     const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
