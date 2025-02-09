@@ -259,7 +259,7 @@ app.get('/api/health-check', (req, res) => {
 });
 
 // Error handling
-app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+// app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
   console.error(err.stack);
 
