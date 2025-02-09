@@ -232,9 +232,13 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
 });
 
-app.get('/dashboard.html', (req, res) => {
+// Handle trailing slash
+app.get('/dashboard/', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
 });
+
+// Serve static files for the dashboard route after handling the main route
+app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
 
 // Protected route example
 app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
