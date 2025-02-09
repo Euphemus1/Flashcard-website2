@@ -5,13 +5,17 @@ let flashcards = [
         question: "What is the cause of Necrotizing Fasciitis?",
         answer: "Streptococcus pyogenes and Staphylococcus aureus",
         interval: 1,
-        lastReview: new Date().getTime()
+        lastReview: new Date().getTime(),
+        deck: 'Microbiología',
+        subdeck: 'Bacterias'
     },
     {
         question: "What is the most common cause of bacterial pneumonia?",
         answer: "Streptococcus pneumoniae",
         interval: 1,
-        lastReview: new Date().getTime()
+        lastReview: new Date().getTime(),
+        deck: 'Microbiología',
+        subdeck: 'Bacterias'
     }
 ];
 
@@ -35,13 +39,13 @@ function calculateCards(deckName, subdeckName = null) {
 
     flashcards.forEach(card => {
         if (subdeckName) {
-            // Check if the card belongs to the subdeck (you can add a subdeck property to flashcards if needed)
+            // Check if the card belongs to the subdeck
             if (card.subdeck === subdeckName) {
                 if (card.interval === 1) newCards++;
                 if (card.lastReview + card.interval * 60000 < now) dueCards++;
             }
         } else {
-            // Check if the card belongs to the deck (you can add a deck property to flashcards if needed)
+            // Check if the card belongs to the deck
             if (card.deck === deckName) {
                 if (card.interval === 1) newCards++;
                 if (card.lastReview + card.interval * 60000 < now) dueCards++;
