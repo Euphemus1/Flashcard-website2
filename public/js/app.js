@@ -162,6 +162,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     setLoadingState('loginForm', true);
 
     try {
+        console.log('Sending login request...');
         const response = await fetch(`${BACKEND_URL}/auth/login`, {
             method: 'POST',
             headers: {
@@ -170,7 +171,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             body: JSON.stringify({ email, password }),
         });
 
+        console.log('Response received:', response);
+
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (response.ok) {
             currentUser = data.user;
@@ -190,6 +194,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             showError('loginForm', data.message || 'Credenciales incorrectas.');
         }
     } catch (error) {
+        console.error('Login failed:', error);
         showError('loginForm', 'Error de conexión. Inténtalo de nuevo.');
     } finally {
         setLoadingState('loginForm', false);
