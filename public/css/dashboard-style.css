@@ -223,6 +223,24 @@ body {
     background-color: #f5f5f5;
 }
 
+/* Hide subdeck rows by default */
+.subdeck-row {
+    display: none;
+}
+
+/* Style for the toggle button */
+.toggle-deck {
+    cursor: pointer;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+/* Ensure the table rows are aligned */
+#overview-section table td {
+    padding: 8px;
+    text-align: left;
+}
+
 /* Flashcard System Section */
 #flashcard-system {
     display: flex;
