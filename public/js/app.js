@@ -192,7 +192,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
             closeModal();
             updateAuthUI();
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard'; // Redirect to /dashboard (without trailing slash)
         } else {
             showError('loginForm', data.error || 'Credenciales incorrectas.');
         }
