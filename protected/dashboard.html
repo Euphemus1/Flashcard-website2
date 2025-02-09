@@ -15,6 +15,7 @@
         </button>
         <div class="logo">Flashcard App</div>
         <div class="nav-buttons">
+            <button id="overview-button">Overview</button>
             <button id="faq-button">FAQ</button>
         </div>
     </div>
@@ -97,9 +98,25 @@
     </div>
 
     <!-- Main Content Section -->
-    <div id="main-content" class="hidden">
+    <div id="main-content">
+        <!-- Overview Section -->
+        <div id="overview-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Deck</th>
+                        <th>New</th>
+                        <th>Due</th>
+                    </tr>
+                </thead>
+                <tbody id="overview-table-body">
+                    <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+
         <!-- Flashcard Section -->
-        <div id="flashcard-system">
+        <div id="flashcard-system" class="hidden">
             <div class="card-pair">
                 <!-- Question Card -->
                 <div class="card question">
@@ -117,15 +134,15 @@
                 </div>
             </div>
 
-                <!-- Answer Card (Hidden by Default) -->
-                <div class="card answer hidden">
-                    <div class="card-content">
-                        <h3 id="card-back">Streptococcus pyogenes and Staphylococcus aureus</h3>
-                        <h1 class="mechanism">Mecanismo de acción:</h1>
-                        <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
-                    </div>
+            <!-- Answer Card (Hidden by Default) -->
+            <div class="card answer hidden">
+                <div class="card-content">
+                    <h3 id="card-back">Streptococcus pyogenes and Staphylococcus aureus</h3>
+                    <h1 class="mechanism">Mecanismo de acción:</h1>
+                    <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
                 </div>
-            
+            </div>
+
             <!-- Review Options (Hidden by Default) -->
             <div class="srs-controls hidden">
                 <div class="srs-option">

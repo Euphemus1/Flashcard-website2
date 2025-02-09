@@ -44,6 +44,7 @@ body {
     gap: 1rem;
 }
 
+#top-nav #overview-button,
 #top-nav #faq-button {
     background: none;
     border: none;
@@ -55,6 +56,7 @@ body {
     transition: background-color 0.3s ease;
 }
 
+#top-nav #overview-button:hover,
 #top-nav #faq-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
@@ -185,6 +187,38 @@ body {
 
 #main-content.full-width {
     margin-left: 0;
+}
+
+/* Overview Section */
+#overview-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#overview-section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#overview-section th, #overview-section td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#overview-section th {
+    background-color: #429edd;
+    color: white;
+}
+
+#overview-section tr:hover {
+    background-color: #f5f5f5;
 }
 
 /* Flashcard System Section */
