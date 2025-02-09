@@ -65,25 +65,24 @@ function generateOverviewTable() {
         const deckRow = document.createElement('tr');
         deckRow.innerHTML = `
             <td><span class="toggle-deck">+</span> ${deckName}</td>
-            <td>${deckStats.newCards}</td>
+            <td class="${deckStats.newCards > 0 ? 'new-positive' : ''}">${deckStats.newCards}</td>
             <td>${deckStats.dueCards}</td>
         `;
         tableBody.appendChild(deckRow);
 
-        // Add rows for subdecks
+        // Add rows for subdecks (hidden by default)
         subdecks.forEach(subdeck => {
             const subdeckStats = calculateCards(deckName, subdeck);
             const subdeckRow = document.createElement('tr');
-            subdeckRow.classList.add('subdeck-row'); // Add a class for subdeck rows
+            subdeckRow.classList.add('subdeck-row', 'hidden');
             subdeckRow.innerHTML = `
-                <td>- ${subdeck}</td>
-                <td>${subdeckStats.newCards}</td>
+                <td style="padding-left: 30px">${subdeck}</td>
+                <td class="${subdeckStats.newCards > 0 ? 'new-positive' : ''}">${subdeckStats.newCards}</td>
                 <td>${subdeckStats.dueCards}</td>
             `;
             tableBody.appendChild(subdeckRow);
         });
     }
-
     return tableBody;
 }
 
@@ -91,19 +90,20 @@ function generateOverviewTable() {
 function toggleSubdecks(event) {
     const toggleButton = event.target;
     const deckRow = toggleButton.closest('tr');
-    const subdeckRows = deckRow.nextElementSibling.querySelectorAll('.subdeck-row');
-
-    // Toggle visibility of subdeck rows
-    subdeckRows.forEach(row => {
-        row.classList.toggle('hidden');
-    });
-
-    // Toggle the plus/minus sign
-    if (toggleButton.textContent === '+') {
-        toggleButton.textContent = '-';
-    } else {
-        toggleButton.textContent = '+';
+    const subdeckRows = [];
+    
+    // Collect all consecutive subdeck rows
+    let nextRow = deckRow.nextElementSibling;
+    while (nextRow && nextRow.classList.contains('subdeck-row')) {
+        subdeckRows.push(nextRow);
+        nextRow = nextRow.nextElementSibling;
     }
+
+    // Toggle visibility
+    subdeckRows.forEach(row => row.classList.toggle('hidden'));
+    
+    // Update toggle icon
+    toggleButton.textContent = toggleButton.textContent === '+' ? '-' : '+';
 }
 
 // Add event listeners for toggle buttons in the overview table
@@ -248,8 +248,91 @@ document.querySelector('.fácil').addEventListener('click', () => rateCard(2880)
 
 // FAQ Button
 document.getElementById('faq-button').addEventListener('click', () => {
-    alert("FAQ content goes here.");
+    showFAQ();
 });
+
+function showFAQ() {
+    const faqContent = `
+        <div class="faq-modal">
+            <div class="faq-header">
+                <h2>Flashcard System FAQ</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="faq-content">
+                <div class="faq-item">
+                    <div class="question">📘 How does spaced repetition work?</div>
+                    <div class="answer">
+                        Our system uses a smart algorithm that shows you cards:
+                        <ul>
+                            <li>🔵 <strong>New cards</strong>: Shown for the first time</li>
+                            <li>🟢 <strong>Due cards</strong>: Cards you've previously seen that need review</li>
+                            <li>⏱️ The more you remember a card, the longer the interval between reviews</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="question">🎯 How should I rate my answers?</div>
+                    <div class="answer">
+                        Use the 4 options:
+                        <ul>
+                            <li><span class="denuevo">De nuevo</span>: Didn't remember - shows again in 10 minutes</li>
+                            <li><span class="díficil">Difícil</span>: Remembered with effort - 1 day</li>
+                            <li><span class="bueno">Bueno</span>: Remembered well - 4 days</li>
+                            <li><span class="fácil">Fácil</span>: Instant recall - 8 days</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="question">📊 What do the overview numbers mean?</div>
+                    <div class="answer">
+                        <ul>
+                            <li><strong>New</strong> (blue): Cards you haven't seen yet</li>
+                            <li><strong>Due</strong>: Cards ready for review based on their interval</li>
+                            <li>Click deck names (➕) to see subdeck statistics</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="question">💡 Study tips</div>
+                    <div class="answer">
+                        Best practices:
+                        <ul>
+                            <li>📅 Review daily for 15-30 minutes</li>
+                            <li>🧠 Focus on understanding, not memorization</li>
+                            <li>🔄 Regularly review older cards</li>
+                            <li>⏸️ Take breaks between sessions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const faqOverlay = document.createElement('div');
+    faqOverlay.className = 'faq-overlay';
+    faqOverlay.innerHTML = faqContent;
+    document.body.appendChild(faqOverlay);
+
+    // Add event listeners
+    faqOverlay.querySelector('.close-btn').addEventListener('click', () => {
+        faqOverlay.remove();
+    });
+
+    faqOverlay.addEventListener('click', (e) => {
+        if(e.target === faqOverlay) faqOverlay.remove();
+    });
+
+    // Add toggle functionality for questions
+    document.querySelectorAll('.faq-item .question').forEach(question => {
+        question.addEventListener('click', () => {
+            question.nextElementSibling.classList.toggle('show');
+            question.classList.toggle('active');
+        });
+    });
+}
 
 document.getElementById('logout').addEventListener('click', () => {
     // currentUser = null;
