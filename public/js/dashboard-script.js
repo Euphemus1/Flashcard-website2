@@ -66,7 +66,7 @@ function generateOverviewTable() {
         deckRow.innerHTML = `
             <td><span class="toggle-deck">+</span> ${deckName}</td>
             <td class="${deckStats.newCards > 0 ? 'new-positive' : ''}">${deckStats.newCards}</td>
-            <td>${deckStats.dueCards}</td>
+            <td class="${deckStats.dueCards > 0 ? 'due-positive' : ''}">${deckStats.dueCards}</td>
         `;
         tableBody.appendChild(deckRow);
 
@@ -78,7 +78,7 @@ function generateOverviewTable() {
             subdeckRow.innerHTML = `
                 <td style="padding-left: 30px">${subdeck}</td>
                 <td class="${subdeckStats.newCards > 0 ? 'new-positive' : ''}">${subdeckStats.newCards}</td>
-                <td>${subdeckStats.dueCards}</td>
+                <td class="${subdeckStats.dueCards > 0 ? 'due-positive' : ''}">${subdeckStats.dueCards}</td>
             `;
             tableBody.appendChild(subdeckRow);
         });
@@ -182,7 +182,7 @@ function rateCard(minutes) {
     const newReviewTime = new Date().getTime() + minutes * 60000;
     currentCard.lastReview = newReviewTime;
     currentCard.interval *= 1.5;
-    showStatus('Due card updated!');
+    showStatus('¡Tarjeta actualizada!');
     setTimeout(() => loadNextCard(), 1000);
 }
 
@@ -192,7 +192,7 @@ function showStatus(status) {
 }
 
 function skipCard() {
-    showStatus('Card skipped.');
+    showStatus('Tarjeta saltada.');
     loadNextCard();
 }
 
@@ -201,7 +201,7 @@ function loadNextCard() {
     const currentCard = flashcards[currentCardIndex];
     document.getElementById('card-front').textContent = currentCard.question;
     document.getElementById('card-back').textContent = currentCard.answer;
-    showStatus(currentCard.interval > 1 ? 'Due card' : 'New card');
+    showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
 
     // Reset card display
     document.querySelector('.question').classList.remove('hidden');
@@ -255,55 +255,55 @@ function showFAQ() {
     const faqContent = `
         <div class="faq-modal">
             <div class="faq-header">
-                <h2>Flashcard System FAQ</h2>
+                <h2>Preguntas Frecuentes</h2>
                 <button class="close-btn">&times;</button>
             </div>
             <div class="faq-content">
                 <div class="faq-item">
-                    <div class="question">📘 How does spaced repetition work?</div>
+                    <div class="question">📘 ¿Cómo funciona la repetición espaciada?</div>
                     <div class="answer">
-                        Our system uses a smart algorithm that shows you cards:
+                        El sistema usa un algoritmo inteligente:
                         <ul>
-                            <li>🔵 <strong>New cards</strong>: Shown for the first time</li>
-                            <li>🟢 <strong>Due cards</strong>: Cards you've previously seen that need review</li>
-                            <li>⏱️ The more you remember a card, the longer the interval between reviews</li>
+                            <li>🔵 <strong>Cartas nuevas</strong>: Las que nunca viste</li>
+                            <li>🟢 <strong>Cartas pendientes</strong>: Para repasar según tu progreso</li>
+                            <li>⏱️ Cuanto mejor recuerdes, más se espaciarán los repasos</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="question">🎯 How should I rate my answers?</div>
+                    <div class="question">🎯 ¿Cómo calificar mis respuestas?</div>
                     <div class="answer">
-                        Use the 4 options:
+                        Usá las 4 opciones:
                         <ul>
-                            <li><span class="denuevo">De nuevo</span>: Didn't remember - shows again in 10 minutes</li>
-                            <li><span class="díficil">Difícil</span>: Remembered with effort - 1 day</li>
-                            <li><span class="bueno">Bueno</span>: Remembered well - 4 days</li>
-                            <li><span class="fácil">Fácil</span>: Instant recall - 8 days</li>
+                            <li><span class="denuevo">De nuevo</span>: No lo recordé - Se repite en 10 min</li>
+                            <li><span class="díficil">Difícil</span>: Costó recordar - 1 día</li>
+                            <li><span class="bueno">Bueno</span>: Lo sabía bien - 4 días</li>
+                            <li><span class="fácil">Fácil</span>: Automático - 8 días</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="question">📊 What do the overview numbers mean?</div>
+                    <div class="question">📊 ¿Qué significan los números?</div>
                     <div class="answer">
                         <ul>
-                            <li><strong>New</strong> (blue): Cards you haven't seen yet</li>
-                            <li><strong>Due</strong>: Cards ready for review based on their interval</li>
-                            <li>Click deck names (➕) to see subdeck statistics</li>
+                            <li><strong>Nuevas</strong> (azul): Cartas nunca vistas</li>
+                            <li><strong>Pendientes</strong>: Cartas para repasar</li>
+                            <li>Hacé clic en los mazos (➕) para ver sub-mazos</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="question">💡 Study tips</div>
+                    <div class="question">💡 Consejos de estudio</div>
                     <div class="answer">
-                        Best practices:
+                        Buenas prácticas:
                         <ul>
-                            <li>📅 Review daily for 15-30 minutes</li>
-                            <li>🧠 Focus on understanding, not memorization</li>
-                            <li>🔄 Regularly review older cards</li>
-                            <li>⏸️ Take breaks between sessions</li>
+                            <li>📅 Estudiá 15-30 minutos por día</li>
+                            <li>🧠 Enfocate en entender, no en memorizar</li>
+                            <li>🔄 Repasá cartas viejas regularmente</li>
+                            <li>⏸️ Tomate pausas entre sesiones</li>
                         </ul>
                     </div>
                 </div>
