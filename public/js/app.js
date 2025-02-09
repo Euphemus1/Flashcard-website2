@@ -233,12 +233,15 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
 
     try {
         console.log('Sending registration request...');
+        const payload = { email, password };
+        console.log('Payload:', payload);
+
         const response = await fetch(`${BACKEND_URL}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify(payload),
         });
 
         console.log('Response received:', response);
@@ -250,7 +253,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
             alert('Registro exitoso! Por favor inicia sesión.');
             showLogin();
         } else {
-            showError('signupForm', data.message || 'Error en el registro.');
+            showError('signupForm', data.error || 'Error en el registro.');
         }
     } catch (error) {
         console.error('Registration failed:', error);
