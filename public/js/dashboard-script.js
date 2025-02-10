@@ -27,8 +27,8 @@ const decks = {
     'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
     'Patología': ['ERA1', 'ERA2', 'ERA3'],
     'Farmacología': ['ERA1', 'ERA2'],
-    'Terapéutica 1': ['Virus', 'Bacterias', 'Hongos', 'Parásitos'],
-    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo alto', 'Tubo digestivo bajo', 'Neurología', 'Anexos']
+    'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
+    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos']
 };
 
 // Function to calculate new and due cards for a deck or subdeck
