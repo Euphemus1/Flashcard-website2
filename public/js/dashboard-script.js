@@ -28,7 +28,9 @@ const decks = {
     'Patología': ['ERA1', 'ERA2', 'ERA3'],
     'Farmacología': ['ERA1', 'ERA2'],
     'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
-    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos']
+    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos'],
+    'Revalida': ['Bling', 'Blang', 'Blong'],
+    'MIR': ['Bling', 'Blang', 'Blong'],
 };
 
 // Function to calculate new and due cards for a deck or subdeck
@@ -76,7 +78,7 @@ function generateOverviewTable() {
             const subdeckRow = document.createElement('tr');
             subdeckRow.classList.add('subdeck-row', 'hidden');
             subdeckRow.innerHTML = `
-                <td style="padding-left: 30px">${subdeck}</td>
+                <td style="padding-left: 20px">${subdeck}</td>
                 <td class="${subdeckStats.newCards > 0 ? 'new-positive' : ''}">${subdeckStats.newCards}</td>
                 <td class="${subdeckStats.dueCards > 0 ? 'due-positive' : ''}">${subdeckStats.dueCards}</td>
             `;

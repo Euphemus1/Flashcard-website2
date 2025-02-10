@@ -260,9 +260,14 @@ body {
 
 /* Ensure the table rows are aligned */
 #overview-section table td {
-    padding: 8px;
+    padding: 20px;
     text-align: left;
 }
+
+/* eu fiz isso aqui so para colocar para direita */
+#overview-section .subdeck-row td {
+    padding-left: 40px;
+} 
 
 /* Flashcard System Section */
 #flashcard-system {
@@ -521,3 +526,19 @@ p.question-look, p.answer-text {
     margin: 0.5rem 0;
     line-height: 1.5;
 }
+
+/* Loggout button looks */
+#logout {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+#logout:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+} 
