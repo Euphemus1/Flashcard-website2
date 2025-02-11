@@ -15,8 +15,10 @@
         </button>
         <div class="logo">Med Upgrade</div>
         <div class="nav-buttons">
+            <span id="username-display" style="color: white; margin-right: 15px;"></span>
             <button id="overview-button">General</button>
             <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
+            <button id="contact-button">Contacto</button>
             <button class="nav-btn" id="logout">Cerrar sesión</button>
         </div>
     </div>
@@ -95,7 +97,7 @@
             </li>
             <li>
                 <button id="revalida-btn" class="deck-btn">
-                    Revalida <span class="plus">+</span>
+                    Revalida <span class="soon-label">(en breve!)</span><span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
                     <li><button class="subdeck-btn">Bling</button></li>
@@ -105,7 +107,7 @@
             </li>
             <li>
                 <button id="mir-btn" class="deck-btn">
-                    MIR <span class="plus">+</span>
+                    MIR <span class="soon-label">(en breve!)</span><span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
                     <li><button class="subdeck-btn">Bling</button></li>
@@ -118,6 +120,27 @@
 
     <!-- Main Content Section -->
     <div id="main-content">
+        <!-- Updates Dropdown Container -->
+        <div class="updates-dropdown">
+            <button class="dropdown-toggle">
+                Noticias y Actualizaciones ▼
+            </button>
+            <div class="dropdown-content">
+                <!-- Update Items -->
+                <div class="update-item">
+                    <h4>Última Actualización - 15/07/2024</h4>
+                    <p>• Nuevo contenido de Microbiología agregado</p>
+                    <p>• Mejoras en el sistema de repetición espaciada</p>
+                </div>
+                
+                <div class="update-item">
+                    <h4>Próximas Novedades</h4>
+                    <p>• Contenido MIR en desarrollo (¡muy pronto!)</p>
+                    <p>• Nuevo diseño de tarjetas interactivas</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Overview Section -->
         <div id="overview-section">
             <table>
@@ -142,7 +165,7 @@
                     <div class="card-content">
                         <h3 id="card-front">What is the cause of Necrotizing Fasciitis?</h3>
                         <h1 class="mechanism">Mecanismo de acción:</h1>
-                        <p class="question-look">"..."</p>
+                        <p class="question-look">[...]</p>
                     </div>
                 </div>
 

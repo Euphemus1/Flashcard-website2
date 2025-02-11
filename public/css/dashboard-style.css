@@ -1,4 +1,4 @@
-/* dashboard-style.css */
+/* ===== GLOBAL STYLES & RESETS ===== */
 @charset "UTF-8"; 
 
 * {
@@ -14,7 +14,11 @@ body {
     height: 100vh;
 }
 
-/* Top Navigation Bar */
+.hidden {
+    display: none !important;
+}
+
+/* ===== TOP NAVIGATION ===== */
 #top-nav {
     position: fixed;
     top: 0;
@@ -63,6 +67,7 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* ===== SIDEBAR & DECK STRUCTURE ===== */
 #sidebar-toggle {
     background: none;
     border: none;
@@ -77,7 +82,6 @@ body {
     transform: scale(1.1);
 }
 
-/* Sidebar Section */
 #sidebar {
     position: fixed;
     top: 0;
@@ -106,6 +110,7 @@ body {
     font-weight: bold;
 }
 
+/* Deck Hierarchy Styles */
 #deck-list {
     list-style-type: none;
     padding: 0;
@@ -139,7 +144,7 @@ body {
     width: 70%;
     height: 1.5rem;
     padding: 0 9px; */
-    background-color: #FF6B6B; 
+    background-color: #2440db; 
     padding: 6px;
     font-size: 14px;
     width: 100%;
@@ -194,7 +199,7 @@ body {
     font-weight: bold;
 }
 
-/* Main Content Section */
+/* ===== MAIN CONTENT AREA ===== */
 #main-content {
     flex-grow: 1;
     padding: 40px;
@@ -217,7 +222,7 @@ body {
     margin-left: 0;
 }
 
-/* Overview Section */
+/* ===== OVERVIEW SECTION ===== */
 #overview-section {
     width: 100%;
     max-width: 800px;
@@ -288,8 +293,8 @@ body {
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    min-height: 300px;
-    min-width: 420px;
+    min-height: 500px;
+    min-width: 600px;
 }
 
 .question {
@@ -309,22 +314,23 @@ h3 {
 h1.mechanism {
     color: #7f8c8d;
     font-size: 1.4rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 3rem;
 }
 
 .mechanism, .answer-text {
     color: #7f8c8d;
     font-size: 1.1rem;
-    margin-top: 1.5rem;
+    margin-top: 3rem;
 }
 
 p.question-look, p.answer-text {
-    color: #7f8c8d;
+    color: #4400fd;
     font-size: 1.1rem;
-    margin-top: 1.5rem;
+    margin-top: 3rem;
+    font-weight: bold;
 }
 
-/* Skip and Revisar Buttons */
+/* ===== Skip and Review Controls ===== */
 #review-actions {
     display: flex;
     justify-content: space-between;
@@ -401,11 +407,6 @@ p.question-look, p.answer-text {
 .díficil { background: #ffa502; }
 .bueno { background: #2ed573; }
 .fácil { background: #1e90ff; }
-
-/* Hidden Class */
-.hidden {
-    display: none !important;
-}
 
 /* Add this new rule for visible subdecks */
 .subdeck-row {
@@ -542,3 +543,103 @@ p.question-look, p.answer-text {
 #logout:hover {
     background-color: rgba(255, 255, 255, 0.1);
 } 
+
+/* Add to existing FAQ styles */
+#contact-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+#contact-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#username-display {
+    align-self: center;
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+/* Soon label styling */
+.soon-label {
+    color: #FFD700; /* Bright yellow color */
+    font-size: 0.8em;
+    margin-left: 5px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Better readability */
+}
+
+/* Updates Dropdown Styles */
+.updates-dropdown {
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+}
+
+.dropdown-toggle {
+    background: #429edd;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-toggle:hover {
+    background: #34495e;
+}
+
+.dropdown-content {
+    display: none;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.update-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.update-item:last-child {
+    border-bottom: none;
+}
+
+.update-item h4 {
+    color: #34495e;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.update-item p {
+    color: #7f8c8d;
+    margin: 0.3rem 0;
+    padding-left: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Rotate arrow when open */
+.dropdown-toggle.active::after {
+    transform: rotate(180deg);
+}

@@ -19,6 +19,81 @@ let flashcards = [
     }
 ];
 
+// Display username immediately when page loads
+function displayUsername() {
+    console.log('CHECKING LOCALSTORAGE...');
+    const userData = localStorage.getItem('currentUser');
+    console.log('RAW STORAGE DATA:', userData);
+    
+    try {
+        if (userData) {
+            const user = JSON.parse(userData);
+            console.log('PARSED USER:', user);
+            const usernameElement = document.getElementById('username-display');
+            console.log('USERNAME ELEMENT EXISTS?', !!usernameElement);
+            if (usernameElement && user.email) {
+                usernameElement.textContent = `Hola, ${user.email.split('@')[0]}`;
+                console.log('USERNAME SHOULD BE VISIBLE NOW');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    displayUsername();
+    
+    // Add contact button functionality
+    document.getElementById('contact-button')?.addEventListener('click', showContact);
+});
+
+// Add Contact Modal Functionality
+function showContact() {
+    const contactContent = `
+    <div class="faq-overlay">
+        <div class="faq-modal">
+            <div class="faq-header">
+                <h2>Información de Contacto</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="faq-content">
+                <div class="faq-item">
+                    <div class="answer show">
+                        <p><strong>Soporte Técnico:</strong></p>
+                        <ul>
+                            <li>📧 Email: soporte@medupgrade.com</li>
+                            <li>📞 Teléfono: +34 123 456 789</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Horario de Atención:</strong></p>
+                        <ul>
+                            <li>Lunes-Viernes: 9:00 - 18:00</li>
+                            <li>Sábados: 10:00 - 14:00</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    const contactOverlay = document.createElement('div');
+    contactOverlay.className = 'faq-overlay';
+    contactOverlay.innerHTML = contactContent;
+    document.body.appendChild(contactOverlay);
+
+    contactOverlay.querySelector('.close-btn').addEventListener('click', () => {
+        contactOverlay.remove();
+    });
+
+    contactOverlay.addEventListener('click', (e) => {
+        if(e.target === contactOverlay) contactOverlay.remove();
+    });
+}
+
+// Add event listener for contact button
+document.getElementById('contact-button').addEventListener('click', showContact);
+
 let currentCardIndex = 0;
 
 // Deck and subdeck structure
@@ -359,3 +434,19 @@ function toggleSidebar() {
     topNav.classList.toggle('collapsed');
     mainContent.classList.toggle('full-width');
 }
+
+// Add this to your existing JavaScript
+document.querySelector('.dropdown-toggle')?.addEventListener('click', function() {
+    this.classList.toggle('active');
+    const content = this.nextElementSibling;
+    content.classList.toggle('show');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.updates-dropdown');
+    if (!dropdown.contains(e.target)) {
+        dropdown.querySelector('.dropdown-content').classList.remove('show');
+        dropdown.querySelector('.dropdown-toggle').classList.remove('active');
+    }
+});
