@@ -195,6 +195,8 @@ function addToggleListeners() {
 function showOverview() {
     const overviewSection = document.getElementById('overview-section');
     const flashcardSystem = document.getElementById('flashcard-system');
+    const updatesDropdown = document.querySelector('.updates-dropdown');
+    const calendar = document.getElementById('study-calendar');
 
     // Clear existing table content
     const tableBody = overviewSection.querySelector('tbody');
@@ -209,6 +211,8 @@ function showOverview() {
 
     // Show the overview section and hide the flashcard system
     overviewSection.classList.remove('hidden');
+    updatesDropdown.classList.remove('hidden');
+    calendar.classList.remove('hidden');
     flashcardSystem.classList.add('hidden');
 
     // Update the status
@@ -220,9 +224,13 @@ function showMainContent() {
     const mainContent = document.getElementById('main-content');
     const overviewSection = document.getElementById('overview-section');
     const flashcardSystem = document.getElementById('flashcard-system');
+    const updatesDropdown = document.querySelector('.updates-dropdown');
+    const calendar = document.getElementById('study-calendar');
 
     mainContent.classList.remove('hidden');
     overviewSection.classList.add('hidden');
+    updatesDropdown.classList.add('hidden');
+    calendar.classList.add('hidden');
     flashcardSystem.classList.remove('hidden');
 }
 
@@ -449,4 +457,53 @@ document.addEventListener('click', function(e) {
         dropdown.querySelector('.dropdown-content').classList.remove('show');
         dropdown.querySelector('.dropdown-toggle').classList.remove('active');
     }
+});
+
+// Add this to generateCalendar function
+function generateCalendar() {
+    const calendarGrid = document.querySelector('.calendar-grid');
+    // Clear existing days
+    calendarGrid.innerHTML = '';
+    
+    // Add day headers
+    ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'day-header';
+        dayEl.textContent = day;
+        calendarGrid.appendChild(dayEl);
+    });
+
+    // Add calendar days (example implementation)
+    const totalDays = 28; // February 2025
+    const startDay = 6; // Starts on Saturday
+    
+    // Add empty days
+    for(let i = 0; i < startDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        calendarGrid.appendChild(emptyDay);
+    }
+
+    // Add actual days
+    for(let day = 1; day <= totalDays; day++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = day;
+        
+        // Example highlight for Feb 18th
+        if(day === 18) {
+            dayEl.classList.add('highlighted');
+            const dueCount = document.createElement('span');
+            dueCount.className = 'due-count';
+            dueCount.textContent = '14';
+            dayEl.appendChild(dueCount);
+        }
+
+        calendarGrid.appendChild(dayEl);
+    }
+}
+
+// Call this in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    generateCalendar();
 });
