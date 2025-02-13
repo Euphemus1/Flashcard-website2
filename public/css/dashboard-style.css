@@ -649,76 +649,50 @@ p.question-look, p.answer-text {
     transform: rotate(180deg);
 }
 
-/* ===== NEW CALENDAR STYLES ===== */
+/* ===== COMPACT CALENDAR ===== */
 #study-calendar {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 25px;
-    margin: 2rem auto;
-    width: 100%;
-    max-width: 800px;
-    Margin-top: 2rem;
-    flex-shrink: 0; 
-}
-
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.month-year {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #34495e;
+    height: 300px;
+    padding: 10px;
+    margin: 1rem auto;
+    background: #0fa176;
+    border-radius: 4px;
 }
 
 .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    display: flex;
+    gap: 1px;
+    height: 100%;
 }
 
-.day-header {
-    text-align: center;
-    padding: 12px 0;
-    background: #429edd;
-    color: white;
-    font-weight: bold;
+.week-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .calendar-day {
-    min-height: 80px;
-    padding: 8px;
-    border: 1px solid #eee;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.calendar-day.empty {
-    background: #f5f5f5;
-    cursor: default;
-}
-
-.calendar-day.highlighted {
-    background: #fff3cd;
-    border-color: #ffeeba;
-}
-
-.due-count {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    font-size: 0.75rem;
-    background: #ff4757;
-    color: white;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+    background: #429edd;
+    transform: scale(1.2);
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Remove month header */
+.calendar-header {
+    display: none;
+}
+
+/* Remove due count display */
+.due-count {
+    display: none;
 }

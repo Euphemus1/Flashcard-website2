@@ -462,44 +462,30 @@ document.addEventListener('click', function(e) {
 // Add this to generateCalendar function
 function generateCalendar() {
     const calendarGrid = document.querySelector('.calendar-grid');
-    // Clear existing days
     calendarGrid.innerHTML = '';
-    
-    // Add day headers
-    ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
-        const dayEl = document.createElement('div');
-        dayEl.className = 'day-header';
-        dayEl.textContent = day;
-        calendarGrid.appendChild(dayEl);
-    });
 
-    // Add calendar days (example implementation)
-    const totalDays = 28; // February 2025
-    const startDay = 6; // Starts on Saturday
-    
-    // Add empty days
-    for(let i = 0; i < startDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'calendar-day empty';
-        calendarGrid.appendChild(emptyDay);
-    }
+    let date = new Date('2025-01-01');
+    let weekColumn = null;
 
-    // Add actual days
-    for(let day = 1; day <= totalDays; day++) {
-        const dayEl = document.createElement('div');
-        dayEl.className = 'calendar-day';
-        dayEl.textContent = day;
-        
-        // Example highlight for Feb 18th
-        if(day === 18) {
-            dayEl.classList.add('highlighted');
-            const dueCount = document.createElement('span');
-            dueCount.className = 'due-count';
-            dueCount.textContent = '14';
-            dayEl.appendChild(dueCount);
+    for(let day = 0; day < 365; day++) {
+        if(day % 7 === 0) {
+            weekColumn = document.createElement('div');
+            weekColumn.className = 'week-column';
+            calendarGrid.appendChild(weekColumn);
         }
 
-        calendarGrid.appendChild(dayEl);
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = ''; // Empty text content
+        dayEl.title = date.toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+
+        weekColumn.appendChild(dayEl);
+        date.setDate(date.getDate() + 1);
     }
 }
 
