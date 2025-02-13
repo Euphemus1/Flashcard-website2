@@ -649,12 +649,12 @@ p.question-look, p.answer-text {
     transform: rotate(180deg);
 }
 
-/* ===== COMPACT CALENDAR ===== */
+/* ===== CALENDAR STYLES ===== */
 #study-calendar {
     height: 300px;
     padding: 12px;
     margin: 1rem auto;
-    background: #0fa176;
+    background: #318ae2;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

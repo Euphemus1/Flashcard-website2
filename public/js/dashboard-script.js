@@ -464,28 +464,58 @@ function generateCalendar() {
     const calendarGrid = document.querySelector('.calendar-grid');
     calendarGrid.innerHTML = '';
 
-    let date = new Date('2025-01-01');
-    let weekColumn = null;
+    // Add day labels column
+    const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const labelColumn = document.createElement('div');
+    labelColumn.className = 'day-labels';
+    dayLabels.forEach(label => {
+        const labelEl = document.createElement('div');
+        labelEl.className = 'day-label';
+        labelEl.textContent = label;
+        labelColumn.appendChild(labelEl);
+    });
+    calendarGrid.appendChild(labelColumn);
 
-    for(let day = 0; day < 365; day++) {
-        if(day % 7 === 0) {
-            weekColumn = document.createElement('div');
-            weekColumn.className = 'week-column';
-            calendarGrid.appendChild(weekColumn);
+    let date = new Date(2025, 0, 1); // January 1 2025 (Wednesday)
+    let weekCount = 0;
+
+    while(weekCount < 52) {
+        const weekColumn = document.createElement('div');
+        weekColumn.className = 'week-column';
+        
+        // Create all 7 days (including potential empties)
+        for(let d = 0; d < 7; d++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+
+            // First week (only Wednesday-Saturday)
+            if(weekCount === 0 && d < 3) {
+                dayEl.classList.add('empty');
+            }
+            // Last week (only Monday-Wednesday)
+            else if(weekCount === 51 && d > 2) {
+                dayEl.classList.add('empty');
+            }
+            else {
+                dayEl.title = date.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                // Store actual date for navigation
+                dayEl.dataset.date = date.toISOString().split('T')[0];
+                
+                // Move to next date if not empty
+                date.setDate(date.getDate() + 1);
+            }
+
+            weekColumn.appendChild(dayEl);
         }
 
-        const dayEl = document.createElement('div');
-        dayEl.className = 'calendar-day';
-        dayEl.textContent = ''; // Empty text content
-        dayEl.title = date.toLocaleDateString('es-ES', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
-
-        weekColumn.appendChild(dayEl);
-        date.setDate(date.getDate() + 1);
+        calendarGrid.appendChild(weekColumn);
+        weekCount++;
     }
 }
 
