@@ -461,62 +461,63 @@ document.addEventListener('click', function(e) {
 
 // Add this to generateCalendar function
 function generateCalendar() {
-    const calendarGrid = document.querySelector('.calendar-grid');
-    calendarGrid.innerHTML = '';
+    const calendarContainer = document.getElementById('study-calendar');
+    calendarContainer.innerHTML = '<h3>Calendario de Estudio 2025</h3>';
 
-    // Add day labels column
-    const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-    const labelColumn = document.createElement('div');
-    labelColumn.className = 'day-labels';
-    dayLabels.forEach(label => {
-        const labelEl = document.createElement('div');
-        labelEl.className = 'day-label';
-        labelEl.textContent = label;
-        labelColumn.appendChild(labelEl);
-    });
-    calendarGrid.appendChild(labelColumn);
-
-    let date = new Date(2025, 0, 1); // January 1 2025 (Wednesday)
-    let weekCount = 0;
-
-    while(weekCount < 52) {
-        const weekColumn = document.createElement('div');
-        weekColumn.className = 'week-column';
+    // Create all 12 months
+    for (let month = 0; month < 12; month++) {
+        const monthDiv = document.createElement('div');
+        monthDiv.className = 'month-container';
         
-        // Create all 7 days (including potential empties)
-        for(let d = 0; d < 7; d++) {
-            const dayEl = document.createElement('div');
-            dayEl.className = 'calendar-day';
+        // Month header
+        const monthName = new Date(2025, month, 1).toLocaleDateString('es-ES', {month: 'long'});
+        monthDiv.innerHTML = `<div class="month-header">${monthName.toUpperCase()}</div>`;
+        
+        // Create day grid
+        const grid = document.createElement('div');
+        grid.className = 'calendar-grid';
+        
+        // Add day labels
+        ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(d => {
+            grid.appendChild(createDayElement(d, true));
+        });
 
-            // First week (only Wednesday-Saturday)
-            if(weekCount === 0 && d < 3) {
-                dayEl.classList.add('empty');
-            }
-            // Last week (only Monday-Wednesday)
-            else if(weekCount === 51 && d > 2) {
-                dayEl.classList.add('empty');
-            }
-            else {
-                dayEl.title = date.toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                
-                // Store actual date for navigation
-                dayEl.dataset.date = date.toISOString().split('T')[0];
-                
-                // Move to next date if not empty
-                date.setDate(date.getDate() + 1);
-            }
-
-            weekColumn.appendChild(dayEl);
+        // Calculate days
+        const start = new Date(2025, month, 1);
+        const end = new Date(2025, month + 1, 0);
+        const startDay = (start.getDay() + 6) % 7; // Convert to Mon-Sun week
+        
+        // Add empty blocks
+        for (let i = 0; i < startDay; i++) {
+            grid.appendChild(createDayElement('', false, true));
         }
 
-        calendarGrid.appendChild(weekColumn);
-        weekCount++;
+        // Add actual days
+        for (let d = 1; d <= end.getDate(); d++) {
+            const date = new Date(2025, month, d);
+            grid.appendChild(createDayElement(d, false, false, date));
+        }
+
+        monthDiv.appendChild(grid);
+        calendarContainer.appendChild(monthDiv);
     }
+}
+
+function createDayElement(day, isLabel, isEmpty, date) {
+    const dayEl = document.createElement('div');
+    dayEl.className = `calendar-day ${isLabel ? 'day-label' : ''} ${isEmpty ? 'empty' : ''}`;
+    
+    if (date) {
+        dayEl.dataset.date = date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        dayEl.dataset.day = day;
+    }
+    
+    return dayEl;
 }
 
 // Call this in DOMContentLoaded
