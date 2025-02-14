@@ -105,7 +105,7 @@ body {
 }
 
 #sidebar h2 {
-    margin-bottom: 20px;
+    margin-bottom: 100px;
     font-size: 24px;
     font-weight: bold;
 }
@@ -118,7 +118,7 @@ body {
 }
 
 #deck-list li {
-    margin: 10px 0;
+    margin-top: 10px;
 }
 
 .deck-btn {
@@ -160,43 +160,49 @@ body {
     background-color: #3c538a !important; /* Darker shade for hover */
 }
 
-/* #deck-list button:hover {
-    background-color: #16a085;
-} */
-
 /* Dropdown styles */
 .subdeck-list {
     list-style-type: none;
     padding-left: 10px;
     margin-top: 2px;
-    display: none; /* Hidden by default */
+    display: none;
+    margin-bottom: 30px;
 }
 
 .subdeck-list > li {
     margin: 1px 0;
 }
 
-/* .subdeck-list button {
-    background-color: #FF6B6B !important; /* Different color for dropdown buttons 
-    padding: 6px;
-    font-size: 14px;
-    width: 100%;
-    text-align: left;
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-} */
-
-/* .subdeck-list button:hover {
-    background-color: #3c538a !important; /* Darker shade for hover 
-} */
-
 .plus {
     float: right;
     font-size: 18px;
     font-weight: bold;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #429edd;
+}
+
+.social-icon {
+    color: white;
+    font-size: 24px;
+    transition: transform 0.3s ease;
+    text-decoration: none;
+}
+
+.social-icon:hover {
+    transform: scale(1.2);
+    color: #f1f1f1;
 }
 
 /* ===== MAIN CONTENT AREA ===== */
