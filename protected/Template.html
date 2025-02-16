@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Flashcard Study App</title>
+    <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div id="top-nav">
+        <button id="sidebar-toggle" class="nav-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">Med Memory</div>
+        <div class="nav-buttons">
+            <span id="username-display" style="color: white; margin-right: 15px;"></span>
+            <button id="overview-button">General</button>
+            <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
+            <button id="contact-button">Contacto</button>
+            <button class="nav-btn" id="logout">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div id="sidebar">
+        <h2>Mis Mazos</h2>
+        <ul id="deck-list">
+            <li>
+                <button id="microbiology-btn" class="deck-btn">
+                    Microbiología <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">Bacterias</button></li>
+                    <li><button class="subdeck-btn">Hongos</button></li>
+                    <li><button class="subdeck-btn">Parásitos</button></li>
+                    <li><button class="subdeck-btn">Virus</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="semiology-btn" class="deck-btn">
+                    Semiología <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">Historía clínica</button></li>
+                    <li><button class="subdeck-btn">Piel y faneras</button></li>
+                    <li><button class="subdeck-btn">Cabeza y cuello</button></li>
+                    <li><button class="subdeck-btn">Respiratorio</button></li>
+                    <li><button class="subdeck-btn">Cardiovascular</button></li>
+                    <li><button class="subdeck-btn">Digestivo</button></li>
+                    <li><button class="subdeck-btn">Urinario</button></li>
+                    <li><button class="subdeck-btn">Neurología</button></li>
+                    <li><button class="subdeck-btn">Osteoarticular</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="patología-btn" class="deck-btn">
+                    Patología <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">ERA1</button></li>
+                    <li><button class="subdeck-btn">ERA2</button></li>
+                    <li><button class="subdeck-btn">ERA3</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="farmacología-btn" class="deck-btn">
+                    Farmacología <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">ERA1</button></li>
+                    <li><button class="subdeck-btn">ERA2</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="terapéutica1-btn" class="deck-btn">
+                    Terapéutica 1 <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">ERA1</button></li>
+                    <li><button class="subdeck-btn">ERA2</button></li>
+                    <li><button class="subdeck-btn">ERA3</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="medicinainterna1-btn" class="deck-btn">
+                    Medicina Interna 1 <span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">Neumonología</button></li>
+                    <li><button class="subdeck-btn">Cardiovascular</button></li>
+                    <li><button class="subdeck-btn">Tubo Digestivo</button></li>
+                    <li><button class="subdeck-btn">Neurología</button></li>
+                    <li><button class="subdeck-btn">Anexos</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="revalida-btn" class="deck-btn">
+                    Revalida <span class="soon-label">(en breve!)</span><span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">Bling</button></li>
+                    <li><button class="subdeck-btn">Blang</button></li>
+                    <li><button class="subdeck-btn">Blong</button></li>
+                </ul>
+            </li>
+            <li>
+                <button id="mir-btn" class="deck-btn">
+                    MIR <span class="soon-label">(en breve!)</span><span class="plus">+</span>
+                </button>
+                <ul class="subdeck-list">
+                    <li><button class="subdeck-btn">Bling</button></li>
+                    <li><button class="subdeck-btn">Blang</button></li>
+                    <li><button class="subdeck-btn">Blong</button></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="https://wa.me/+5547988336792" target="_blank" class="social-icon">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="https://instagram.com/medmemory.ar" target="_blank" class="social-icon">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="mailto:medmemory@outlook.com" class="social-icon">>
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+    </div>
+    
+    <script src="/js/dashboard-script.js"></script>
+</body>
+</html>

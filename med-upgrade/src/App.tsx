@@ -1,19 +1,26 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { FlashcardsProvider } from './contexts/FlashcardsContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import FlashcardSystem from './components/FlashcardSystem';
+import Flashcard from './components/Flashcard';
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/decks/:deckId" element={<FlashcardSystem />} />
-          <Route path="/decks/:deckId/:subdeckId" element={<FlashcardSystem />} />
-        </Route>
-      </Routes>
+      <FlashcardsProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            {/* Dashboard Route */}
+            <Route path="/" element={<Dashboard />} />
+            
+            {/* Flashcard System Routes */}
+            <Route path="/decks/:deckId" element={<Flashcard />} />
+            <Route path="/decks/:deckId/:subdeckId" element={<Flashcard />} />
+            
+            {/* Add more routes as needed */}
+          </Route>
+        </Routes>
+      </FlashcardsProvider>
     </BrowserRouter>
   );
 }

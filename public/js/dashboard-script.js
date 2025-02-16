@@ -317,7 +317,23 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 
 // Add event listeners for deck and subdeck buttons
 document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', function() {
+        // Check if it's a subdeck button under "Patología"
+        if (this.classList.contains('subdeck-btn')) {
+            const subdeckName = this.textContent.trim();
+            const deckName = this.closest('li').querySelector('.deck-btn').textContent
+                .replace('+', '')
+                .trim()
+                .replace(/\s*\(en breve!\)$/, ''); // Remove "soon" labels
+
+            // Redirect for Patología ERA1
+            if (deckName === 'Patología' && subdeckName === 'ERA1') {
+                window.location.href = '/patologia-era1.html'; // Replace with your actual URL
+                return; // Exit to prevent default behavior
+            }
+        }
+
+        // Default behavior for other buttons
         showMainContent();
         loadNextCard();
     });

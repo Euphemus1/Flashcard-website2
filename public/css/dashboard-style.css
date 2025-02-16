@@ -682,10 +682,10 @@ p.question-look, p.answer-text {
 
 /* Day blocks */
 .calendar-day {
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
     background: #f5f6fa;
-    border-radius: 3px;
+    border-radius: 2px;
     position: relative;
     transition: all 0.2s ease;
 }
@@ -717,7 +717,7 @@ p.question-look, p.answer-text {
     font-size: 0.8rem; 
     font-weight: 600; 
     color: #000000;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     padding-bottom: 4px;
     border-bottom: 2px solid #f9fd14;
 }
