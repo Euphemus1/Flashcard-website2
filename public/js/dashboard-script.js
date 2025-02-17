@@ -316,24 +316,40 @@ document.querySelectorAll('.deck-btn').forEach(button => {
 });
 
 // Add event listeners for deck and subdeck buttons
-document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
+document.querySelectorAll('.subdeck-btn').forEach(button => {
     button.addEventListener('click', function() {
-        // Check if it's a subdeck button under "Patología"
-        if (this.classList.contains('subdeck-btn')) {
-            const subdeckName = this.textContent.trim();
-            const deckName = this.closest('li').querySelector('.deck-btn').textContent
-                .replace('+', '')
-                .trim()
-                .replace(/\s*\(en breve!\)$/, ''); // Remove "soon" labels
-
-            // Redirect for Patología ERA1
-            if (deckName === 'Patología' && subdeckName === 'ERA1') {
-                window.location.href = '/patologia-era1.html'; // Replace with your actual URL
-                return; // Exit to prevent default behavior
-            }
+        // Get parent deck LI container
+        const parentLi = this.closest('li').parentElement.closest('li');
+        
+        if (!parentLi) {
+            console.error('Parent deck container not found');
+            return;
         }
 
-        // Default behavior for other buttons
+        // Get deck name from button in parent LI
+        const deckButton = parentLi.querySelector('.deck-btn');
+        if (!deckButton) {
+            console.error('Deck button not found in:', parentLi);
+            return;
+        }
+
+        const deckName = deckButton.textContent
+            .replace(/\s*[+✕]/, '') // Remove any icons
+            .replace(/\s*\(.*?\)/, '') // Remove "(en breve!)"
+            .trim();
+
+        const subdeckName = this.textContent.trim();
+
+        // Debug logs
+        console.log('Deck:', deckName, 'Subdeck:', subdeckName);
+
+        // Handle Patología ERA1 redirect
+        if (deckName === 'Patología' && subdeckName === 'ERA1') {
+            window.location.href = '/patologia-era1';
+            return;
+        }
+
+        // Original functionality for others
         showMainContent();
         loadNextCard();
     });
@@ -540,3 +556,42 @@ function createDayElement(day, isLabel, isEmpty, date) {
 document.addEventListener('DOMContentLoaded', () => {
     generateCalendar();
 });
+
+async function loadERACards() {
+    // REPLACE WITH YOUR SHEET ID
+    const SHEET_ID = '1J2Cl8oZXwGPAI2aJhMcbLC-R4vzHfhX1U_GSnH2v7HM';
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/1J2Cl8oZXwGPAI2aJhMcbLC-R4vzHfhX1U_GSnH2v7HM/export?format=csv`;
+  
+    try {
+      const response = await fetch(CSV_URL);
+      const csvData = await response.text();
+      
+      // Convert CSV to flashcard objects
+      window.flashcards = csvData.split('\n')
+        .slice(1) // Skip header row
+        .map(row => {
+          const [question, answer, deck, subdeck, image, reference] = row.split(',');
+          return {
+            question: question?.trim(),
+            answer: answer?.trim(),
+            deck: deck?.trim() || 'Patología', // Default value if empty
+            subdeck: subdeck?.trim() || 'ERA1',
+            imageUrl: image?.trim(),
+            reference: reference?.trim(),
+            interval: 1,
+            lastReview: Date.now()
+          };
+        })
+        .filter(card => card.question); // Remove empty rows
+  
+      loadNextCard();
+    } catch (error) {
+      console.error('Failed to load cards:', error);
+      showStatus('Error: Could not load flashcards. Try refreshing.');
+    }
+  }
+  
+  // Call this when entering ERA1 page
+  if (window.location.pathname.includes('patologia-era1')) {
+    loadERACards();
+  }

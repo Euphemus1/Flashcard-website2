@@ -239,6 +239,11 @@ app.get('/dashboard/', (req, res) => {
 // Serve static files for the dashboard route after handling the main route
 app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
 
+// Route for ERA1 page
+app.get('/patologia-era1', (req, res) => {
+    res.sendFile(path.join(__dirname, 'protected/patologia-era1.html'));
+});
+
 // Protected route example
 app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.json({ message: 'Protected route accessed', user: req.user });
