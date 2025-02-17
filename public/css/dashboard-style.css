@@ -736,3 +736,24 @@ p.question-look, p.answer-text {
     background: transparent !important;
     box-shadow: none !important;
 }
+
+#admin-panel {
+    background: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  #add-flashcard-form {
+    display: grid;
+    gap: 10px;
+    max-width: 500px;
+  }
+  
+  #add-flashcard-form input, 
+  #add-flashcard-form select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
