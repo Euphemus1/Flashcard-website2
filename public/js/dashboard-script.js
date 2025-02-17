@@ -26,20 +26,27 @@ function displayUsername() {
     console.log('RAW STORAGE DATA:', userData);
     
     try {
-        if (userData) {
-            const user = JSON.parse(userData);
-            console.log('PARSED USER:', user);
-            const usernameElement = document.getElementById('username-display');
-            console.log('USERNAME ELEMENT EXISTS?', !!usernameElement);
-            if (usernameElement && user.email) {
-                usernameElement.textContent = `Hola, ${user.email.split('@')[0]}`;
-                console.log('USERNAME SHOULD BE VISIBLE NOW');
-            }
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log('PARSED USER:', user);
+        const usernameElement = document.getElementById('username-display');
+        console.log('USERNAME ELEMENT EXISTS?', !!usernameElement);
+        if (usernameElement && user.email) {
+          usernameElement.textContent = `Hola, ${user.email.split('@')[0]}`;
+          
+          // Add these lines
+          isAdmin = user.isAdmin;
+          if (isAdmin) {
+            document.getElementById('admin-panel').classList.remove('hidden');
+          }
+          
+          console.log('USERNAME SHOULD BE VISIBLE NOW');
         }
+      }
     } catch (error) {
-        console.error('Error loading user data:', error);
+      console.error('Error loading user data:', error);
     }
-}
+  }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -301,11 +308,19 @@ function switchDeck(deckName) {
     loadNextCard();
 }
 
-function getDeckData(deckName) {
-    return [
-        { question: "Sample question", answer: "Sample answer", interval: 1, lastReview: new Date().getTime() }
-    ];
-}
+async function getDeckData(deckName) {
+    try {
+      const response = await fetch(`/api/flashcards?deck=${deckName}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading deck:', error);
+      return [];
+    }
+  }
 
 // Add event listeners for dropdown functionality
 document.querySelectorAll('.deck-btn').forEach(button => {
@@ -346,6 +361,36 @@ document.querySelector('.denuevo').addEventListener('click', () => rateCard(10))
 document.querySelector('.díficil').addEventListener('click', () => rateCard(60));
 document.querySelector('.bueno').addEventListener('click', () => rateCard(1440));
 document.querySelector('.fácil').addEventListener('click', () => rateCard(2880));
+
+// Admin flashcard form handler
+document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const newCard = {
+      question: document.getElementById('question').value,
+      answer: document.getElementById('answer').value,
+      deck: document.getElementById('deck-select').value,
+      subdeck: document.getElementById('subdeck').value
+    };
+  
+    try {
+      const response = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        },
+        body: JSON.stringify(newCard)
+      });
+  
+      if (response.ok) {
+        alert('Flashcard added successfully!');
+        location.reload();
+      }
+    } catch (error) {
+      console.error('Error adding flashcard:', error);
+    }
+  });
 
 // FAQ Button
 document.getElementById('faq-button').addEventListener('click', () => {
