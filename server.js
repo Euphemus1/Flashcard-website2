@@ -267,6 +267,39 @@ app.get('/api/user', passport.authenticate('jwt', { session: false }), (req, res
   res.json({ email: req.user.email });
 });
 
+// Flashcard route start?
+const Flashcard = require('./models/Flashcard');
+
+// Admin middleware
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) return next();
+  res.status(403).json({ error: 'Admin access required' });
+};
+
+// Add flashcard route
+app.post('/api/flashcards', passport.authenticate('jwt', { session: false }), isAdmin, async (req, res) => {
+  try {
+    const newCard = new Flashcard({
+      ...req.body,
+      createdBy: req.user._id
+    });
+    await newCard.save();
+    res.status(201).json(newCard);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get flashcards route
+app.get('/api/flashcards', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const flashcards = await Flashcard.find({ deck: req.query.deck });
+    res.json(flashcards);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Public routes
 app.get('/api/health-check', (req, res) => {
   res.json({ 
