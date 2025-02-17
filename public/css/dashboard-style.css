@@ -572,6 +572,7 @@ p.question-look, p.answer-text {
 }
 
 #username-display {
+    color: white;
     align-self: center;
     margin-right: 1rem;
     font-weight: 500;

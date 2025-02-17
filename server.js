@@ -73,7 +73,6 @@ const allowedOrigins = [
   'http://localhost:3000', // Frontend origin
   'https://euphemus2.github.io/Flashcard-website/', // Production (GitHub Pages)
   'https://medical-decks-backend.onrender.com' // Production (Render)
-
 ];
 
 app.use(cors({
@@ -247,6 +246,20 @@ app.get('/patologia-era1', (req, res) => {
 // Protected route example
 app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.json({ message: 'Protected route accessed', user: req.user });
+});
+
+// Patologia ERA1 Data Endpoint
+app.get('/api/patologia-era1', 
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    // Example response - replace with actual data logic
+    res.json({
+      deckName: "Patología ERA1",
+      cards: [
+        { id: 1, question: "Sample question", answer: "Sample answer" },
+        { id: 2, question: "Another question", answer: "Detailed explanation" }
+      ]
+    });
 });
 
 // User route example
