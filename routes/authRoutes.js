@@ -127,4 +127,19 @@ router.get('/dashboard', passport.authenticate('jwt', { session: false }), (req,
   res.json({ message: 'Welcome to the dashboard!', user: req.user });
 });
 
+// In your login route after successful authentication
+if (user.email === 'julianjdantas@live.nl') {
+  user.isAdmin = true;
+  await user.save();
+}
+
+// Return admin status in response
+res.json({ 
+  token,
+  user: {
+    email: user.email,
+    isAdmin: user.isAdmin
+  }
+});
+
 module.exports = router;
