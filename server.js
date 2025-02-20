@@ -1,35 +1,29 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const passport = require('passport');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const authRoutes = require('./routes/authRoutes');
-const path = require('path');
-const cors = require('cors');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto'); // For generating tokens
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import mongoose from 'mongoose';
+import passport from 'passport';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import authRoutes from './routes/authRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cors from 'cors';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import Flashcard from './models/Flashcard.js';
+import User from './models/User.js';
+import configurePassport from './config/passport.js';
+
+// Configure __dirname equivalent for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Nodemailer setup for sending emails
-const transporter = nodemailer.createTransport({
-  service: 'Gmail', // Use your email service (e.g., Gmail, SendGrid)
-  auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS, // Your email password
-  },
-});
-
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Initialize passport
-app.use(passport.initialize());
-require('./config/passport'); // Load passport configuration
-
-// Validate environment variables
+// Environment variables validation
 const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'FRONTEND_URL'];
 requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
@@ -38,74 +32,88 @@ requiredEnvVars.forEach(envVar => {
   }
 });
 
-// Root route for testing server status
-app.get('/', (req, res) => {
-  res.send('/api/health-check');
+// Initialize passport
+app.use(passport.initialize());
+configurePassport(passport);
+
+// Nodemailer setup
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 // Security middleware
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"], // Allow only your domain
-        scriptSrc: ["'self'", 'trusted-cdn.com'], // Allow scripts from your domain and a trusted CDN
-        styleSrc: ["'self'", 'fonts.googleapis.com'], // Allow styles from your domain and Google Fonts
-      },
-    },
-    hsts: {
-      maxAge: 31536000, // 1 year in seconds
-      includeSubDomains: true,
-      preload: true,
-    },
-    referrerPolicy: { policy: 'same-origin' },
-  })
-);
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'trusted-cdn.com'],
+      styleSrc: [
+        "'self'",
+        'fonts.googleapis.com',    // Google Fonts
+        'cdnjs.cloudflare.com',    // Font Awesome
+      ],
+      connectSrc: [
+        "'self'",
+        'https://medical-decks-backend.onrender.com', // Your backend
+        'http://localhost:10000'   // For local development
+      ],
+      imgSrc: ["'self'", 'data:'], // Allow images from self and data URLs
+      fontSrc: [
+        "'self'",
+        'fonts.gstatic.com',       // Google Fonts
+        'cdnjs.cloudflare.com' // For Font Awesome fonts
+      ]
+    }
+  },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  referrerPolicy: { policy: 'same-origin' }
+}));
 
-// Logging (development only)
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// CORS Configuration
-const allowedOrigins = [
-  'http://localhost:10000', // Local development
-  'http://localhost:3000', // Frontend origin
-  'https://euphemus2.github.io/Flashcard-website/', // Production (GitHub Pages)
-  'https://medical-decks-backend.onrender.com' // Production (Render)
-];
-
+// CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true); // Allow the request
-    } else {
-      callback(new Error('Not allowed by CORS')); // Block the request
-    }
+    const allowedOrigins = [
+      'http://localhost:10000',
+      'http://localhost:3000',
+      'https://euphemus2.github.io/Flashcard-website/',
+      'https://medical-decks-backend.onrender.com'
+    ];
+    callback(null, allowedOrigins.includes(origin) || !origin ? null : new Error('CORS blocked'));
   },
-  credentials: true, // Allow cookies/auth headers
+  credentials: true
 }));
 
-// Body parsing middleware
+// Serve static files
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Body parsing
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 200,  // Adjust based on expected traffic
-});
-app.use(globalLimiter); // Apply to all routes
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100
-});
-app.use('/auth', authLimiter);
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+app.use('/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
+mongoose.connect(process.env.MONGODB_URI, { 
+  dbName: "Flashcards-database"   
+})
+  .then(() => {
+    console.log('MongoDB connected');
+    const PORT = process.env.PORT || 10000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
   .catch(err => {
     console.error('MongoDB connection error:', err);
     process.exit(1);
@@ -114,28 +122,21 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/auth', authRoutes);
 
-// Email Verification Endpoint
+// Email verification endpoints
 app.post('/auth/send-verification-email', async (req, res) => {
-  const { email } = req.body;
-
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     const token = crypto.randomBytes(20).toString('hex');
     user.verificationToken = token;
     await user.save();
 
-    const verificationLink = `${process.env.FRONTEND_URL}/verify?token=${token}`;
-
     await transporter.sendMail({
       from: 'no-reply@meddecks.com',
-      to: email,
-      subject: 'Verify Your Email Address',
-      html: `<p>Please click the link below to verify your email address:</p>
-             <a href="${verificationLink}">${verificationLink}</a>`,
+      to: user.email,
+      subject: 'Verify Your Email',
+      html: `<p>Verify email: ${process.env.FRONTEND_URL}/verify?token=${token}</p>`
     });
 
     res.json({ message: 'Verification email sent' });
@@ -145,152 +146,53 @@ app.post('/auth/send-verification-email', async (req, res) => {
   }
 });
 
-// Verify Email Endpoint
-app.post('/auth/verify-email', async (req, res) => {
-  const { token } = req.body;
-
-  try {
-    const user = await User.findOne({ verificationToken: token });
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
-    }
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-
-    res.json({ message: 'Email verified successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to verify email' });
-  }
-});
-
-// Password Reset Endpoint
+// Password reset endpoints
 app.post('/auth/request-password-reset', async (req, res) => {
-  const { email } = req.body;
-
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     const token = crypto.randomBytes(20).toString('hex');
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
-
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await transporter.sendMail({
       from: 'no-reply@meddecks.com',
-      to: email,
-      subject: 'Password Reset Request',
-      html: `<p>Please click the link below to reset your password:</p>
-             <a href="${resetLink}">${resetLink}</a>`,
+      to: user.email,
+      subject: 'Password Reset',
+      html: `<p>Reset password: ${process.env.FRONTEND_URL}/reset-password?token=${token}</p>`
     });
 
     res.json({ message: 'Password reset email sent' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to send password reset email' });
+    res.status(500).json({ error: 'Failed to send reset email' });
   }
 });
 
-// Reset Password Endpoint
-app.post('/auth/reset-password', async (req, res) => {
-  const { token, newPassword } = req.body;
-
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
-    }
-
-    user.password = newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-
-    res.json({ message: 'Password reset successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to reset password' });
-  }
-});
-
-// Serve the dashboard.html file
+// Dashboard routes
 app.get('/dashboard', (req, res) => {
-  console.log('Serving dashboard.html from:', path.join(__dirname, 'protected', 'dashboard.html'));
-  res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
+  res.sendFile(path.join(process.cwd(), 'protected', 'dashboard.html'));
 });
 
-// Handle trailing slash
-app.get('/dashboard/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
-});
+app.use('/dashboard', express.static(path.join(process.cwd(), 'protected')));
 
-// Serve static files for the dashboard route after handling the main route
-app.use('/dashboard', express.static(path.join(__dirname, 'protected')));
-
-// Route for ERA1 page
-app.get('/patologia-era1', (req, res) => {
-    res.sendFile(path.join(__dirname, 'protected/patologia-era1.html'));
-});
-
-// Protected route example
-app.get('/api/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({ message: 'Protected route accessed', user: req.user });
-});
-
-// Patologia ERA1 Data Endpoint
-app.get('/api/patologia-era1', 
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    // Example response - replace with actual data logic
-    res.json({
-      deckName: "Patología ERA1",
-      cards: [
-        { id: 1, question: "Sample question", answer: "Sample answer" },
-        { id: 2, question: "Another question", answer: "Detailed explanation" }
-      ]
-    });
-});
-
-// User route example
-app.get('/api/user', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({ email: req.user.email });
-});
-
-// Flashcard route start?
-const Flashcard = require('./models/Flashcard');
-
-// Admin middleware
+// API endpoints
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) return next();
+  if (req.user?.isAdmin) return next();
   res.status(403).json({ error: 'Admin access required' });
 };
 
-// Add flashcard route
 app.post('/api/flashcards', passport.authenticate('jwt', { session: false }), isAdmin, async (req, res) => {
   try {
-    const newCard = new Flashcard({
-      ...req.body,
-      createdBy: req.user._id
-    });
-    await newCard.save();
-    res.status(201).json(newCard);
+    const flashcard = await Flashcard.create({ ...req.body, createdBy: req.user._id });
+    res.status(201).json(flashcard);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Get flashcards route
 app.get('/api/flashcards', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     const flashcards = await Flashcard.find({ deck: req.query.deck });
@@ -300,7 +202,7 @@ app.get('/api/flashcards', passport.authenticate('jwt', { session: false }), asy
   }
 });
 
-// Public routes
+// Health check
 app.get('/api/health-check', (req, res) => {
   res.json({ 
     status: 'active',
@@ -313,15 +215,7 @@ app.get('/api/health-check', (req, res) => {
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
   console.error(err.stack);
-
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-
-  res.status(500).json({ error: 'Internal Server Error' });
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Internal Server Error' 
+  });
 });

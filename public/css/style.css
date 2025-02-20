@@ -406,6 +406,13 @@ nav {
     font-size: 1rem;
 }
 
+.auth-form.hidden { display: none; }
+
+.auth-link-text {
+    text-align: center;
+    margin-top: 1rem;
+}
+
 .user-status {
     color: white;
     margin-right: 1rem;

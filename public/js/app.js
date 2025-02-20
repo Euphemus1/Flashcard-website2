@@ -1,12 +1,11 @@
 // User Management
 let currentUser;
 try {
-    curentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
+    currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
 } catch (error) {
     console.error(error);
     localStorage.removeItem('currentUser');
 }
-let users = JSON.parse(localStorage.getItem('users')) || [];
 let autoSlideInterval;
 
 // Carousel Functionality
@@ -68,15 +67,25 @@ function updateAuthUI() {
     }
 }
 
-// Toggle Password Visibility
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
+// Add password toggle listeners
+document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', function() {
+      // Find the closest password container
+      const container = this.closest('.password-container');
+      // Get the input field within this container
+      const input = container.querySelector('input');
+      // Call toggle function
+      togglePasswordVisibility(input);
+    });
+  });
+
+  function togglePasswordVisibility(input) {
     if (input.type === 'password') {
-        input.type = 'text';
+      input.type = 'text';
     } else {
-        input.type = 'password';
+      input.type = 'password';
     }
-}
+  }
 
 // Email Validation
 function isValidEmail(email) {
@@ -315,20 +324,14 @@ function closeModal() {
 }
 
 function showSignup() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('signupForm').style.display = 'block';
-}
-
-function showLogin() {
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-}
-
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateAuthUI();
-}
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('signupForm').classList.remove('hidden');
+  }
+  
+  function showLogin() {
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('loginForm').classList.remove('hidden');
+  }
 
 // Event Listeners
 authBtn.addEventListener('click', (e) => {
@@ -373,6 +376,29 @@ function scrollToContenido() {
         behavior: 'smooth'
     });
 }
+
+document.getElementById('inicioBtn').addEventListener('click', scrollToInicio);
+document.getElementById('contenidoBtn').addEventListener('click', scrollToContenido);
+document.getElementById('planesBtn').addEventListener('click', scrollToPlanes);
+document.getElementById('contactoBtn').addEventListener('click', scrollToContact);
+
+function handleRegistration() {
+    console.log('Registration initiated');
+  }
+
+document.getElementById('signupLink').addEventListener('click', function(e) {
+    e.preventDefault(); // Prevent default link behavior
+    showSignup(); // Call your existing function
+  });
+   
+// Add close button listener
+document.querySelector('.close-btn').addEventListener('click', closeModal);
+
+// Add login link listener
+document.getElementById('loginLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    showLogin();
+  });
 
 const BACKEND_URL = 'https://medical-decks-backend.onrender.com';
 

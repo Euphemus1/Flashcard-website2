@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const flashcardSchema = new mongoose.Schema({
   question: String,
@@ -10,4 +10,5 @@ const flashcardSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
-module.exports = mongoose.model('Flashcard', flashcardSchema);
+const Flashcard = mongoose.model('Flashcard', flashcardSchema);
+export default Flashcard;

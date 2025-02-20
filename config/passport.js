@@ -1,75 +1,46 @@
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const JwtStrategy = require('passport-jwt').Strategy;
-const { ExtractJwt } = require('passport-jwt');
-const User = require('../models/User'); // Your User model
-const bcrypt = require('bcrypt');
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as LocalStrategy } from 'passport-local';
+import User from '../models/User.js';
+import bcrypt from 'bcrypt';
 
-// Local Strategy for email/password login
-passport.use(
-  new LocalStrategy(
-    {
-      usernameField: 'email', // Use 'email' as the login field
-      passwordField: 'password', // Use 'password' as the password field
-    },
-    async (email, password, done) => {
-      try {
-        // Find the user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-          return done(null, false, { message: 'Invalid credentials' });
-        }
-
-        // Compare the provided password with the hashed password in the database
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-          return done(null, false, { message: 'Invalid credentials' });
-        }
-
-        // If everything is correct, return the user object
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
-    }
-  )
-);
-
-// JWT Strategy for protecting routes
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from the Authorization header
-  secretOrKey: process.env.JWT_SECRET, // Use your JWT secret from environment variables
-};
-
-passport.use(
-  new JwtStrategy(jwtOptions, async (payload, done) => {
-    try {
-      // Find the user by ID from the JWT payload
-      const user = await User.findById(payload.sub);
-      if (!user) {
-        return done(null, false); // User not found
-      }
-
-      // If the user exists, return the user object
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  })
-);
-
-// Serialize and deserialize user (optional, for session-based auth)
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
+export default function configurePassport(passport) {
+  // Verify JWT_SECRET exists when configuring passport
+  if (!process.env.JWT_SECRET) {
+    throw new Error('❌ JWT_SECRET is missing in environment variables');
   }
-});
 
-module.exports = passport;
+  // Local Strategy
+  passport.use(
+    new LocalStrategy(
+      { usernameField: 'email' },
+      async (email, password, done) => {
+        try {
+          const user = await User.findOne({ email });
+          if (!user) return done(null, false, { message: 'Invalid credentials' });
+          
+          const isMatch = await bcrypt.compare(password, user.password);
+          return isMatch ? done(null, user) : done(null, false, { message: 'Invalid credentials' });
+        } catch (err) {
+          return done(err);
+        }
+      }
+    )
+  );
+
+  // JWT Strategy
+  const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET
+  };
+
+  passport.use(
+    new JwtStrategy(jwtOptions, async (payload, done) => {
+      try {
+        const user = await User.findById(payload.sub);
+        return user ? done(null, user) : done(null, false);
+      } catch (err) {
+        return done(err, false);
+      }
+    })
+  );
+};

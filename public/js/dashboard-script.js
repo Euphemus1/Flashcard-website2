@@ -73,7 +73,7 @@ function showContact() {
                             <li>📧 Email: soporte@medupgrade.com</li>
                             <li>📞 Teléfono: +34 123 456 789</li>
                         </ul>
-                        <p style="margin-top: 15px;"><strong>Horario de Atención:</strong></p>
+                        <p class="contact-schedule"><strong>Horario de Atención:</strong></p>
                         <ul>
                             <li>Lunes-Viernes: 9:00 - 18:00</li>
                             <li>Sábados: 10:00 - 14:00</li>
@@ -584,4 +584,81 @@ function createDayElement(day, isLabel, isEmpty, date) {
 // Call this in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     generateCalendar();
+});
+
+// Admin Panel Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const adminModal = document.getElementById('admin-modal');
+    const openAdminBtn = document.getElementById('open-admin-btn'); // Add this button in your UI
+    const closeAdminBtn = document.querySelector('.admin-close-btn');
+    
+    // Open admin panel
+    openAdminBtn?.addEventListener('click', () => {
+        adminModal.classList.remove('hidden');
+    });
+    
+    // Close admin panel
+    closeAdminBtn?.addEventListener('click', () => {
+        adminModal.classList.add('hidden');
+    });
+    
+    // Close when clicking outside
+    adminModal?.addEventListener('click', (e) => {
+        if(e.target === adminModal) adminModal.classList.add('hidden');
+    });
+    
+    // Preview functionality
+    document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
+    
+    // Toggle preview answer
+    document.querySelector('.toggle-preview')?.addEventListener('click', function() {
+        const answer = document.querySelector('.preview-answer');
+        answer.classList.toggle('hidden');
+        this.textContent = answer.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+    });
+});
+
+function updatePreview() {
+    const question = document.getElementById('question').value;
+    const answer = document.getElementById('answer').value;
+    const previewPanel = document.getElementById('preview-panel');
+    
+    document.querySelector('.preview-question').textContent = question;
+    document.querySelector('.preview-answer').textContent = answer;
+    previewPanel.classList.remove('hidden');
+}
+
+// Enhanced form submission
+document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const newCard = {
+        question: document.getElementById('question').value,
+        answer: document.getElementById('answer').value,
+        deck: document.getElementById('deck-select').value,
+        subdeck: document.getElementById('subdeck').value,
+        references: document.getElementById('references').value.split(',').map(s => s.trim()),
+        tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+        extraInfo: document.getElementById('extra-info').value
+    };
+    
+    try {
+        const response = await fetch('/api/flashcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            },
+            body: JSON.stringify(newCard)
+        });
+        
+        if(response.ok) {
+            alert('Flashcard added successfully!');
+            document.getElementById('admin-modal').classList.add('hidden');
+            location.reload();
+        }
+    } catch(error) {
+        console.error('Error adding flashcard:', error);
+        alert('Error saving flashcard. Please try again.');
+    }
 });

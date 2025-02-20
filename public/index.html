@@ -13,10 +13,10 @@
         <div class="logo">Med Memory</div>
         <div class="nav-buttons">
             <span class="user-status"></span>
-            <button class="nav-btn" onclick="scrollToInicio()">Inicio</button>
-            <button class="nav-btn" onclick="scrollToContenido()">Contenido</button>
-            <button class="nav-btn" onclick="scrollToPlanes()">Planes</button>
-            <button class="nav-btn" onclick="scrollToContact()">Contacto</button>
+<button class="nav-btn" id="inicioBtn">Inicio</button>
+<button class="nav-btn" id="contenidoBtn">Contenido</button>
+<button class="nav-btn" id="planesBtn">Planes</button>
+<button class="nav-btn" id="contactoBtn">Contacto</button>
             <button class="nav-btn" id="authBtn">Login</button>
         </div>
     </nav>
@@ -24,7 +24,7 @@
     <!-- Auth Modals -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <span class="close-btn">&times;</span>
             <div id="authForms">
                 <!-- Login Form -->
                 <form id="loginForm" class="auth-form">
@@ -32,34 +32,34 @@
                     <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
                     <div class="password-container">
                         <input type="password" id="loginPassword" placeholder="Contraseña" required>
-                        <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">👁️</span>
+                        <span class="toggle-password">👁️</span>
                     </div>
                     <div class="error-message"></div>
                     <label>
                         <input type="checkbox" id="rememberMe"> Recordarme
                     </label>
                     <button type="submit" class="plan-btn">Iniciar Sesión</button>
-                    <p style="text-align: center; margin-top: 1rem;">
-                        ¿No tienes cuenta? <a href="#" onclick="showSignup()">Regístrate</a>
+                    <p class="auth-link-text">
+                        ¿No tienes cuenta? <a href="#" id="signupLink">Regístrate</a>
                     </p>
                 </form>
                 
                 <!-- Signup Form -->
-                <form id="signupForm" class="auth-form" style="display: none;">
+                <form id="signupForm" class="auth-form hidden">
                     <h2>Crear Cuenta</h2>
                     <input type="email" id="signupEmail" placeholder="Correo electrónico" required>
                     <div class="password-container">
                         <input type="password" id="signupPassword" placeholder="Contraseña (mínimo 6 caracteres)" minlength="6" required>
-                        <span class="toggle-password" onclick="togglePasswordVisibility('signupPassword')">👁️</span>
+                        <span class="toggle-password">👁️</span>
                     </div>
                     <div class="password-container">
                         <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" required>
-                        <span class="toggle-password" onclick="togglePasswordVisibility('confirmPassword')">👁️</span>
+                        <span class="toggle-password">👁️</span>
                     </div>
                     <div class="error-message"></div>
                     <button type="submit" class="plan-btn">Registrarse</button>
-                    <p style="text-align: center; margin-top: 1rem;">
-                        ¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Iniciar sesión</a>
+                    <p class="auth-link-text">
+                        ¿Ya tienes cuenta? <a href="#" id="loginLink">Iniciar sesión</a>
                     </p>
                 </form>
             </div>
