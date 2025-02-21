@@ -42,7 +42,7 @@ const flashcardSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
   }
-});
+},{ collection: 'Flashcards' });
 
-const Flashcard = mongoose.model('Flashcard', flashcardSchema);
+const Flashcard = mongoose.model('Flashcards', flashcardSchema);
 export default Flashcard;
