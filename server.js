@@ -185,7 +185,7 @@ const isAdmin = (req, res, next) => {
 };
 
 app.post('/api/flashcards', 
-  passport.authenticate('jwt', { session: false }), // Keep JWT auth
+//passport.authenticate('jwt', { session: false }), // Keep JWT auth
   async (req, res) => { // Remove isAdmin check temporarily
     try {
       // Add admin check INSIDE the route handler

@@ -367,7 +367,7 @@ document.querySelector('.díficil').addEventListener('click', () => rateCard(60)
 document.querySelector('.bueno').addEventListener('click', () => rateCard(1440));
 document.querySelector('.fácil').addEventListener('click', () => rateCard(2880));
 
-// Enhanced form submission
+// Admin pannel
 document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
