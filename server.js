@@ -184,13 +184,23 @@ const isAdmin = (req, res, next) => {
   res.status(403).json({ error: 'Admin access required' });
 };
 
-app.post('/api/flashcards', passport.authenticate('jwt', { session: false }), isAdmin, async (req, res) => {
-  try {
-    const flashcard = await Flashcard.create({ ...req.body, createdBy: req.user._id });
-    res.status(201).json(flashcard);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
+app.post('/api/flashcards', 
+  passport.authenticate('jwt', { session: false }), // Keep JWT auth
+  async (req, res) => { // Remove isAdmin check temporarily
+    try {
+      // Add admin check INSIDE the route handler
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const flashcard = await Flashcard.create({ 
+        ...req.body, 
+        createdBy: req.user._id 
+      });
+      res.status(201).json(flashcard);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
 });
 
 app.get('/api/flashcards', passport.authenticate('jwt', { session: false }), async (req, res) => {

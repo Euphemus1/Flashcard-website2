@@ -156,6 +156,10 @@ body {
     transition: background-color 0.3s ease;
 }
 
+.subdeck-padding {
+    padding-left: 20px;
+}
+
 .subdeck-btn:hover {
     background-color: #3c538a !important; /* Darker shade for hover */
 }

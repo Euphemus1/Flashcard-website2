@@ -32,7 +32,7 @@ export function FlashcardsProvider({ children }: { children: ReactNode }) {
   // Mock deck data - replace with actual data loading from your TS decks.ts
   const mockDecks: Deck[] = [
     {
-      id: 'microbiology',
+      id: 'microbiología',
       name: 'Microbiología',
       cards: [
         {

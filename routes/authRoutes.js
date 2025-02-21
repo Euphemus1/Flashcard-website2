@@ -51,20 +51,23 @@ router.post('/login', (req, res, next) => {
     try {
       if (err || !user) return res.status(401).json({ error: 'Invalid credentials' });
 
-      // Admin check
-      if (user.email === 'julianjdantas@live.nl') {
+      // Generate token FIRST
+      const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      // Admin check (update database if needed)
+      if (user.email === 'julianjdantas@live.nl' && !user.isAdmin) {
         user.isAdmin = true;
         await user.save();
       }
 
-      const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      
+      // Set cookie
       res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: req.body.rememberMe ? 604800000 : null // 7 days
+        maxAge: req.body.rememberMe ? 604800000 : null
       });
 
+      // Send response ONCE
       res.json({ 
         token,
         user: {

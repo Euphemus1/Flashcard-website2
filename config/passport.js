@@ -36,7 +36,9 @@ export default function configurePassport(passport) {
   passport.use(
     new JwtStrategy(jwtOptions, async (payload, done) => {
       try {
+        console.log('🔑 JWT Payload:', payload); 
         const user = await User.findById(payload.sub);
+        console.log('👤 Found user:', user?.email); 
         return user ? done(null, user) : done(null, false);
       } catch (err) {
         return done(err, false);

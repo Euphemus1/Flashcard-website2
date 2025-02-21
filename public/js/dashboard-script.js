@@ -37,7 +37,7 @@ function displayUsername() {
           // Add these lines
           isAdmin = user.isAdmin;
           if (isAdmin) {
-            document.getElementById('admin-panel').classList.remove('hidden');
+            document.getElementById('admin-modal').classList.remove('hidden');
           }
           
           console.log('USERNAME SHOULD BE VISIBLE NOW');
@@ -160,10 +160,10 @@ function generateOverviewTable() {
             const subdeckRow = document.createElement('tr');
             subdeckRow.classList.add('subdeck-row', 'hidden');
             subdeckRow.innerHTML = `
-                <td style="padding-left: 20px">${subdeck}</td>
+                <td class="subdeck-padding">${subdeck}</td>
                 <td class="${subdeckStats.newCards > 0 ? 'new-positive' : ''}">${subdeckStats.newCards}</td>
                 <td class="${subdeckStats.dueCards > 0 ? 'due-positive' : ''}">${subdeckStats.dueCards}</td>
-            `;
+        `;
             tableBody.appendChild(subdeckRow);
         });
     }
@@ -310,17 +310,22 @@ function switchDeck(deckName) {
 
 async function getDeckData(deckName) {
     try {
-      const response = await fetch(`/api/flashcards?deck=${deckName}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        console.log('🔑 Current JWT:', localStorage.getItem('jwt'));
+        console.log('📡 Fetching deck:', deckName);
+        
+        const response = await fetch(`/api/flashcards?deck=${deckName}`, {
+            headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            }
+        });
+
+        console.log('📦 Response status:', response.status); 
+        return await response.json();
+        } catch (error) {
+        console.error('Error loading deck:', error);
+        return [];
         }
-      });
-      return await response.json();
-    } catch (error) {
-      console.error('Error loading deck:', error);
-      return [];
-    }
-  }
+     }
 
 // Add event listeners for dropdown functionality
 document.querySelectorAll('.deck-btn').forEach(button => {
@@ -362,35 +367,40 @@ document.querySelector('.díficil').addEventListener('click', () => rateCard(60)
 document.querySelector('.bueno').addEventListener('click', () => rateCard(1440));
 document.querySelector('.fácil').addEventListener('click', () => rateCard(2880));
 
-// Admin flashcard form handler
+// Enhanced form submission
 document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const newCard = {
-      question: document.getElementById('question').value,
-      answer: document.getElementById('answer').value,
-      deck: document.getElementById('deck-select').value,
-      subdeck: document.getElementById('subdeck').value
+        question: document.getElementById('question').value,
+        answer: document.getElementById('answer').value,
+        deck: document.getElementById('deck-select').value,
+        subdeck: document.getElementById('subdeck').value,
+        references: document.getElementById('references').value.split(',').map(s => s.trim()),
+        tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+        extraInfo: document.getElementById('extra-info').value
     };
-  
+    
     try {
-      const response = await fetch('/api/flashcards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-        },
-        body: JSON.stringify(newCard)
-      });
-  
-      if (response.ok) {
-        alert('Flashcard added successfully!');
-        location.reload();
-      }
-    } catch (error) {
-      console.error('Error adding flashcard:', error);
+        const response = await fetch('/api/flashcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            },
+            body: JSON.stringify(newCard)
+        });
+        
+        if(response.ok) {
+            alert('Flashcard added successfully!');
+            document.getElementById('admin-modal').classList.add('hidden');
+            location.reload();
+        }
+    } catch(error) {
+        console.error('Error adding flashcard:', error);
+        alert('Error saving flashcard. Please try again.');
     }
-  });
+});
 
 // FAQ Button
 document.getElementById('faq-button').addEventListener('click', () => {
@@ -627,38 +637,3 @@ function updatePreview() {
     document.querySelector('.preview-answer').textContent = answer;
     previewPanel.classList.remove('hidden');
 }
-
-// Enhanced form submission
-document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const newCard = {
-        question: document.getElementById('question').value,
-        answer: document.getElementById('answer').value,
-        deck: document.getElementById('deck-select').value,
-        subdeck: document.getElementById('subdeck').value,
-        references: document.getElementById('references').value.split(',').map(s => s.trim()),
-        tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-        extraInfo: document.getElementById('extra-info').value
-    };
-    
-    try {
-        const response = await fetch('/api/flashcards', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-            },
-            body: JSON.stringify(newCard)
-        });
-        
-        if(response.ok) {
-            alert('Flashcard added successfully!');
-            document.getElementById('admin-modal').classList.add('hidden');
-            location.reload();
-        }
-    } catch(error) {
-        console.error('Error adding flashcard:', error);
-        alert('Error saving flashcard. Please try again.');
-    }
-});
