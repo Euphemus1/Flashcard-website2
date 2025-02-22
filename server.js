@@ -176,7 +176,12 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'protected', 'dashboard.html'));
 });
 
-app.use('/dashboard', express.static(path.join(process.cwd(), 'protected')));
+app.use('/protected', express.static(path.join(process.cwd(), 'protected')));
+
+// Route for ERA1 page
+app.get('/patologia-era1', (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected/patologia-era1.html'));
+});
 
 // API endpoints
 const isAdmin = (req, res, next) => {
