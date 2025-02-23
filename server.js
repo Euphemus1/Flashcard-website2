@@ -193,32 +193,77 @@ const isAdmin = (req, res, next) => {
   res.status(403).json({ error: 'Admin access required' });
 };
 
-app.post('/api/flashcards', 
+//app.post('/api/flashcards', 
 //passport.authenticate('jwt', { session: false }), // Keep JWT auth
-  async (req, res) => { // Remove isAdmin check temporarily
-    try {
+//  async (req, res) => { // Remove isAdmin check temporarily
+//    try {
       // Add admin check INSIDE the route handler
  //     if (!req.user.isAdmin) {
  //       return res.status(403).json({ error: "Admin access required" });
  //     }
 
-      const flashcard = await Flashcard.create({ 
-        deck: req.query.deck,
-        subdeck: req.query.subdeck // Add this line
+ //     const flashcard = await Flashcard.create({ 
+     //   deck: req.query.deck,
+   //     subdeck: req.query.subdeck // Add this line
 //        createdBy: req.user._id 
+  //    });
+  //    res.status(201).json(flashcard);
+ //   } catch (error) {
+  //    res.status(400).json({ error: error.message });
+  //  }
+//});
+
+app.post('/api/flashcards', async (req, res) => {
+  try {
+    console.log('Incoming flashcard data:', req.body); // Add this line
+    // 1. Add validation for required fields
+    if (!req.body.question || !req.body.answer || !req.body.deck) {
+      return res.status(400).json({ 
+        error: "Missing required fields: question, answer, deck" 
       });
-      res.status(201).json(flashcard);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
     }
+
+    // 2. Normalize deck name
+    const cleanDeck = req.body.deck
+      .trim()           // Remove whitespace
+      .replace(/\s+/g, ' ')  // Fix multiple spaces
+
+    // 3. Create flashcard with cleaned data
+    const flashcard = await Flashcard.create({
+      ...req.body,
+      deck: cleanDeck // Use normalized deck name
+    });
+
+    res.status(201).json(flashcard);
+  } catch (error) {
+    console.error('Flashcard creation error:', error);
+    res.status(400).json({ 
+      error: `Server error: ${error.message}` 
+    });
+  }
 });
 
-app.get('/api/flashcards', async (req, res) => {
+app.get('/api/flashcards', async (req, res) => { // Removed passport.authenticate
   try {
-    const flashcards = await Flashcard.find({ deck: req.query.deck });
+    // 1. Create a query object with both deck and subdeck
+    const query = {
+      deck: req.query.deck,
+      subdeck: req.query.subdeck // Add subdeck filtering
+    };
+
+    // 2. Clean undefined parameters
+    Object.keys(query).forEach(key => {
+      if (query[key] === undefined) delete query[key];
+    });
+
+    // 3. Find cards with the combined query
+    const flashcards = await Flashcard.find(query);
+    
     res.json(flashcards);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: `Failed to load cards: ${error.message}` 
+    });
   }
 });
 

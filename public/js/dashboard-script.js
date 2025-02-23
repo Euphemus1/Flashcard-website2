@@ -331,18 +331,22 @@ function switchDeck(deckName) {
     loadNextCard();
 }
 
-async function getDeckData(deckName) {
+async function getDeckData(deckName, subdeckName = null) {
     try {
-      console.log('📡 Fetching deck:', deckName);
-      const response = await fetch(`/api/flashcards?deck=${encodeURIComponent(deckName)}`);
+      // 1. Create URL parameters
+      const params = new URLSearchParams({ deck: deckName });
+      if (subdeckName) params.set('subdeck', subdeckName);
+  
+      // 2. Make API call with both parameters
+      const response = await fetch(`/api/flashcards?${params.toString()}`);
       
+      // 3. Handle response
       if (!response.ok) {
         console.warn('⚠️ API response not OK, using default cards');
-        return getDefaultCards(); // Will add this function
+        return getDefaultCards();
       }
       
-      const data = await response.json();
-      return data.filter(card => card.subdeck === (deckName === 'Patología' ? 'ERA1' : ''));
+      return await response.json();
     } catch (error) {
       console.error('Error loading deck:', error);
       return getDefaultCards();
@@ -373,8 +377,11 @@ document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
 
             if (deckName === 'Patología' && subdeckName === 'ERA1') {
                 window.location.href = '/protected/patologia-era1.html';
-                getDeckData('Patología').then(data => flashcards = data);
-                return;
+                getDeckData('Patología', 'ERA1').then(data => {
+                    flashcards = data;
+                    loadNextCard();
+                  });                
+                  return;
             }
         }
 
@@ -396,35 +403,51 @@ document.getElementById('add-flashcard-form')?.addEventListener('submit', async 
     e.preventDefault();
     
     const newCard = {
-        question: document.getElementById('question').value,
-        answer: document.getElementById('answer').value,
-        deck: document.getElementById('deck-select').value,
-        subdeck: document.getElementById('subdeck').value,
-        references: document.getElementById('references').value.split(',').map(s => s.trim()),
-        tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-        extraInfo: document.getElementById('extra-info').value
+      question: document.getElementById('question').value,
+      answer: document.getElementById('answer').value,
+      deck: document.getElementById('deck-select').value,
+      subdeck: document.getElementById('subdeck').value,
+      references: document.getElementById('references').value.split(',').map(s => s.trim()),
+      tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+      extraInfo: document.getElementById('extra-info').value
     };
-    
-    try {
-        const response = await fetch('/api/flashcards', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-            },
-            body: JSON.stringify(newCard)
-        });
-        
-        if(response.ok) {
-            alert('Flashcard added successfully!');
-            document.getElementById('admin-modal').classList.add('hidden');
-            location.reload();
-        }
-    } catch(error) {
-        console.error('Error adding flashcard:', error);
-        alert('Error saving flashcard. Please try again.');
+  
+    // Add validation
+    if (!newCard.question || !newCard.answer || !newCard.deck) {
+      alert('Please fill in all required fields (Question, Answer, Deck)');
+      return;
     }
-});
+  
+    try {
+      const response = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCard)
+      });
+  
+      const data = await response.json();
+      
+      if(response.ok) {
+        alert('Flashcard added successfully!');
+        document.getElementById('admin-modal').classList.add('hidden');
+        
+        if(window.location.pathname.includes('patologia-era1')) {
+            getDeckData('Patología', 'ERA1').then(data => {
+              flashcards = data;
+              currentCardIndex = 0; // Reset to first card
+              loadNextCard();
+            });
+          }
+      } else {
+        alert(`Error: ${data.error || 'Unknown error'}`);
+      }
+    } catch(error) {
+      console.error('Error adding flashcard:', error);
+      alert('Connection error. Please try again.');
+    }
+  });
 
 // FAQ Button
 document.getElementById('faq-button').addEventListener('click', () => {
@@ -670,15 +693,17 @@ function updatePreview() {
 }
 
 function initializeERA1Cards() {
-    // Only run on ERA1 page
     if (window.location.pathname.includes('patologia-era1')) {
       console.log('Initializing ERA1 flashcards...');
       
-      getDeckData('Patología').then(data => {
-        flashcards = data.filter(card => card.subdeck === 'ERA1');
-        console.log('Filtered ERA1 cards:', flashcards);
+      // 1. Get both deck and subdeck
+      getDeckData('Patología', 'ERA1').then(data => {
+        // 2. Directly use server-filtered data
+        flashcards = data;
+        console.log('Loaded ERA1 cards:', flashcards);
         
         if(flashcards.length > 0) {
+          currentCardIndex = 0; // Reset index
           loadNextCard();
         } else {
           showStatus('No hay tarjetas en este mazo');
