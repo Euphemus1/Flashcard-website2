@@ -663,10 +663,11 @@ p.question-look, p.answer-text {
 /* Calendar container */
 #study-calendar {
     padding: 20px;
-    white-space: nowrap;
+    white-space: wrap;
     background: #0fa176;
-    border-radius: 10px;
+    border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
 }
 
 /* Month container */
@@ -724,6 +725,7 @@ p.question-look, p.answer-text {
     color: #000000;
     margin-bottom: 6px;
     padding-bottom: 4px;
+    padding-top: 10px;
     border-bottom: 2px solid #f9fd14;
 }
 

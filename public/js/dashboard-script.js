@@ -34,10 +34,12 @@ function displayUsername() {
         if (usernameElement && user.email) {
           usernameElement.textContent = `Hola, ${user.email.split('@')[0]}`;
           
-          // Add these lines
           isAdmin = user.isAdmin;
           if (isAdmin) {
-            document.getElementById('admin-modal').classList.remove('hidden');
+            const adminModal = document.getElementById('admin-modal'); // 1. Store element reference
+            if (adminModal) { // 2. Check if element exists
+              adminModal.classList.remove('hidden'); // 3. Only modify if element exists
+            }
           }
           
           console.log('USERNAME SHOULD BE VISIBLE NOW');
@@ -205,24 +207,36 @@ function showOverview() {
     const updatesDropdown = document.querySelector('.updates-dropdown');
     const calendar = document.getElementById('study-calendar');
 
-    // Clear existing table content
+    // Null check all elements
+    if (!overviewSection || !flashcardSystem || !updatesDropdown || !calendar) {
+        console.warn('Overview elements not found - wrong page?');
+        return;
+    }
+
+    // Clear table only if it exists
     const tableBody = overviewSection.querySelector('tbody');
     if (tableBody) tableBody.remove();
 
-    // Generate and append the new table content
+    // Generate new content
     const newTableBody = generateOverviewTable();
-    overviewSection.querySelector('table').appendChild(newTableBody);
+    const table = overviewSection.querySelector('table');
+    
+    // Check if table exists before appending
+    if (table) {
+        table.appendChild(newTableBody);
+    }
 
-    // Add event listeners for toggle buttons
-    addToggleListeners();
+    // Toggle visibility with safety checks
+    overviewSection.classList?.remove('hidden');
+    updatesDropdown.classList?.remove('hidden');
+    calendar.classList?.remove('hidden');
+    flashcardSystem.classList?.add('hidden');
 
-    // Show the overview section and hide the flashcard system
-    overviewSection.classList.remove('hidden');
-    updatesDropdown.classList.remove('hidden');
-    calendar.classList.remove('hidden');
-    flashcardSystem.classList.add('hidden');
+    // Only add listeners if elements exist
+    if (table) {
+        addToggleListeners();
+    }
 
-    // Update the status
     showStatus('Overview');
 }
 
@@ -234,19 +248,28 @@ function showMainContent() {
     const updatesDropdown = document.querySelector('.updates-dropdown');
     const calendar = document.getElementById('study-calendar');
 
-    mainContent.classList.remove('hidden');
-    overviewSection.classList.add('hidden');
-    updatesDropdown.classList.add('hidden');
-    calendar.classList.add('hidden');
-    flashcardSystem.classList.remove('hidden');
+    mainContent?.classList?.remove('hidden');
+    overviewSection?.classList?.add('hidden');
+    updatesDropdown?.classList?.add('hidden');
+    calendar?.classList?.add('hidden');
+    flashcardSystem?.classList?.remove('hidden');
 }
 
 // Add event listener for the overview button
-document.getElementById('overview-button').addEventListener('click', showOverview);
+document.getElementById('overview-button')?.addEventListener('click', () => {
+    if (!window.location.pathname.includes('dashboard.html')) {
+        window.location.href = '/dashboard.html';
+    } else {
+        showOverview();
+    }
+});
 
 // Load the overview section by default when the page loads
 window.onload = function() {
-    showOverview();
+    // Only show overview if section exists
+    if (document.getElementById('overview-section')) {
+        showOverview();
+    }
 };
 
 // Existing functions for flashcard functionality
@@ -519,13 +542,13 @@ function toggleSidebar() {
 document.querySelector('.dropdown-toggle')?.addEventListener('click', function() {
     this.classList.toggle('active');
     const content = this.nextElementSibling;
-    content.classList.toggle('show');
+    if (content) content.classList.toggle('show');
 });
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     const dropdown = document.querySelector('.updates-dropdown');
-    if (!dropdown.contains(e.target)) {
+    if (dropdown && !dropdown.contains(e.target)) {
         dropdown.querySelector('.dropdown-content').classList.remove('show');
         dropdown.querySelector('.dropdown-toggle').classList.remove('active');
     }
@@ -534,6 +557,8 @@ document.addEventListener('click', function(e) {
 // Add this to generateCalendar function
 function generateCalendar() {
     const calendarContainer = document.getElementById('study-calendar');
+    if (!calendarContainer) return; // Exit if element doesn't exist
+
     calendarContainer.innerHTML = '<h3>Calendario de Estudio 2025</h3>';
 
     // Create all 12 months
@@ -594,7 +619,12 @@ function createDayElement(day, isLabel, isEmpty, date) {
 
 // Call this in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('study-calendar')) {
     generateCalendar();
+}
+
+displayUsername();
+document.getElementById('contact-button')?.addEventListener('click', showContact);
 });
 
 // Admin Panel Functionality

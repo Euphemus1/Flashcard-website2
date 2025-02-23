@@ -176,6 +176,10 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'protected', 'dashboard.html'));
 });
 
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'protected', 'dashboard.html'));
+});
+
 app.use('/protected', express.static(path.join(process.cwd(), 'protected')));
 
 // Route for ERA1 page
@@ -190,17 +194,17 @@ const isAdmin = (req, res, next) => {
 };
 
 app.post('/api/flashcards', 
-  passport.authenticate('jwt', { session: false }), // Keep JWT auth
+//passport.authenticate('jwt', { session: false }), // Keep JWT auth
   async (req, res) => { // Remove isAdmin check temporarily
     try {
       // Add admin check INSIDE the route handler
-      if (!req.user.isAdmin) {
-        return res.status(403).json({ error: "Admin access required" });
-      }
+ //     if (!req.user.isAdmin) {
+ //       return res.status(403).json({ error: "Admin access required" });
+ //     }
 
       const flashcard = await Flashcard.create({ 
         ...req.body, 
-        createdBy: req.user._id 
+//        createdBy: req.user._id 
       });
       res.status(201).json(flashcard);
     } catch (error) {
