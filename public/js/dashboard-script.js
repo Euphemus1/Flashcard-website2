@@ -333,22 +333,21 @@ function switchDeck(deckName) {
 
 async function getDeckData(deckName) {
     try {
-        console.log('🔑 Current JWT:', localStorage.getItem('jwt'));
-        console.log('📡 Fetching deck:', deckName);
-        
-        const response = await fetch(`/api/flashcards?deck=${deckName}`, {
-            headers: {
-            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-            }
-        });
-
-        console.log('📦 Response status:', response.status); 
-        return await response.json();
-        } catch (error) {
-        console.error('Error loading deck:', error);
-        return [];
-        }
-     }
+      console.log('📡 Fetching deck:', deckName);
+      const response = await fetch(`/api/flashcards?deck=${encodeURIComponent(deckName)}`);
+      
+      if (!response.ok) {
+        console.warn('⚠️ API response not OK, using default cards');
+        return getDefaultCards(); // Will add this function
+      }
+      
+      const data = await response.json();
+      return data.filter(card => card.subdeck === (deckName === 'Patología' ? 'ERA1' : ''));
+    } catch (error) {
+      console.error('Error loading deck:', error);
+      return getDefaultCards();
+    }
+  }
 
 // Add event listeners for dropdown functionality
 document.querySelectorAll('.deck-btn').forEach(button => {
@@ -374,6 +373,7 @@ document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
 
             if (deckName === 'Patología' && subdeckName === 'ERA1') {
                 window.location.href = '/protected/patologia-era1.html';
+                getDeckData('Patología').then(data => flashcards = data);
                 return;
             }
         }
@@ -668,3 +668,32 @@ function updatePreview() {
     document.querySelector('.preview-answer').textContent = answer;
     previewPanel.classList.remove('hidden');
 }
+
+function initializeERA1Cards() {
+    // Only run on ERA1 page
+    if (window.location.pathname.includes('patologia-era1')) {
+      console.log('Initializing ERA1 flashcards...');
+      
+      getDeckData('Patología').then(data => {
+        flashcards = data.filter(card => card.subdeck === 'ERA1');
+        console.log('Filtered ERA1 cards:', flashcards);
+        
+        if(flashcards.length > 0) {
+          loadNextCard();
+        } else {
+          showStatus('No hay tarjetas en este mazo');
+        }
+      }).catch(error => {
+        console.error('Error loading ERA1 cards:', error);
+        showStatus('Error al cargar las tarjetas');
+      });
+    }
+  }
+  
+  // Add to existing DOMContentLoaded listener
+  document.addEventListener('DOMContentLoaded', () => {
+    displayUsername();
+    initializeERA1Cards(); // <-- Add this line
+    // Keep other existing initializations
+    document.getElementById('contact-button')?.addEventListener('click', showContact);
+  });

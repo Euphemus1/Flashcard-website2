@@ -203,7 +203,8 @@ app.post('/api/flashcards',
  //     }
 
       const flashcard = await Flashcard.create({ 
-        ...req.body, 
+        deck: req.query.deck,
+        subdeck: req.query.subdeck // Add this line
 //        createdBy: req.user._id 
       });
       res.status(201).json(flashcard);
@@ -212,7 +213,7 @@ app.post('/api/flashcards',
     }
 });
 
-app.get('/api/flashcards', passport.authenticate('jwt', { session: false }), async (req, res) => {
+app.get('/api/flashcards', async (req, res) => {
   try {
     const flashcards = await Flashcard.find({ deck: req.query.deck });
     res.json(flashcards);
