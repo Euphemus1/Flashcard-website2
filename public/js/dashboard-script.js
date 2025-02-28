@@ -395,12 +395,18 @@ document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
 });
 
 // Add event listeners for flashcard actions
-document.getElementById('revisar-button').addEventListener('click', flipCard);
-document.getElementById('skip-button').addEventListener('click', skipCard);
-document.querySelector('.denuevo').addEventListener('click', () => rateCard(10));
-document.querySelector('.díficil').addEventListener('click', () => rateCard(60));
-document.querySelector('.bueno').addEventListener('click', () => rateCard(1440));
-document.querySelector('.fácil').addEventListener('click', () => rateCard(2880));
+const revisarButton = document.getElementById('revisar-button');
+const skipButton = document.getElementById('skip-button');
+
+// Only add event listeners if elements exist
+revisarButton?.addEventListener('click', flipCard);
+skipButton?.addEventListener('click', skipCard);
+
+// Add optional chaining for difficulty buttons
+document.querySelector('.denuevo')?.addEventListener('click', () => rateCard(10));
+document.querySelector('.díficil')?.addEventListener('click', () => rateCard(60));
+document.querySelector('.bueno')?.addEventListener('click', () => rateCard(1440));
+document.querySelector('.fácil')?.addEventListener('click', () => rateCard(2880));
 
 // Admin pannel
 document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {

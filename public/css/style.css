@@ -661,3 +661,22 @@ p.question-look, p.answer-text {
         gap: 0.3rem;
     }
 }
+
+/* Keep active subdecks visible */
+.deck-btn.active + .subdeck-list {
+    display: block !important;
+}
+
+/* Active subdeck button styling */
+.subdeck-btn.active {
+    background: #429edd !important;
+    font-weight: 600;
+}
+
+/* Plus/minus indicator */
+.deck-btn .plus {
+    transition: transform 0.3s ease;
+}
+.deck-btn[aria-expanded="true"] .plus {
+    transform: rotate(45deg);
+}
