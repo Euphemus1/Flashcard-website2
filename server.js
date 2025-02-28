@@ -187,6 +187,16 @@ app.get('/patologia-era1', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected/patologia-era1.html'));
 });
 
+// Route for ERA2 page
+app.get('/patologia-era2', (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected/patologia-era2.html'));
+});
+
+// Route for ERA3 page
+app.get('/patologia-era3', (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected/patologia-era3.html'));
+});
+
 // API endpoints
 const isAdmin = (req, res, next) => {
   if (req.user?.isAdmin) return next();

@@ -361,30 +361,34 @@ document.querySelectorAll('.deck-btn').forEach(button => {
     });
 });
 
-// Add event listeners for deck and subdeck buttons
+// awd
 document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (this.classList.contains('subdeck-btn')) {
             const subdeckName = this.textContent.trim();
-            
-            // Corrected DOM traversal to find the parent deck name
-            const subdeckList = this.closest('ul.subdeck-list');
-            const deckButton = subdeckList.previousElementSibling; // Gets the .deck-btn
+            const deckButton = this.closest('ul.subdeck-list').previousElementSibling;
             const deckName = deckButton.textContent
                 .replace('+', '')
                 .trim()
                 .replace(/\s*\(en breve!\)$/, '');
 
-            if (deckName === 'Patología' && subdeckName === 'ERA1') {
-                window.location.href = '/protected/patologia-era1.html';
-                getDeckData('Patología', 'ERA1').then(data => {
+            // Modified section starts here
+            if (deckName === 'Patología') {
+                if (subdeckName === 'ERA1') {
+                    window.location.href = '/protected/patologia-era1.html';
+                } else if (subdeckName === 'ERA2') {
+                    window.location.href = '/protected/patologia-era2.html';
+                } else if (subdeckName === 'ERA3') {
+                    window.location.href = '/protected/patologia-era3.html';
+                }
+                getDeckData('Patología', subdeckName).then(data => {
                     flashcards = data;
                     loadNextCard();
-                  });                
-                  return;
+                });
+                return;
             }
+            // Modified section ends here
         }
-
         showMainContent();
         loadNextCard();
     });

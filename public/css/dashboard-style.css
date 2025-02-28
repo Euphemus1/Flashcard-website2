@@ -905,3 +905,91 @@ p.question-look, p.answer-text {
     cursor: pointer;
     padding: 0.5rem 1rem;
 }
+
+/* ===== CLASS GRID SYSTEM ===== */
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.class-block {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+}
+
+.class-block:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.class-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+}
+
+.class-block h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    min-height: 3em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.class-progress {
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+/* Progress percentages */
+.progress-5 { width: 5%; }
+.progress-10 { width: 10%; }
+.progress-15 { width: 15%; }
+.progress-20 { width: 20%; }
+.progress-25 { width: 25%; }
+.progress-30 { width: 30%; }
+.progress-40 { width: 40%; }
+.progress-45 { width: 45%; }
+.progress-60 { width: 60%; }
+.progress-75 { width: 75%; }
+
+/* Color Schemes */
+.class-block.endocrine .class-icon { background: #4CAF50; }
+.class-block.hematology .class-icon { background: #F44336; }
+.class-block.genital .class-icon { background: #9C27B0; }
+.class-block.skeletal .class-icon { background: #795548; }
+.class-block.neuro .class-icon { background: #3F51B5; }
+.class-block.dermatology .class-icon { background: #FF9800; }
+.class-block.urinary .class-icon { background: #00BCD4; }
+.class-block.ocular .class-icon { background: #E91E63; }
+
+/* Progress bar colors */
+.class-block .progress-bar {
+    background: inherit;
+    opacity: 0.8;
+}
