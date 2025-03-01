@@ -234,19 +234,16 @@ nav {
     background: #9fe7fb;
 }
 
-.pricing-section {
-    padding: 4rem 2rem;
-    background: #fff;
+/* ===== PRICE SECTION ===== */
+/* ===== PRICE SECTION ===== */
+.price {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin: 1.5rem 0;
+    font-weight: bold;
 }
 
-.pricing-plans {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
+/* Update existing .plan-card */
 .plan-card {
     background: #f8f9fa;
     padding: 2rem;
@@ -254,36 +251,236 @@ nav {
     border: 2px solid #429edb;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    overflow: visible; /* Changed from hidden */
     transition: all 0.3s ease;
+    margin: 1rem; /* Added */
 }
 
-.plan-card:nth-child(2) {
-    border: 2px solid #429edb;
+/* Update existing .pricing-plans grid */
+.pricing-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.plan-card h3 {
-    color: #000000; 
-    font-size: 1rem;
-    margin-bottom: 1rem;
+/* New additions */
+.duration-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-.price {
-    font-size: 2.5rem;
-    color: #000000;
-    margin: 1.5rem 0;
+.duration-btn {
+    background: #e0e0e0;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    &:hover {
+        background: #c0c0c0;
+    }
+    &.active {
+        background: var(--secondary-color);
+        color: white;
+        transform: scale(1.05);
+    }
+}
+
+.duration-btn.active {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.plan-card.premium {
+    border-color: var(--accent-color);
+    transform: scale(1.02);
+    z-index: 1;
+}
+
+.plan-card.premium .plan-btn {
+    background: var(--accent-color);
+    color: white;
+}
+
+.plan-card.premium .plan-btn:hover {
+    background: #ff5252;
+    transform: scale(1.05);
+}
+
+.price-value {
+    font-size: 50px;
     font-weight: bold;
+    color: #13ddf8;
 }
 
+/* Planos benefits */
 .plan-card ul {
     list-style: none;
-    margin: 2rem 0;
-    padding: 0;
+    padding-left: 0;
+    margin: 1.5rem 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    justify-content: center;
+    gap: 0.5rem;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .plan-card li {
-    margin: 1rem 0;
-    font-size: 1rem;
+    display: contents; /* Makes children participate in grid */
+}
+
+.plan-card li span.emoji {
+    grid-column: 1;
+    text-align: center;
+    padding-right: 0.8rem;
+}
+
+.plan-card li span.text {
+    grid-column: 2;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* ======= NEW CURRENCY TOGGLE STYLES ======= */
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+  
+  .currency-toggle {
+    position: relative;
+    height: 24px;
+  }
+  
+  .toggle-container {
+    background: #f0f0f0;
+    border-radius: 20px;
+    padding: 2px;
+    width: 70px;
+    height: 100%;
+    display: flex;
+    position: relative;
+  }
+  
+  /* ARS on left, R$ on right */
+  .toggle-option[data-currency="ARS"] { order: 1; }
+  .toggle-option[data-currency="BRL"] { order: 2; }
+  
+  .toggle-option {
+    flex: 1;
+    padding: 2px 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 2;
+    font-size: 0.7rem;
+    color: #666;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+  
+  .toggle-option.active {
+    color: white;
+  }
+  
+  .slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 32px;
+    height: 20px;
+    background: var(--secondary-color); /* Default ARS color */
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    transform: translateX(0); /* Start on ARS side */
+  }
+  
+  /* Green color for R$ */
+  .slider.green {
+    background: #2ed573;
+  }
+
+/* Price Display */
+.price {
+    margin: 0;
+    font-size: 1.5rem; /* Slightly smaller font */
+    color: var(--secondary-color);
+    font-weight: bold;
+    min-width: 90px; /* Adjusted for smaller screens */
+    text-align: center;
+}
+
+/* Currency Symbol - UPDATED VERSION */
+.price-container[data-currency="ARS"] .price-value::before {
+    content: 'ARS ';
+    font-size: 0.6em;
+    vertical-align: middle;
+    color: #666;
+}
+
+.price-container[data-currency="BRL"] .price-value::before {
+    content: 'R$ ';
+    font-size: 0.6em;
+    vertical-align: middle;
+    color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .price-container {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .price {
+        font-size: 1.4rem;
+    }
+
+    .toggle-container {
+        width: 60px;
+    }
+
+    .toggle-option {
+        padding: 2px 6px;
+        font-size: 0.65rem;
+    }
+
+    .slider {
+        width: 28px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .price {
+        font-size: 1.3rem;
+    }
+
+    .toggle-container {
+        width: 55px;
+    }
+
+    .toggle-option {
+        padding: 1px 5px;
+        font-size: 0.6rem;
+    }
+
+    .slider {
+        width: 26px;
+        height: 16px;
+    }
 }
 
 .plan-btn {
@@ -660,23 +857,4 @@ p.question-look, p.answer-text {
     .srs-controls {
         gap: 0.3rem;
     }
-}
-
-/* Keep active subdecks visible */
-.deck-btn.active + .subdeck-list {
-    display: block !important;
-}
-
-/* Active subdeck button styling */
-.subdeck-btn.active {
-    background: #429edd !important;
-    font-weight: 600;
-}
-
-/* Plus/minus indicator */
-.deck-btn .plus {
-    transition: transform 0.3s ease;
-}
-.deck-btn[aria-expanded="true"] .plus {
-    transform: rotate(45deg);
 }

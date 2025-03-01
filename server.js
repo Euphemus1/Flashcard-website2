@@ -183,6 +183,11 @@ app.get('/dashboard.html', (req, res) => {
 app.use('/protected', express.static(path.join(process.cwd(), 'protected')));
 
 // Route for ERA1 page
+app.get('/patologia', (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected/patologia.html'));
+});
+
+// Route for ERA1 page
 app.get('/patologia-era1', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected/patologia-era1.html'));
 });

@@ -413,3 +413,149 @@ fetch(`${BACKEND_URL}/api/health-check`)
         }
     })
     .catch(error => console.error('Connection failed:', error));
+
+// Pricing Configuration
+const PRICING = {
+    basic: {
+        brl: [80, 70, 60, 50],
+        ars: [14000, 12500, 10800, 9000]
+    },
+    premium: {
+        brl: [120, 110, 100, 90],
+        ars: [22000, 20000, 18000, 16000]
+    }
+};
+
+// Initialize prices on page load
+document.querySelectorAll('.plan-card').forEach(planCard => {
+    const activeDurationBtn = planCard.querySelector('.duration-btn.active');
+    const durationIndex = Array.from(activeDurationBtn.parentElement.children)
+        .indexOf(activeDurationBtn);
+    const priceElement = planCard.querySelector('.price-value');
+    const priceContainer = priceElement.closest('.price-container');
+    const isPremium = planCard.classList.contains('premium');
+    const prices = isPremium ? PRICING.premium : PRICING.basic;
+    
+    // Set ARS by default
+    priceContainer.setAttribute('data-currency', 'ARS');
+    priceElement.textContent = prices.ars[durationIndex].toLocaleString('es-AR');
+});
+
+// Add this initialization code after defining PRICING
+document.querySelectorAll('.price-value').forEach(priceElement => {
+    priceElement.textContent = priceElement.dataset.ars;
+});
+
+// Update the currency toggle handler
+// Currency Toggle Handler
+document.querySelectorAll('.toggle-option').forEach(button => {
+    button.addEventListener('click', function() {
+        const container = this.closest('.toggle-container');
+        const currency = this.dataset.currency;
+        const slider = container.querySelector('.slider');
+        const planCard = this.closest('.plan-card');
+        
+        // Update active currency
+        container.querySelectorAll('.toggle-option').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        // Update currency symbol container
+        const priceContainer = planCard.querySelector('.price-container');
+        priceContainer.setAttribute('data-currency', currency);
+
+        // Get active duration
+        const activeDurationBtn = planCard.querySelector('.duration-btn.active');
+        const durationIndex = Array.from(activeDurationBtn.parentElement.children)
+            .indexOf(activeDurationBtn);
+
+        // Update price
+        const priceElement = planCard.querySelector('.price-value');
+        const isPremium = planCard.classList.contains('premium');
+        const prices = isPremium ? PRICING.premium : PRICING.basic;
+        const newPrice = prices[currency.toLowerCase()][durationIndex];
+        
+        priceElement.textContent = newPrice.toLocaleString('es-AR', {
+            minimumFractionDigits: 2
+        });
+
+        // Update slider position and color
+        slider.style.transform = currency === 'BRL' ? 'translateX(100%)' : 'translateX(0)';
+        slider.style.backgroundColor = currency === 'BRL' ? '#2ed573' : 
+            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
+    });
+});
+
+// Update duration selection handler
+document.querySelectorAll('.duration-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const planCard = this.closest('.plan-card');
+        const durationSelector = this.closest('.duration-selector');
+        
+        // Remove active class from all buttons in this duration selector
+        durationSelector.querySelectorAll('.duration-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Rest of your price update logic...
+        const durationIndex = Array.from(durationSelector.children)
+            .indexOf(this);
+        const currency = planCard.querySelector('.toggle-option.active').dataset.currency;
+        const isPremium = planCard.classList.contains('premium');
+        
+        // Update price
+        const priceElement = planCard.querySelector('.price-value');
+        const prices = isPremium ? PRICING.premium : PRICING.basic;
+        const newPrice = prices[currency.toLowerCase()][durationIndex];
+        
+        priceElement.textContent = newPrice.toLocaleString('es-AR', {
+            minimumFractionDigits: 2
+        });
+    });
+});
+
+// Plan Selection
+document.querySelectorAll('.plan-btn').forEach(button => {
+    button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            openModal();
+            return;
+        }
+        
+        const planCard = e.target.closest('.plan-card');
+        const currency = document.querySelector('.toggle-option.active').dataset.currency;
+        const duration = planCard.querySelector('.duration-btn.active').dataset.months;
+        const price = parseFloat(planCard.querySelector('.price-value').textContent.replace(',', '.'));
+        const planType = planCard.classList.contains('premium') ? 'premium' : 'basic';
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/subscribe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentUser.token}`
+                },
+                body: JSON.stringify({
+                    plan: planType,
+                    duration: parseInt(duration),
+                    currency: currency,
+                    price: price
+                })
+            });
+
+            if (response.ok) {
+                window.location.href = '/payment';
+            } else {
+                alert('Erro ao processar assinatura');
+            }
+        } catch (error) {
+            console.error('Subscription error:', error);
+            alert('Erro de conexão');
+        }
+    });
+});

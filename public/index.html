@@ -182,53 +182,84 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
+    <!-- Updated Pricing Section -->
     <section class="pricing-section" id="planes">
-        <h2 class="section-title">Planes de Suscripción</h2>
+        <h2 class="section-title">Planos de Assinatura</h2>
         <div class="pricing-plans">
+            <!-- Basic Plan -->
             <div class="plan-card">
-                <h3>1 mes</h3>
-                <p class="price">ARS 1.999/mes</p>
-                <p class="price">R$ 79,99/mes</p>
+                <h3>Plano Básico</h3>
+                <div class="duration-selector">
+                    <button class="duration-btn active" data-months="1">1 mês</button>
+                    <button class="duration-btn" data-months="3">3 meses</button>
+                    <button class="duration-btn" data-months="6">6 meses</button>
+                    <button class="duration-btn" data-months="12">12 meses</button>
+                </div> <!-- Added closing div -->
+                <div class="price-container">
+                    <div class="currency-toggle">
+                        <div class="toggle-container">
+                            <button class="toggle-option active" data-currency="ARS">ARS</button>
+                            <button class="toggle-option" data-currency="BRL">R$</button>
+                            <div class="slider"></div>
+                        </div>
+                    </div>
+                    <p class="price">
+                        <span class="price-value" data-brl="80" data-ars="14.000,00">14.000</span>/mês
+                    </p>
+                </div>
                 <ul>
-                    <li>✔️ Acceso completo</li>
-                    <li>✔️ Actualizaciones constantes</li>
-                    <li>✔️ blablablablablablabla</li>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Acesso a decks básicos</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Atualizações mensais</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Suporte por email</span>
+                    </li>
                 </ul>
-                <button class="plan-btn">Comenzar</button>
+                <button class="plan-btn">Comprar</button>
             </div>
-            <div class="plan-card">
-                <h3>3 meses</h3>
-                <p class="price">ARS 1.799/mes</p>
-                <p class="price">R$ 69,99/mes</p>
+
+            <!-- Premium Plan -->
+            <div class="plan-card premium">
+                <h3>Plano Premium</h3>
+                <div class="duration-selector">
+                    <button class="duration-btn active" data-months="1">1 mês</button>
+                    <button class="duration-btn" data-months="3">3 meses</button>
+                    <button class="duration-btn" data-months="6">6 meses</button>
+                    <button class="duration-btn" data-months="12">12 meses</button>
+                </div>
+                <div class="price-container">
+                    <div class="currency-toggle">
+                        <div class="toggle-container">
+                            <button class="toggle-option active" data-currency="ARS">ARS</button>
+                            <button class="toggle-option" data-currency="BRL">R$</button>
+                            <div class="slider"></div>
+                        </div>
+                    </div>
+                    <p class="price">
+                        <span class="price-value" data-brl="120" data-ars="22.000,00">22.000,00</span>/mês
+                    </p>
+                </div>
                 <ul>
-                    <li>✔️ Acceso completo</li>
-                    <li>✔️ Acceso a flashcards tipo choice</li>
-                    <li>✔️ Acceso a nuestra comunidad en Discord</li>
-                </ul>
-                <button class="plan-btn">Comenzar</button>
-            </div>
-            <div class="plan-card">
-                <h3>6 meses</h3>
-                <p class="price">ARS 1.499/mes</p>
-                <p class="price">R$ 59,99/mes</p>
-                <ul>
-                    <li>✔️ Acceso completo</li>
-                    <li>✔️ Acceso a flashcards tipo choice</li>
-                    <li>✔️ Acceso a nuestra comunidad en Discord</li>
-                </ul>
-                <button class="plan-btn">Comenzar</button>
-            </div>
-            <div class="plan-card">
-                <h3>12 meses</h3>
-                <p class="price">ARS 1.799/mes</p>
-                <p class="price">R$ 49,99/mes</p>
-                <ul>
-                    <li>✔️ Acceso completo</li>
-                    <li>✔️ Acceso a flashcards tipo choice</li>
-                    <li>✔️ Acceso a nuestra comunidad en Discord</li>
-                </ul>
-                <button class="plan-btn">Comenzar</button>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Acesso a decks básicos</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Atualizações mensais</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Suporte por email</span>
+                    </li>
+                </ul>   
+                <button class="plan-btn">Comprar ahora</button>
             </div>
         </div>
     </section>

@@ -117,59 +117,77 @@ const decks = {
     'MIR': ['Bling', 'Blang', 'Blong'],
 };
 
-// Function to calculate new and due cards for a deck or subdeck
-function calculateCards(deckName, subdeckName = null) {
-    const now = new Date().getTime();
-    let newCards = 0;
-    let dueCards = 0;
+// OPTIMIZED VERSION - FETCH ALL CARDS ONCE
+let allCardsCache = null; // Add this at the top of your file
 
-    flashcards.forEach(card => {
-        if (subdeckName) {
-            // Check if the card belongs to the subdeck
-            if (card.subdeck === subdeckName) {
-                if (card.interval === 1) newCards++;
-                if (card.lastReview + card.interval * 60000 < now) dueCards++;
-            }
-        } else {
-            // Check if the card belongs to the deck
-            if (card.deck === deckName) {
-                if (card.interval === 1) newCards++;
-                if (card.lastReview + card.interval * 60000 < now) dueCards++;
-            }
-        }
-    });
+// MODIFIED VERSION - SIMPLE COUNTING
+async function calculateCards(deckName, subdeckName = null) {
+    try {
+        const params = new URLSearchParams({ 
+            deck: deckName,
+            ...(subdeckName && { subdeck: subdeckName })
+        });
 
-    return { newCards, dueCards };
+        const response = await fetch(`/api/flashcards?${params.toString()}`);
+        if (!response.ok) return { totalCards: 0 };
+        
+        const cards = await response.json();
+        return { totalCards: cards.length };
+
+    } catch (error) {
+        console.error('Error counting cards:', error);
+        return { totalCards: 0 };
+    }
 }
 
-// Function to generate the overview table
-function generateOverviewTable() {
+// MODIFIED GENERATE TABLE FUNCTION
+async function generateOverviewTable() {
     const tableBody = document.createElement('tbody');
+    
     for (const [deckName, subdecks] of Object.entries(decks)) {
-        // Add row for the main deck
-        const deckStats = calculateCards(deckName);
-        const deckRow = document.createElement('tr');
-        deckRow.innerHTML = `
-            <td><span class="toggle-deck">+</span> ${deckName}</td>
-            <td class="${deckStats.newCards > 0 ? 'new-positive' : ''}">${deckStats.newCards}</td>
-            <td class="${deckStats.dueCards > 0 ? 'due-positive' : ''}">${deckStats.dueCards}</td>
-        `;
+        // Main deck row
+        const deckStats = await calculateCards(deckName);
+        const deckRow = createOverviewRow(deckName, deckStats, false);
         tableBody.appendChild(deckRow);
 
-        // Add rows for subdecks (hidden by default)
-        subdecks.forEach(subdeck => {
-            const subdeckStats = calculateCards(deckName, subdeck);
-            const subdeckRow = document.createElement('tr');
-            subdeckRow.classList.add('subdeck-row', 'hidden');
-            subdeckRow.innerHTML = `
-                <td class="subdeck-padding">${subdeck}</td>
-                <td class="${subdeckStats.newCards > 0 ? 'new-positive' : ''}">${subdeckStats.newCards}</td>
-                <td class="${subdeckStats.dueCards > 0 ? 'due-positive' : ''}">${subdeckStats.dueCards}</td>
-        `;
+        // Subdeck rows
+        for (const subdeck of subdecks) {
+            const subdeckStats = await calculateCards(deckName, subdeck);
+            const subdeckRow = createOverviewRow(subdeck, subdeckStats, true);
             tableBody.appendChild(subdeckRow);
-        });
+        }
     }
     return tableBody;
+}
+
+// MODIFIED ROW CREATION
+function createOverviewRow(name, stats, isSubdeck) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${isSubdeck ? `<span class="subdeck-padding">${name}</span>` : `<span class="toggle-deck">+</span> ${name}`}</td>
+        <td class="total-cards">${stats.totalCards}</td>
+    `;
+    if (isSubdeck) row.classList.add('subdeck-row', 'hidden');
+    return row;
+}
+
+// NEW VERSION - ASYNC VERSION
+async function showOverview() {
+    const overviewSection = document.getElementById('overview-section');
+    // ... keep existing null checks ...
+
+    // Clear table
+    const oldTableBody = overviewSection.querySelector('tbody');
+    if (oldTableBody) oldTableBody.remove();
+
+    // Generate new content
+    const newTableBody = await generateOverviewTable();
+    const table = overviewSection.querySelector('table');
+    if (table) table.appendChild(newTableBody);
+
+    // Rest of existing code remains the same...
+    addToggleListeners();
+    showStatus('Overview');
 }
 
 // Function to toggle subdeck visibility
@@ -198,46 +216,6 @@ function addToggleListeners() {
     toggleButtons.forEach(button => {
         button.addEventListener('click', toggleSubdecks);
     });
-}
-
-// Function to show the overview section
-function showOverview() {
-    const overviewSection = document.getElementById('overview-section');
-    const flashcardSystem = document.getElementById('flashcard-system');
-    const updatesDropdown = document.querySelector('.updates-dropdown');
-    const calendar = document.getElementById('study-calendar');
-
-    // Null check all elements
-    if (!overviewSection || !flashcardSystem || !updatesDropdown || !calendar) {
-        console.warn('Overview elements not found - wrong page?');
-        return;
-    }
-
-    // Clear table only if it exists
-    const tableBody = overviewSection.querySelector('tbody');
-    if (tableBody) tableBody.remove();
-
-    // Generate new content
-    const newTableBody = generateOverviewTable();
-    const table = overviewSection.querySelector('table');
-    
-    // Check if table exists before appending
-    if (table) {
-        table.appendChild(newTableBody);
-    }
-
-    // Toggle visibility with safety checks
-    overviewSection.classList?.remove('hidden');
-    updatesDropdown.classList?.remove('hidden');
-    calendar.classList?.remove('hidden');
-    flashcardSystem.classList?.add('hidden');
-
-    // Only add listeners if elements exist
-    if (table) {
-        addToggleListeners();
-    }
-
-    showStatus('Overview');
 }
 
 // Function to show the main content (flashcard system)
@@ -387,7 +365,6 @@ document.querySelectorAll('.deck-btn, .subdeck-btn').forEach(button => {
                 });
                 return;
             }
-            // Modified section ends here
         }
         showMainContent();
         loadNextCard();
@@ -704,7 +681,7 @@ function updatePreview() {
 
 function initializeERA1Cards() {
     if (window.location.pathname.includes('patologia-era1')) {
-      console.log('Initializing ERA1 flashcards...');
+      console.log('Initializing ERA1 flashcards... 1233445');
       
       // 1. Get both deck and subdeck
       getDeckData('Patología', 'ERA1').then(data => {
@@ -728,7 +705,41 @@ function initializeERA1Cards() {
   // Add to existing DOMContentLoaded listener
   document.addEventListener('DOMContentLoaded', () => {
     displayUsername();
-    initializeERA1Cards(); // <-- Add this line
+    initializeERA1Cards(); 
     // Keep other existing initializations
     document.getElementById('contact-button')?.addEventListener('click', showContact);
   });
+
+  // Expand active subdeck's parent
+const activeSubdeck = document.querySelector('.subdeck-btn.active');
+if (activeSubdeck) {
+  const parentDeck = activeSubdeck.closest('li').previousElementSibling;
+  const subdeckList = activeSubdeck.closest('.subdeck-list');
+  
+  if (parentDeck && subdeckList) {
+    // Expand the subdeck list
+    subdeckList.style.display = 'block';
+    
+    // Update the toggle icon
+    const toggleIcon = parentDeck.querySelector('.plus');
+    if (toggleIcon) {
+      toggleIcon.textContent = '-';
+    }
+  }
+}
+
+// Add this to existing DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', () => {
+    // Expand active subdeck's parent
+    const activeSubdeck = document.querySelector('.subdeck-btn.active');
+    if (activeSubdeck) {
+        const parentDeck = activeSubdeck.closest('li').previousElementSibling;
+        const subdeckList = activeSubdeck.closest('.subdeck-list');
+        
+        if (parentDeck && subdeckList) {
+            subdeckList.style.display = 'block';
+            const toggleIcon = parentDeck.querySelector('.plus');
+            if (toggleIcon) toggleIcon.textContent = '-';
+        }
+    }
+});

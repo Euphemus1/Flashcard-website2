@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Flashcard Study App</title>
+    <title>Dashboard - Patología ERA3</title>
     <link rel="stylesheet" href="/css/dashboard-style.css">
     <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
 </head>
@@ -45,7 +45,7 @@
                 <ul class="subdeck-list">
                     <li><button class="subdeck-btn">ERA1</button></li>
                     <li><button class="subdeck-btn">ERA2</button></li>
-                    <li><button class="subdeck-btn">ERA3</button></li>
+                    <li><button class="subdeck-btn active">ERA3</button></li>
                 </ul>
             </li>
             <li>
@@ -117,70 +117,50 @@
             </li>
         </ul>
         <div class="sidebar-footer">
-            <a href="https://wa.me/+5547988v9yf6yftf336792" target="_blank" class="social-icon">
+            <a href="https://wa.me/+554798yf68yf6fv8336792" target="_blank" class="social-icon">
                 <i class="fab fa-whatsapp"></i>
             </a>
-            <a href="https://instagshdfhadshram.com/medmemory.ar" target="_blank" class="social-icon">
+            <a href="https://instagdfgfdgdram.com/medmemory.ar" target="_blank" class="social-icon">
                 <i class="fab fa-instagram"></i>
             </a>
-            <a href="mailto:medmy6fviyfvemory@outlook.com" class="social-icon">>
+            <a href="mailto:medmem79f79f79fgory@outlook.com" class="social-icon">>
                 <i class="fas fa-envelope"></i>
             </a>
         </div>
     </div>
 
-    <!-- ERA1 Specific Content -->
     <div id="main-content">
-        <!-- Flashcard System -->
-        <div id="flashcard-system">
-            <div class="card-pair">
-                <!-- Question Card -->
-                <div class="card question">
-                    <div class="card-content">
-                        <h3 id="card-front"></h3>
-                        <div id="extra-content" class="hidden"></div>
-                    </div>
+        <h1>Patología</h1>
+        <div class="class-grid">
+            <a href="#" class="class-block era1">
+                <div class="class-icon">
+                    <i class="fas fa-faucet"></i>
                 </div>
+                <h3>ERA 1</h3>
+                <div class="class-progress">
+                    <div class="progress-bar progress-5"></div>
+                </div>
+            </a>
 
-                <!-- Answer Card (Hidden by Default) -->
-                <div class="card answer hidden">
-                    <div class="card-content">
-                        <h3 id="card-back"></h3>
-                        <div id="answer-extra" class="hidden"></div>
-                    </div>
+            <a href="#" class="class-block era2">
+                <div class="class-icon">
+                    <i class="fas fa-venus"></i>
                 </div>
-
-                <!-- Review Controls -->
-                <div id="review-actions">
-                    <button id="skip-button">Saltar</button>
-                    <button id="revisar-button">Revisar</button>
+                <h3>ERA 2</h3>
+                <div class="class-progress">
+                    <div class="progress-bar progress-75"></div>
                 </div>
-            </div>
-
-            <!-- SRS Controls -->
-            <div class="srs-controls hidden">
-                <div class="srs-option">
-                    <button class="difficulty denuevo">De nuevo</button>
-                    <span class="interval">1d</span>
+            </a>
+    
+            <a href="#" class="class-block era3">
+                <div class="class-icon">
+                    <i class="fas fa-mars"></i>
                 </div>
-                <div class="srs-option">
-                    <button class="difficulty díficil">Díficil</button>
-                    <span class="interval">2d</span>
+                <h3>ERA 3</h3>
+                <div class="class-progress">
+                    <div class="progress-bar progress-60"></div>
                 </div>
-                <div class="srs-option">
-                    <button class="difficulty bueno">Bueno</button>
-                    <span class="interval">4d</span>
-                </div>
-                <div class="srs-option">
-                    <button class="difficulty fácil">Fácil</button>
-                    <span class="interval">8d</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Display -->
-        <div id="card-status">
-            <span id="status"></span>
+            </a>
         </div>
     </div>
 
