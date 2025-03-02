@@ -234,8 +234,7 @@ nav {
     background: #9fe7fb;
 }
 
-/* ===== PRICE SECTION ===== */
-/* ===== PRICE SECTION ===== */
+/* ===================================== PRICE SECTION ================================================== */
 .price {
     font-size: 2rem;
     color: var(--secondary-color);
@@ -247,13 +246,20 @@ nav {
 .plan-card {
     background: #f8f9fa;
     padding: 2rem;
-    border-radius: 15px;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
     border: 2px solid #429edb;
     text-align: center;
     position: relative;
     overflow: visible; /* Changed from hidden */
     transition: all 0.3s ease;
     margin: 1rem; /* Added */
+}
+
+.plan-card.premium {
+    border-color: var(--accent-color);
+    transform: scale(1.02);
+    z-index: 1;
 }
 
 /* Update existing .pricing-plans grid */
@@ -297,12 +303,6 @@ nav {
     color: white;
 }
 
-.plan-card.premium {
-    border-color: var(--accent-color);
-    transform: scale(1.02);
-    z-index: 1;
-}
-
 .plan-card.premium .plan-btn {
     background: var(--accent-color);
     color: white;
@@ -319,7 +319,7 @@ nav {
     color: #13ddf8;
 }
 
-/* Planos benefits */
+/* ======================== Planos benefits ====================================== */
 .plan-card ul {
     list-style: none;
     padding-left: 0;
@@ -349,7 +349,7 @@ nav {
     white-space: nowrap;
 }
 
-/* ======= NEW CURRENCY TOGGLE STYLES ======= */
+/* =========================== NEW CURRENCY TOGGLE STYLES ====================================== */
 .price-container {
     display: flex;
     align-items: center;
