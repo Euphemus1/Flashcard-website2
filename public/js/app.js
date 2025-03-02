@@ -438,15 +438,15 @@ document.querySelectorAll('.plan-card').forEach(planCard => {
     
     // Set ARS by default
     priceContainer.setAttribute('data-currency', 'ARS');
-    priceElement.textContent = prices.ars[durationIndex].toLocaleString('es-AR');
+    const priceValue = prices.ars[durationIndex];
+    const formatted = priceValue.toLocaleString('es-AR', { 
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    const [main, decimals] = formatted.split(',');
+    priceElement.innerHTML = `${main}<span class="decimal-part">,${decimals}</span>`;
 });
 
-// Add this initialization code after defining PRICING
-document.querySelectorAll('.price-value').forEach(priceElement => {
-    priceElement.textContent = priceElement.dataset.ars;
-});
-
-// Update the currency toggle handler
 // Currency Toggle Handler
 document.querySelectorAll('.toggle-option').forEach(button => {
     button.addEventListener('click', function() {
@@ -461,7 +461,7 @@ document.querySelectorAll('.toggle-option').forEach(button => {
         });
         this.classList.add('active');
 
-        // Update currency symbol container
+        // Update currency display
         const priceContainer = planCard.querySelector('.price-container');
         priceContainer.setAttribute('data-currency', currency);
 
@@ -476,11 +476,15 @@ document.querySelectorAll('.toggle-option').forEach(button => {
         const prices = isPremium ? PRICING.premium : PRICING.basic;
         const newPrice = prices[currency.toLowerCase()][durationIndex];
         
-        priceElement.textContent = newPrice.toLocaleString('es-AR', {
-            minimumFractionDigits: 2
+        // Format with small decimals
+        const formatted = newPrice.toLocaleString('es-AR', { 
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
+        const [main, decimals] = formatted.split(',');
+        priceElement.innerHTML = `${main}<span class="decimal-part">,${decimals}</span>`;
 
-        // Update slider position and color
+        // Update slider
         slider.style.transform = currency === 'BRL' ? 'translateX(100%)' : 'translateX(0)';
         slider.style.backgroundColor = currency === 'BRL' ? '#2ed573' : 
             getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
@@ -501,20 +505,25 @@ document.querySelectorAll('.duration-btn').forEach(button => {
         // Add active class to clicked button
         this.classList.add('active');
         
-        // Rest of your price update logic...
+        // REST OF THE CODE TO REPLACE STARTS HERE
         const durationIndex = Array.from(durationSelector.children)
             .indexOf(this);
         const currency = planCard.querySelector('.toggle-option.active').dataset.currency;
         const isPremium = planCard.classList.contains('premium');
         
-        // Update price
+        // Update price - REPLACE THIS PART
         const priceElement = planCard.querySelector('.price-value');
         const prices = isPremium ? PRICING.premium : PRICING.basic;
         const newPrice = prices[currency.toLowerCase()][durationIndex];
         
-        priceElement.textContent = newPrice.toLocaleString('es-AR', {
-            minimumFractionDigits: 2
+        // NEW CODE TO PASTE:
+        const formatted = newPrice.toLocaleString('es-AR', { 
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
+        const [main, decimals] = formatted.split(',');
+        priceElement.innerHTML = `${main}<span class="decimal-part">,${decimals}</span>`;
+        // END OF REPLACEMENT
     });
 });
 

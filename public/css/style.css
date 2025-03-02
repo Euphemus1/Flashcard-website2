@@ -234,8 +234,9 @@ nav {
     background: #9fe7fb;
 }
 
-/* ===== PRICE SECTION ===== */
-/* ===== PRICE SECTION ===== */
+/* =================================================================== */
+/* ========================= PRICE SECTION =========================== */
+/* =================================================================== */
 .price {
     font-size: 2rem;
     color: var(--secondary-color);
@@ -251,9 +252,40 @@ nav {
     border: 2px solid #429edb;
     text-align: center;
     position: relative;
-    overflow: visible; /* Changed from hidden */
+    overflow: hidden;
     transition: all 0.3s ease;
-    margin: 1rem; /* Added */
+    margin: 1rem;
+}
+
+.plan-card.premium {
+    background: #5d7994;
+    background-size: contain;
+    padding: 2rem;
+    border-radius: 15px;
+    border: 2px solid #ff5252;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin: 1rem;
+}
+
+.plan-card h3 { /* faixa plano basico */
+    background: var(--secondary-color);
+    color: white;
+    padding: 1.2rem;
+    margin: -2rem -2rem 2rem -2rem; /* Align with card edges */
+    position: relative;
+    font-size: 1.9rem;
+}
+
+.plan-card.premium h3 { /* faixa plano premium */
+    background: #ff5252;
+    color: white;
+    padding: 1.2rem;
+    margin: -2rem -2rem 2rem -2rem; /* Align with card edges */
+    position: relative;
+    font-size: 1.9rem;
 }
 
 /* Update existing .pricing-plans grid */
@@ -297,14 +329,8 @@ nav {
     color: white;
 }
 
-.plan-card.premium {
-    border-color: var(--accent-color);
-    transform: scale(1.02);
-    z-index: 1;
-}
-
 .plan-card.premium .plan-btn {
-    background: var(--accent-color);
+    background: #ff5252;
     color: white;
 }
 
@@ -319,7 +345,7 @@ nav {
     color: #13ddf8;
 }
 
-/* Planos benefits */
+/* Planos benefits ========================================= */
 .plan-card ul {
     list-style: none;
     padding-left: 0;
@@ -434,6 +460,16 @@ nav {
     content: 'R$ ';
     font-size: 0.6em;
     vertical-align: middle;
+    color: #666;
+}
+
+.decimal-part {
+    font-size: 0.4em;  /* Only affects the decimal */
+    vertical-align: 2px; /* Fine-tune vertical position */
+    opacity: 0.9;
+    font-weight: 400;
+    display: inline-block;
+    margin-left: 1px;
     color: #666;
 }
 
