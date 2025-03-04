@@ -9,6 +9,10 @@
 </head>
 <body>
 	<!-- Navigation Bar -->
+    <div class="corner-logo">
+        <img src="img/MedMemorrylogo5.jpeg" alt="Medical Logo">
+    </div>
+    
     <nav>
         <div class="logo">Med Memory</div>
         <div class="nav-buttons">
@@ -81,8 +85,8 @@
         <div class="carousel-slides">
             <!-- New Welcome Slide -->
             <div class="carousel-slide">
-                <h2>Welcome to the Medical Decks app!</h2>
-                <p>Your medical study companion</p>
+                <h2>Bienvenido a Med Memory!</h2>
+                <p>Tu compañero de estudio de medicina</p>
             </div>
 
             <!-- Existing Slides -->
@@ -105,51 +109,174 @@
     </div>
 </section>
 
-       <!-- Flashcard sample Section -->
-    <section class="flashcard-system-section">
-        <div class="flashcard-system">
-            <!-- Question Card -->
+<!-- Flashcard sample Section -->
+<section class="flashcard-system-section">
+    <h2 class="section-title">Nuestro Flashcard CLÁSICO</h2>
+    <div class="flashcard-system">
+        <div class="classic-container">
+            <!-- Flashcard Pair -->
             <div class="card-pair">
-                <div class="card question">
-                    <div class="card-content">
-                        <h3>Dolutegravir</h3>
-                        <h1 class="mechanism">Mecanismo de acción:</h1>
-                        <p class="question-look">"..."</p>
+                <div class="flip-container">
+                    <div class="flip-card">
+                        <!-- Front Side (Question) -->
+                        <div class="card question front">
+                            <div class="card-content">
+                                <h3>Dolutegravir</h3>
+                                <h1 class="mechanism">Mecanismo de acción:</h1>
+                                <p class="question-look">[...]</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Back Side (Answer) -->
+                        <div class="card answer back">
+                            <div class="card-content">
+                                <h3>Dolutegravir</h3>
+                                <h1 class="mechanism">Mecanismo de acción:</h1>
+                                <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Success Message -->
+                <div class="success-message">
+                    <div class="message-content">
+                        <span class="checkmark">✓</span>
+                        <h3>¡Excelente trabajo!</h3>
+                        <p>Has completado tu tarea</p>
+                    </div>
+                </div>
+                
                 <button class="revisar-btn">Revisar</button>
-            </div>
-
-            <!-- Answer Card -->
-            <div class="card-pair">
-                <div class="card answer">
-                    <div class="card-content">
-                        <h3>Dolutegravir</h3>
-                        <h1 class="mechanism">Mecanismo de acción:</h1>
-                        <p class="answer-text">Bloquea la actividad catalítica de la integrasa</p>
-                    </div>
-                </div>
                 <div class="srs-controls">
                     <div class="srs-option">
                         <button class="difficulty denuevo">De nuevo</button>
-                        <span class="interval">1d</span>
+                        <span class="interval">10min</span>
                     </div>
                     <div class="srs-option">
                         <button class="difficulty díficil">Díficil</button>
-                        <span class="interval">2d</span>
+                        <span class="interval">1h</span>
                     </div>
                     <div class="srs-option">
                         <button class="difficulty bueno">Bueno</button>
-                        <span class="interval">4d</span>
+                        <span class="interval">1d</span>
                     </div>
                     <div class="srs-option">
                         <button class="difficulty fácil">Fácil</button>
-                        <span class="interval">8d</span>
+                        <span class="interval">3d</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instruction Panel -->
+            <div class="explanation-panel classic-instructions">
+                <div class="instruction-content">
+                    <h3>¿Cómo funciona?</h3>
+                    <div class="instruction-steps">
+                        <div class="instruction-step">
+                            <span class="step-icon">👉</span>
+                            <p>Haz clic en "Revisar" para ver la respuesta</p>
+                        </div>
+                        <div class="instruction-step">
+                            <span class="step-icon">🔄</span>
+                            <p>Selecciona una dificultad para programar el próximo repaso</p>
+                        </div>
+                        <div class="instruction-step">
+                            <span class="step-icon">💡</span>
+                            <p>El sistema ajustará automáticamente el intervalo de repetición</p>
+                        </div>
+                    </div>
+                    <div class="instruction-tip">
+                        <span class="tip-icon">📌</span>
+                        <p><em>Consejo:</em> Sé honesto con tu evaluación para mejores resultados</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
+<!-- Choice Flashcard Section -->
+<section class="flashcard-system-section">
+    <h2 class="section-title">Nuestro Flashcard CHOICE</h2>
+    <div class="choice-container">
+        <!-- Interactive Choice Flashcard -->
+        <div class="card-pair choice-card scroll-fade">
+            <div class="card question">
+                <div class="card-content">
+                    <h3>¿Qué antibiótico inhibe la síntesis de la pared celular?</h3>
+                    <div class="choice-options">
+                        <button class="choice" data-correct="false">Eritromicina</button>
+                        <button class="choice" data-correct="false">Ciprofloxacina</button>
+                        <button class="choice" data-correct="true" 
+                                data-explanation="La penicilina inhibe la síntesis de la pared celular bacteriana al interferir con la transpeptidación, proceso crucial para la formación de peptidoglicano.">
+                            Penicillina
+                        </button>
+                        <button class="choice" data-correct="false">Tetraciclina</button>
+                    </div>
+                    
+                    <!-- Explanation Container -->
+                    <div class="explanation-container"></div>
+
+                    <div class="success-message">
+                        <div class="message-content">
+                            <span class="checkmark">✓</span>
+                            <h3>¡Excelente trabajo!</h3>
+                            <p>Has completado tu tarea</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SRS Controls Outside Card -->
+            <div class="choice-srs-container">
+                <div class="srs-controls">
+                    <div class="srs-option">
+                        <button class="difficulty denuevo">De nuevo</button>
+                        <span class="interval">10min</span>
+                    </div>
+                    <div class="srs-option">
+                        <button class="difficulty díficil">Díficil</button>
+                        <span class="interval">1h</span>
+                    </div>
+                    <div class="srs-option">
+                        <button class="difficulty bueno">Bueno</button>
+                        <span class="interval">1d</span>
+                    </div>
+                    <div class="srs-option">
+                        <button class="difficulty fácil">Fácil</button>
+                        <span class="interval">3d</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction Panel -->
+        <div class="explanation-panel">
+            <div class="instruction-content">
+                <h3>¿Cómo funciona?</h3>
+                <div class="instruction-steps">
+                    <div class="instruction-step">
+                        <span class="step-icon">👉</span>
+                        <p>Selecciona la respuesta correcta entre las opciones</p>
+                    </div>
+                    <div class="instruction-step">
+                        <span class="step-icon">💡</span>
+                        <p>Si aciertas, verás la explicación y podrás programar tu próximo repaso</p>
+                    </div>
+                    <div class="instruction-step">
+                        <span class="step-icon">⏳</span>
+                        <p>Elige cuándo quieres revisar esta tarjeta nuevamente usando los botones de intervalo</p>
+                    </div>
+                </div>
+                <div class="instruction-tip">
+                    <span class="tip-icon">📌</span>
+                    <p><em>Tip:</em> Las opciones incorrectas se ocultarán automáticamente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     <!-- Decks Section -->
     <section class="deck-section" id="contenido">
@@ -182,31 +309,32 @@
         </div>
     </section>
 
-    <!-- Updated Pricing Section -->
-    <section class="pricing-section" id="planes">
-        <h2 class="section-title">Planos de Assinatura</h2>
-        <div class="pricing-plans">
-            <!-- Basic Plan -->
+<!-- ======================= PRICING SECTION ======================= -->
+<section class="pricing-section" id="planes">
+    <h2 class="section-title">Planos de Assinatura</h2>
+    <div class="global-currency-toggle">
+        <div class="toggle-container">
+            <button class="toggle-option active" data-currency="ARS">ARS</button>
+            <button class="toggle-option" data-currency="BRL">R$</button>
+            <div class="slider"></div>
+        </div>
+    </div>
+    <div class="pricing-plans">
+        <!-- Basic Plan -->
+        <div class="plan-container">
+            <div class="plan-card-header basic-header">
+                <h3>Plano Básico</h3>
+            </div>
             <div class="plan-card">
-                <div class="plan-card-header">
-                    <h3>Plano Básico</h3>
-                </div>
                 <div class="duration-selector">
-                    <button class="duration-btn active" data-months="1">1 mês</button>
+                    <button class="duration-btn active" data-months="1">1 mes</button>
                     <button class="duration-btn" data-months="3">3 meses</button>
                     <button class="duration-btn" data-months="6">6 meses</button>
                     <button class="duration-btn" data-months="12">12 meses</button>
-                </div> <!-- Added closing div -->
+                </div>
                 <div class="price-container">
-                    <div class="currency-toggle">
-                        <div class="toggle-container">
-                            <button class="toggle-option active" data-currency="ARS">ARS</button>
-                            <button class="toggle-option" data-currency="BRL">R$</button>
-                            <div class="slider"></div>
-                        </div>
-                    </div>
                     <p class="price">
-                        <span class="price-value" data-brl="80" data-ars="14.000,00">14.000</span>/mês
+                        <span class="price-value" data-brl="80" data-ars="14.000,00">14.000</span>/mes
                     </p>
                 </div>
                 <ul>
@@ -216,37 +344,28 @@
                     </li>
                     <li>
                         <span class="emoji">✔️</span>
-                        <span class="text"> 5 "Neuronas" por día para los choice</span>
-                    </li>
-                    <li>
-                        <span class="emoji">✔️</span>
-                        <span class="text">Suporte por email</span>
+                        <span class="text">5 "Neuronas" por día para los choice</span>
                     </li>
                 </ul>
                 <button class="plan-btn">Comprar</button>
             </div>
+        </div>
 
-            <!-- Premium Plan -->
-            <div class="plan-card premium">
-                <div class="plan-card-header">
-                    <h3>Plano Premium</h3>
-                </div>
+        <!-- Premium Plan -->
+        <div class="plan-container premium">
+            <div class="plan-card-header premium-header">
+                <h3>Plano Premium</h3>
+            </div>
+            <div class="plan-card">
                 <div class="duration-selector">
-                    <button class="duration-btn active" data-months="1">1 mês</button>
+                    <button class="duration-btn active" data-months="1">1 mes</button>
                     <button class="duration-btn" data-months="3">3 meses</button>
                     <button class="duration-btn" data-months="6">6 meses</button>
                     <button class="duration-btn" data-months="12">12 meses</button>
                 </div>
                 <div class="price-container">
-                    <div class="currency-toggle">
-                        <div class="toggle-container">
-                            <button class="toggle-option active" data-currency="ARS">ARS</button>
-                            <button class="toggle-option" data-currency="BRL">R$</button>
-                            <div class="slider"></div>
-                        </div>
-                    </div>
                     <p class="price">
-                        <span class="price-value" data-brl="120" data-ars="22.000,00">22.000,00</span>/mês
+                        <span class="price-value" data-brl="120" data-ars="22.000,00">21.000,00</span>/mes
                     </p>
                 </div>
                 <ul>
@@ -262,11 +381,16 @@
                         <span class="emoji">✔️</span>
                         <span class="text">Acceso a nuestra comunidad en Discord</span>
                     </li>
-                </ul>   
-                <button class="plan-btn">Comprar ahora</button>
+                    <li>
+                        <span class="emoji">✔️</span>
+                        <span class="text">Acceso antecipado a los nuevos contenidos</span>
+                    </li>
+                </ul>
+                <button class="plan-btn">Comprar</button>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Contact Section -->
     <section class="contact-section" id="contacto">

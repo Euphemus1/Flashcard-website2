@@ -437,8 +437,10 @@ document.querySelectorAll('.plan-card').forEach(planCard => {
     const prices = isPremium ? PRICING.premium : PRICING.basic;
     
     // Set ARS by default
-    priceContainer.setAttribute('data-currency', 'ARS');
-    const priceValue = prices.ars[durationIndex];
+    const globalCurrency = document.querySelector('.global-currency-toggle .toggle-option.active').dataset.currency;
+    priceContainer.setAttribute('data-currency', globalCurrency);
+    const priceValue = prices[globalCurrency.toLowerCase()][durationIndex];
+    
     const formatted = priceValue.toLocaleString('es-AR', { 
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -448,12 +450,11 @@ document.querySelectorAll('.plan-card').forEach(planCard => {
 });
 
 // Currency Toggle Handler
-document.querySelectorAll('.toggle-option').forEach(button => {
+document.querySelectorAll('.global-currency-toggle .toggle-option').forEach(button => {
     button.addEventListener('click', function() {
         const container = this.closest('.toggle-container');
         const currency = this.dataset.currency;
         const slider = container.querySelector('.slider');
-        const planCard = this.closest('.plan-card');
         
         // Update active currency
         container.querySelectorAll('.toggle-option').forEach(btn => {
@@ -461,32 +462,32 @@ document.querySelectorAll('.toggle-option').forEach(button => {
         });
         this.classList.add('active');
 
-        // Update currency display
-        const priceContainer = planCard.querySelector('.price-container');
-        priceContainer.setAttribute('data-currency', currency);
+        // Update all plan cards
+        document.querySelectorAll('.plan-card').forEach(planCard => {
+            const priceContainer = planCard.querySelector('.price-container');
+            priceContainer.setAttribute('data-currency', currency);
 
-        // Get active duration
-        const activeDurationBtn = planCard.querySelector('.duration-btn.active');
-        const durationIndex = Array.from(activeDurationBtn.parentElement.children)
-            .indexOf(activeDurationBtn);
+            // Get active duration
+            const activeDurationBtn = planCard.querySelector('.duration-btn.active');
+            const durationIndex = Array.from(activeDurationBtn.parentElement.children)
+                .indexOf(activeDurationBtn);
 
-        // Update price
-        const priceElement = planCard.querySelector('.price-value');
-        const isPremium = planCard.classList.contains('premium');
-        const prices = isPremium ? PRICING.premium : PRICING.basic;
-        const newPrice = prices[currency.toLowerCase()][durationIndex];
-        
-        // Format with small decimals
-        const formatted = newPrice.toLocaleString('es-AR', { 
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            // Update price
+            const priceElement = planCard.querySelector('.price-value');
+            const isPremium = planCard.classList.contains('premium');
+            const prices = isPremium ? PRICING.premium : PRICING.basic;
+            const newPrice = prices[currency.toLowerCase()][durationIndex];
+            
+            const formatted = newPrice.toLocaleString('es-AR', { 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            const [main, decimals] = formatted.split(',');
+            priceElement.innerHTML = `${main}<span class="decimal-part">,${decimals}</span>`;
         });
-        const [main, decimals] = formatted.split(',');
-        priceElement.innerHTML = `${main}<span class="decimal-part">,${decimals}</span>`;
 
         // Update slider
         slider.style.transform = currency === 'BRL' ? 'translateX(100%)' : 'translateX(0)';
-        slider.style.backgroundColor = currency === 'BRL' ? '#2ed573' : 
             getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
     });
 });
@@ -508,8 +509,8 @@ document.querySelectorAll('.duration-btn').forEach(button => {
         // REST OF THE CODE TO REPLACE STARTS HERE
         const durationIndex = Array.from(durationSelector.children)
             .indexOf(this);
-        const currency = planCard.querySelector('.toggle-option.active').dataset.currency;
-        const isPremium = planCard.classList.contains('premium');
+            const currency = document.querySelector('.global-currency-toggle .toggle-option.active').dataset.currency;
+            const isPremium = planCard.classList.contains('premium');
         
         // Update price - REPLACE THIS PART
         const priceElement = planCard.querySelector('.price-value');
@@ -567,4 +568,193 @@ document.querySelectorAll('.plan-btn').forEach(button => {
             alert('Erro de conexão');
         }
     });
+});
+
+
+
+// Scroll-triggered animations
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+});
+
+// Apply to all flashcards
+document.querySelectorAll('.card-pair').forEach((card) => {
+    observer.observe(card);
+});
+
+// Add flip functionality to Revisar button
+document.querySelectorAll('.revisar-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const cardPair = this.closest('.card-pair');
+        const flipCard = cardPair.querySelector('.flip-card');
+        cardPair.classList.add('flipped');
+        flipCard.classList.add('flipped');
+    });
+});
+
+// Choice Flashcard Logic
+function initializeChoiceFlashcards() {
+    // Choice click handler
+    function handleChoiceClick() {
+        const cardPair = this.closest('.card-pair');
+        const cardContent = this.closest('.card-content');
+        const srsControls = cardPair.querySelector('.srs-controls');
+        
+        if (this.dataset.correct === 'true') {
+            // Show explanation
+            const explanation = this.dataset.explanation;
+            const explanationContainer = cardContent.querySelector('.explanation-container');
+            
+            // Hide other options
+            cardContent.querySelectorAll('.choice').forEach(btn => {
+                if (btn !== this) btn.classList.add('hidden-option');
+                btn.disabled = true;
+            });
+
+            // Show SRS controls
+            srsControls.classList.add('visible');
+
+            // Show explanation
+            explanationContainer.innerHTML = `<div class="explanation-text">${explanation}</div>`;
+            explanationContainer.classList.add('visible');
+            this.classList.add('correct');
+        } else {
+            this.classList.add('wrong');
+            this.disabled = true;
+        }
+    }
+
+    // SRS button handler
+    function handleSrsClick() {
+        const cardPair = this.closest('.card-pair');
+        const successMessage = cardPair.querySelector('.success-message');
+
+        // Show success message
+        successMessage.style.display = 'flex';
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+            successMessage.style.opacity = '0';
+        }, 5000);
+
+        // Full reset after 15 seconds
+        setTimeout(() => {
+            // Reset choices
+            cardPair.querySelectorAll('.choice').forEach(btn => {
+                btn.classList.remove('correct', 'wrong', 'hidden-option');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.visibility = 'visible';
+                btn.style.transform = 'scale(1)';
+            });
+
+            // Reset explanation
+            const explanationContainer = cardPair.querySelector('.explanation-container');
+            explanationContainer.classList.remove('visible');
+            explanationContainer.innerHTML = '';
+            explanationContainer.style.maxHeight = '0';
+
+            // Reset SRS controls
+            const srsControls = cardPair.querySelector('.srs-controls');
+            srsControls.classList.remove('visible');
+
+            // Reset success message
+            successMessage.style.display = 'none';
+            successMessage.style.opacity = '1';
+
+            // Re-attach event listeners
+            cardPair.querySelectorAll('.choice').forEach(choice => {
+                choice.addEventListener('click', handleChoiceClick);
+            });
+        }, 5000);
+    }
+
+    // Initialize all choice flashcards
+    document.querySelectorAll('.choice').forEach(choice => {
+        choice.addEventListener('click', handleChoiceClick);
+    });
+
+    // Initialize SRS buttons
+    document.querySelectorAll('.srs-controls .difficulty').forEach(button => {
+        button.addEventListener('click', handleSrsClick);
+    });
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeChoiceFlashcards();
+});
+
+// ================================================================= //
+
+// Update classic flashcard SRS handler for loop
+document.querySelectorAll('.card-pair:not(.choice-card) .srs-controls .difficulty').forEach(button => {
+    button.addEventListener('click', function() {
+        const cardPair = this.closest('.card-pair');
+        const successMessage = cardPair.querySelector('.success-message');
+        const flipCard = cardPair.querySelector('.flip-card');
+
+        // Show success message
+        successMessage.style.display = 'flex';
+        
+        // Hide message after 2.5 seconds
+        setTimeout(() => {
+            successMessage.style.opacity = '0';
+        }, 2500);
+
+        // Full reset after 3 seconds
+        setTimeout(() => {
+            // Reset card state
+            cardPair.classList.remove('flipped');
+            flipCard.classList.remove('flipped');
+            
+            // Reset success message
+            successMessage.style.display = 'none';
+            successMessage.style.opacity = '1';
+            
+            // Reset animation properties
+            successMessage.style.removeProperty('display');
+            successMessage.style.removeProperty('opacity');
+            
+            // Re-enable revisar button
+            const revisarBtn = cardPair.querySelector('.revisar-btn');
+            revisarBtn.disabled = false;
+            revisarBtn.style.opacity = '1';
+            revisarBtn.style.cursor = 'pointer';
+            
+            // Re-attach flip functionality
+            revisarBtn.addEventListener('click', handleRevisarClick);
+        }, 3000);
+    });
+});
+
+// Modified revisar button handler
+let activeTimer; // Track active timer
+
+function handleRevisarClick() {
+    const cardPair = this.closest('.card-pair');
+    const flipCard = cardPair.querySelector('.flip-card');
+    
+    // Clear any existing timers
+    if (activeTimer) clearTimeout(activeTimer);
+    
+    // Disable button during interaction
+    this.disabled = true;
+    this.style.opacity = '0.5';
+    this.style.cursor = 'not-allowed';
+    
+    cardPair.classList.add('flipped');
+    flipCard.classList.add('flipped');
+}
+
+// Update initialization
+document.querySelectorAll('.revisar-btn').forEach(button => {
+    button.addEventListener('click', handleRevisarClick);
 });

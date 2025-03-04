@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #9FE7F8;
+    --primary-color: #58d2ee;
     --secondary-color: #053F5C;
     --accent-color: #FF6B6B;
 }
@@ -16,10 +16,29 @@ body {
     background: #f8f9fa;
 }
 
+.corner-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2000; /* Higher than navbar's z-index */
+    padding: 0;
+    margin: 0;
+}
+
+.corner-logo img {
+    height: 70px; /* Match navbar height */
+    width: auto;
+    display: block;
+    object-fit: cover;
+    object-position: left top;
+}
+
 nav {
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     padding: 1rem 2rem;
     display: flex;
+    padding-left: 5rem;
+    max-height: 70px;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -235,43 +254,125 @@ nav {
 }
 
 /* ===================================== PRICE SECTION ================================================== */
-.price {
-    font-size: 2rem;
-    color: var(--secondary-color);
-    margin: 1.5rem 0;
-    font-weight: bold;
+
+.pricing-section {
+    padding: 4rem 2rem;
+    background: #fff;
+    scroll-margin-top: 70px;
 }
 
-/* Update existing .plan-card */
-.plan-card {
-    background: #f8f9fa;
-    padding: 2rem;
-    border-top: none;
-    border-radius: 0 0 15px 15px;
-    border: 2px solid #429edb;
-    text-align: center;
-    position: relative;
-    overflow: visible; /* Changed from hidden */
-    transition: all 0.3s ease;
-    margin: 1rem; /* Added */
-}
-
-.plan-card.premium {
-    border-color: var(--accent-color);
-    transform: scale(1.02);
-    z-index: 1;
-}
-
-/* Update existing .pricing-plans grid */
 .pricing-plans {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    grid-template-columns: 1fr;
+    align-items: stretch;
 }
 
-/* New additions */
+@media (min-width: 768px) {
+    .pricing-plans {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.plan-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+}
+
+.plan-card-header {
+    min-height: 85px;
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 15px 15px 0 0;
+    border: 2px solid;
+    border-bottom: none;
+    background: #58d2ee;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.plan-card-header.basic-header h3 {
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0.5rem 0;
+    width: 100%; /* Add this line */
+}
+
+.plan-card-header.basic-header {
+    border: 2px solid #58d2ee;
+    border-bottom: none;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    margin: 0 -2px; /* Add this line */
+    width: calc(100% + 4px); /* Add this line */
+}
+
+
+.plan-container:not(.premium) .plan-card {
+    border: 2px solid #58d2ee;
+    border-top: none;
+    margin: 0 -2px -2px -2px;
+    width: calc(100% + 4px);
+}
+
+.plan-card-header.premium-header {
+    align-items: center;
+    background: #a13cff;
+    border-color: #a13cff;
+    display: flex;
+    justify-content: center;
+}
+
+.plan-card-header.premium-header h3 {
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0.5rem 0;
+    width: 100%; /* Add this line */
+}
+
+.plan-card {
+    flex: 1;
+    background: white;
+    padding: 2rem;
+    border: 2px solid var(--secondary-color);
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px 5px rgba(0,0,0,0.2); /* Same as deck-card */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Match transition */
+}
+
+.plan-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.25); /* Same as deck-card:hover */
+}
+
+.plan-container.premium .duration-btn.active {
+    background: #a13cff; /* Match premium header color */
+    color: white;
+  }
+
+.plan-container.premium .plan-card {
+    border-color: #a13cff;
+}
+
+.plan-container.premium .plan-btn {
+    background: #a13cff;
+}
+
+/* Optional: Adjust hover state if needed */
+.plan-container.premium .plan-btn:hover {
+    background: color-mix(in srgb, var(--accent-color) 90%, black);
+}
+
 .duration-selector {
     display: flex;
     gap: 0.5rem;
@@ -288,38 +389,101 @@ nav {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
-    &:hover {
-        background: #c0c0c0;
-    }
-    &.active {
-        background: var(--secondary-color);
-        color: white;
-        transform: scale(1.05);
-    }
+}
+
+.duration-btn:hover {
+    background: #c0c0c0;
 }
 
 .duration-btn.active {
-    background: var(--secondary-color);
+    background: #58d2ee;
     color: white;
-}
-
-.plan-card.premium .plan-btn {
-    background: var(--accent-color);
-    color: white;
-}
-
-.plan-card.premium .plan-btn:hover {
-    background: #ff5252;
     transform: scale(1.05);
 }
 
-.price-value {
-    font-size: 50px;
-    font-weight: bold;
-    color: #13ddf8;
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1.5rem 0;
 }
 
-/* ======================== Planos benefits ====================================== */
+.global-currency-toggle {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+    position: relative; /* Add this */
+}
+
+.global-currency-toggle .toggle-container {
+    background: #e0e0e0;
+    border-radius: 20px;
+    padding: 2px;
+    width: 90px;
+    height: 32px;
+    position: relative;
+    display: flex; /* Add this */
+    align-items: center; /* Add this */
+}
+
+.global-currency-toggle .toggle-option {
+    flex: 1;
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 2;
+    font-size: 1,8rem;
+    color: var(--secondary-color);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    display: flex; /* Add this */
+    align-items: center; /* Add this */
+    justify-content: center; /* Add this */
+    height: 100%; /* Add this */
+}
+
+.global-currency-toggle .slider {
+    position: absolute;
+    width: 45px;
+    height: 32px;
+    background: #2ed573;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    display: flex; /* Add this */
+    align-items: center; /* Add this */
+    justify-content: center; /* Add this */
+}
+
+/* For mobile responsiveness */
+@media (max-width: 480px) {
+    .global-currency-toggle .toggle-container {
+        width: 80px;
+        height: 28px;
+    }
+    
+    .global-currency-toggle .slider {
+        width: 38px;
+        height: 22px;
+    }
+    
+    .global-currency-toggle .toggle-option {
+        font-size: 0.9rem;
+        padding: 3px 8px;
+    }
+}
+
+.price {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    font-weight: bold;
+    min-width: 90px;
+    text-align: center;
+}
+
 .plan-card ul {
     list-style: none;
     padding-left: 0;
@@ -334,7 +498,7 @@ nav {
 }
 
 .plan-card li {
-    display: contents; /* Makes children participate in grid */
+    display: contents;
 }
 
 .plan-card li span.emoji {
@@ -349,153 +513,9 @@ nav {
     white-space: nowrap;
 }
 
-/* =========================== NEW CURRENCY TOGGLE STYLES ====================================== */
-.price-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-    margin: 1.5rem 0;
-  }
-  
-  .currency-toggle {
-    position: relative;
-    height: 24px;
-  }
-  
-  .toggle-container {
-    background: #f0f0f0;
-    border-radius: 20px;
-    padding: 2px;
-    width: 70px;
-    height: 100%;
-    display: flex;
-    position: relative;
-  }
-  
-  /* ARS on left, R$ on right */
-  .toggle-option[data-currency="ARS"] { order: 1; }
-  .toggle-option[data-currency="BRL"] { order: 2; }
-  
-  .toggle-option {
-    flex: 1;
-    padding: 2px 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    z-index: 2;
-    font-size: 0.7rem;
-    color: #666;
-    transition: all 0.3s ease;
-    font-weight: bold;
-  }
-  
-  .toggle-option.active {
-    color: white;
-  }
-  
-  .slider {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 32px;
-    height: 20px;
-    background: var(--secondary-color); /* Default ARS color */
-    border-radius: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-    transform: translateX(0); /* Start on ARS side */
-  }
-  
-  /* Green color for R$ */
-  .slider.green {
-    background: #2ed573;
-  }
-
-/* Price Display */
-.price {
-    margin: 0;
-    font-size: 1.5rem; /* Slightly smaller font */
-    color: var(--secondary-color);
-    font-weight: bold;
-    min-width: 90px; /* Adjusted for smaller screens */
-    text-align: center;
-}
-
-/* Currency Symbol - UPDATED VERSION */
-.price-container[data-currency="ARS"] .price-value::before {
-    content: 'ARS ';
-    font-size: 0.6em;
-    vertical-align: middle;
-    color: #666;
-}
-
-.price-container[data-currency="BRL"] .price-value::before {
-    content: 'R$ ';
-    font-size: 0.6em;
-    vertical-align: middle;
-    color: #666;
-}
-
-.decimal-part {
-    font-size: 0.4em;  /* Only affects the decimal */
-    vertical-align: 2px; /* Fine-tune vertical position */
-    opacity: 0.9;
-    font-weight: 400;
-    display: inline-block;
-    margin-left: 1px;
-    color: #666;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .price-container {
-        flex-direction: column;
-        gap: 0.4rem;
-    }
-
-    .price {
-        font-size: 1.4rem;
-    }
-
-    .toggle-container {
-        width: 60px;
-    }
-
-    .toggle-option {
-        padding: 2px 6px;
-        font-size: 0.65rem;
-    }
-
-    .slider {
-        width: 28px;
-        height: 18px;
-    }
-}
-
-@media (max-width: 480px) {
-    .price {
-        font-size: 1.3rem;
-    }
-
-    .toggle-container {
-        width: 55px;
-    }
-
-    .toggle-option {
-        padding: 1px 5px;
-        font-size: 0.6rem;
-    }
-
-    .slider {
-        width: 26px;
-        height: 16px;
-    }
-}
-
 .plan-btn {
-    background: #ff8300;
-    color: #000000;
+    background: #58d2ee;
+    color: white;
     border: none;
     padding: 1rem 2.5rem;
     border-radius: 25px;
@@ -503,13 +523,94 @@ nav {
     font-weight: bold;
     width: 100%;
     transition: transform 0.3s ease;
+    margin-top: auto;
+}
+
+.plan-card.premium .plan-btn {
+    background: var(--accent-color);
 }
 
 .plan-btn:hover {
     transform: scale(1.05);
-    background: #ff8300;
-    border: none;
+    opacity: 0.9;
 }
+
+@media (max-width: 768px) {
+    .pricing-plans {
+        grid-template-columns: 1fr;
+    }
+    .price {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .price {
+        font-size: 1.3rem;
+    }
+    .toggle-container {
+        width: 55px;
+    }
+    .duration-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Restored Price Styling */
+.price-container[data-currency="ARS"] .price-value::before {
+    content: 'ARS ';
+    font-size: 0.4em;
+    vertical-align: baseline;
+    color: #666;
+}
+
+.price-container[data-currency="BRL"] .price-value::before {
+    content: 'R$ ';
+    font-size: 0.4em;
+    vertical-align: baseline;
+    color: #666;
+}
+
+.price-value {
+    font-size: 4.5rem;  /* 40px equivalent */
+    font-weight: bold;
+    color: #58d2ee;
+    line-height: 1.2;
+}
+
+.plan-container.premium .price-value {
+    font-size: 4.5rem;  /* 40px equivalent */
+    font-weight: bold;
+    color: #a13cff;
+    line-height: 1.2;
+}
+
+.decimal-part {
+    font-size: 0.3em;
+    vertical-align: baseline;
+    margin-left: 2px;
+    color: #666;
+    font-weight: 400;
+    margin-bottom: 0.2em; /* Adjust this value as needed */
+    display: inline-block;
+}
+
+/* Price Emphasis */
+.price {
+    font-size: 1.5rem;
+    color: #666;
+    margin: 1rem 0;
+}
+
+/* Hover Effects */
+.plan-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    opacity: 1 !important;
+}
+
+/* ==================================  CONTACT SECTION ======================================= */
 
 .contact-section {
     padding: 4rem 2rem;
@@ -570,6 +671,8 @@ nav {
     color: #666;
     font-size: 1rem;
 }
+
+/* ==================================  lOGIN ======================================= */
 
 .modal {
     display: none;
@@ -634,6 +737,8 @@ nav {
     display: none;
 }
 
+/* ==================================  FLASHCARD SECTION ======================================= */
+
 /* Flashcard System Section */
 .flashcard-system-section {
     padding: 6rem 2rem 4rem;
@@ -648,13 +753,14 @@ nav {
     align-items: start;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 0;
 }
 
 .card-pair {
     width: 100%;
     max-width: 600px;
-    flex: 1 1 400px;
+    flex: 1;
+    margin: 0;
 }
 
 .card {
@@ -665,6 +771,7 @@ nav {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     min-height: 300px;
     min-width: 420px;
+    position: relative;
 }
 
 .question {
@@ -705,7 +812,7 @@ h1.mechanism {
 }
 
 p.question-look, p.answer-text {
-    color: #7f8c8d;
+    color: #2810ff;
     font-size: 1.1rem;
     margin-top: 1.5rem; /* Add margin to create space above p */
 }
@@ -729,10 +836,10 @@ p.question-look, p.answer-text {
 }
 
 .srs-controls {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    margin-top: 1.5rem; /* Added margin to separate from the card */
+    margin-top: 1rem; /* Added margin to separate from the card */
     height: 40px;
 }
 
@@ -768,6 +875,28 @@ p.question-look, p.answer-text {
 .díficil { background: #ffa502; }
 .bueno { background: #2ed573; }
 .fácil { background: #1e90ff; }
+
+/* ==================================  Fade-in animations ======================================= */
+
+/* Scroll-triggered fade-in animations */
+.card-pair {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-pair.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Optional delay for staggered effects */
+.card-pair:nth-child(1) { transition-delay: 0.4s; }
+.card-pair:nth-child(2) { transition-delay: 0.6s; }
+.card-pair:nth-child(3) { transition-delay: 0.8s; }
+
+/* ==================================  RESPONSIVE DESIGN ======================================= */
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -867,4 +996,417 @@ p.question-look, p.answer-text {
     .srs-controls {
         gap: 0.3rem;
     }
+}
+
+/* ========================================== CHOICE FLASHCARD ========================================================== */
+
+/* Choice Card Specific Styles */
+.choice-card {
+    margin-top: 2rem;
+}
+
+.choice-options {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.choice {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.choice:hover {
+    background: #429edb;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.choice.correct {
+    background: #2ed573;
+    color: white;
+    border-color: #2ed573;
+}
+
+.choice.wrong {
+    background: #ff4757;
+    color: white;
+    border-color: #ff4757;
+}
+
+
+/* Hidden state for wrong answers */
+.choice.hidden-option {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+/* Explanation styling */
+.explanation-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    margin-top: 1rem;
+}
+
+.explanation-container.visible {
+    max-height: 200px; /* Adjust based on content size */
+}
+
+.explanation-text {
+    background: #f0faff;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #2ed573;
+    color: #053F5C;
+}
+
+/* Choice Card SRS Positioning */
+.choice-srs-container {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.card-pair.choice-card .srs-controls {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.card-pair.choice-card .srs-controls.visible {
+    display: grid;
+}
+
+/* ==================================== CHOICE FLASHCARD INSTRUCTION STUFF ================================ */
+
+/* Choice Container Layout */
+.choice-container {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    align-items: stretch; /* Crucial for equal height */
+    min-height: 500px; /* Match flashcard height */
+}
+
+/* Explanation Panel Styling */
+.explanation-panel {
+    flex: 1;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-height: 400px;
+    max-height: none; /* Remove any existing max-height */
+}
+
+/* Card pair adjustments */
+.card-pair.choice-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Take full container height */
+}
+
+/* Content alignment */
+.instruction-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.instruction-content h3 {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.instruction-steps {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.instruction-step {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+}
+
+.step-icon {
+    font-size: 1.5rem;
+    margin-top: 0.3rem;
+}
+
+.instruction-tip {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(88, 210, 238, 0.1);
+    border-radius: 8px;
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.tip-icon {
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .choice-container {
+        flex-direction: column;
+    }
+    
+    .explanation-panel {
+        order: -1; /* Moves explanation above card on mobile */
+    }
+}
+
+/* ================================= CLASSIC FLASHCARD ================================== */
+
+/* Flip Card Styles */
+.flip-container {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.flip-card {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.flip-card.flipped {
+    transform: rotateY(180deg);
+}
+
+.front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.back {
+    transform: rotateY(180deg);
+}
+
+/* Classic Flashcard SRS Controls */
+.card-pair:not(.choice-card) .srs-controls {
+    display: none;
+}
+
+.card-pair:not(.choice-card).flipped .srs-controls {
+    display: grid;
+}
+
+.card-pair:not(.choice-card).flipped .revisar-btn {
+    display: none;
+}
+
+/* ============================================== SUCCES ANIMATION ============================================ */
+
+/* Add these styles to your CSS */
+.success-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    animation: fadeIn 0.5s ease-out;
+    z-index: 10;
+    pointer-events: none; /* Allow clicks through the animation */
+}
+
+.message-content {
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.5s 0.3s ease-out forwards;
+}
+
+.checkmark {
+    font-size: 4rem;
+    color: #2ed573;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.card-pair.choice-card {
+    pointer-events: all; /* Ensure card remains interactive */
+}
+
+/* Reset all interactive elements */
+.reset-state {
+    pointer-events: all !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ========================================================= */
+
+/* Add to style.css */
+.card-pair:not(.choice-card) .success-message {
+    z-index: 1; /* Ensure it appears above flip content */
+}
+
+/* Classic Flashcard Success Message */
+.card-pair:not(.choice-card) .success-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+}
+
+/* ================ Classic Flashcard Layout Fixes ================ */
+.classic-container {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    align-items: flex-start; /* Changed from stretch */
+}
+
+.card-pair {
+    flex: 2; /* Takes 2/3 of the space */
+    min-width: 0; /* Fixes flex overflow */
+    position: relative; /* For success message positioning */
+}
+
+.classic-instructions {
+    flex: 1; /* Takes 1/3 of the space */
+    max-width: 400px;
+    position: sticky;
+    top: 100px; /* Sticks below navbar */
+    height: fit-content;
+}
+
+/* Fix flashcard system padding */
+.flashcard-system {
+    padding: 2rem 0;
+}
+
+/* Adjust card dimensions */
+.flip-container {
+    width: 100%;
+    max-width: 100%;
+    perspective: 1000px;
+}
+
+.flip-card {
+    height: 400px; /* Fixed height for consistency */
+}
+
+/* Success message positioning fix */
+.card-pair:not(.choice-card) .success-message {
+    position: absolute;
+    z-index: 100;
+}
+
+/* Responsive Fixes */
+@media (max-width: 1024px) {
+    .classic-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .classic-instructions {
+        position: static;
+        max-width: 600px;
+        width: 100%;
+        order: -1;
+    }
+    
+    .card-pair {
+        width: 100%;
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .flip-card {
+        height: 350px;
+    }
+    
+    .card {
+        min-width: unset;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .flip-card {
+        height: 300px;
+    }
+    
+    .srs-controls {
+        grid-template-columns: 1fr;
+        height: auto;
+        gap: 0.5rem;
+    }
+    
+    .srs-option {
+        width: 100%;
+    }
+}
+
+/* Fix overlapping success message */
+.success-message {
+    pointer-events: none;
+}
+
+/* Ensure instruction panel content spacing */
+.instruction-steps {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.instruction-step p {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.instruction-tip {
+    margin-top: auto;
 }
