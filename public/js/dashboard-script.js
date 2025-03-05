@@ -743,3 +743,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// =========================================== CLASSBLOCKS ============================================================
+
+// Add to dashboard-script.js
+async function updateClassBlockCounts() {
+    const classBlocks = document.querySelectorAll('.class-block');
+    
+    for (const block of classBlocks) {
+        const deck = block.dataset.deck;
+        const subdeck = block.dataset.subdeck;
+        
+        try {
+            const response = await fetch(`/api/flashcards/count?deck=${encodeURIComponent(deck)}&subdeck=${encodeURIComponent(subdeck)}`);
+            const data = await response.json();
+            
+            block.querySelector('.new-cards').textContent = data.newCards;
+            block.querySelector('.due-cards').textContent = data.dueCards;
+        } catch (error) {
+            console.error('Error fetching counts:', error);
+            block.querySelector('.new-cards').textContent = '0';
+            block.querySelector('.due-cards').textContent = '0';
+        }
+    }
+}
+
+// Call this in your DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.class-grid')) {
+        updateClassBlockCounts();
+    }
+});

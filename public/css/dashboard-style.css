@@ -906,7 +906,8 @@ p.question-look, p.answer-text {
     padding: 0.5rem 1rem;
 }
 
-/* ===== CLASS GRID SYSTEM ===== */
+/* ============================================= CLASS GRID SYSTEM ================================================= */
+
 .class-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -992,4 +993,22 @@ p.question-look, p.answer-text {
 .class-block .progress-bar {
     background: inherit;
     opacity: 0.8;
+}
+
+.card-counts {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.new-cards {
+    color: #429edd;
+    font-weight: bold;
+}
+
+.due-cards {
+    color: #27ae60;
+    font-weight: bold;
 }

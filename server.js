@@ -282,6 +282,29 @@ app.get('/api/flashcards', async (req, res) => { // Removed passport.authenticat
   }
 });
 
+// Add this with your other API endpoints (around line 296 in your file)
+app.get('/api/flashcards/count', async (req, res) => {
+  try {
+    const { deck, subdeck } = req.query;
+    
+    const newCards = await Flashcard.countDocuments({
+      deck,
+      subdeck,
+      lastReview: { $exists: false }
+    });
+
+    const dueCards = await Flashcard.countDocuments({
+      deck,
+      subdeck,
+      lastReview: { $lte: Date.now() }
+    });
+
+    res.json({ newCards, dueCards });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Health check
 app.get('/api/health-check', (req, res) => {
   res.json({ 
