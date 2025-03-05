@@ -433,7 +433,7 @@ document.querySelectorAll('.plan-card').forEach(planCard => {
         .indexOf(activeDurationBtn);
     const priceElement = planCard.querySelector('.price-value');
     const priceContainer = priceElement.closest('.price-container');
-    const isPremium = planCard.classList.contains('premium');
+    const isPremium = planCard.closest('.plan-container').classList.contains('premium');
     const prices = isPremium ? PRICING.premium : PRICING.basic;
     
     // Set ARS by default
@@ -474,7 +474,7 @@ document.querySelectorAll('.global-currency-toggle .toggle-option').forEach(butt
 
             // Update price
             const priceElement = planCard.querySelector('.price-value');
-            const isPremium = planCard.classList.contains('premium');
+            const isPremium = planCard.closest('.plan-container').classList.contains('premium');
             const prices = isPremium ? PRICING.premium : PRICING.basic;
             const newPrice = prices[currency.toLowerCase()][durationIndex];
             
@@ -510,7 +510,7 @@ document.querySelectorAll('.duration-btn').forEach(button => {
         const durationIndex = Array.from(durationSelector.children)
             .indexOf(this);
             const currency = document.querySelector('.global-currency-toggle .toggle-option.active').dataset.currency;
-            const isPremium = planCard.classList.contains('premium');
+            const isPremium = planCard.closest('.plan-container').classList.contains('premium');
         
         // Update price - REPLACE THIS PART
         const priceElement = planCard.querySelector('.price-value');
