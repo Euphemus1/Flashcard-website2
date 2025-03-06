@@ -396,8 +396,16 @@ document.getElementById('add-flashcard-form')?.addEventListener('submit', async 
       subdeck: document.getElementById('subdeck').value,
       references: document.getElementById('references').value.split(',').map(s => s.trim()),
       tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-      extraInfo: document.getElementById('extra-info').value
-    };
+      extraInfo: document.getElementById('extra-info').value,
+      type: document.getElementById('card-type').value,
+};
+
+if (newCard.type === 'multipleChoice') {
+  newCard.options = document.getElementById('options').value.split(',').map(s => s.trim());
+  newCard.correctAnswer = parseInt(document.getElementById('correct-answer').value);
+  newCard.answer = newCard.options[newCard.correctAnswer]; // Store correct answer text
+}
+
   
     // Add validation
     if (!newCard.question || !newCard.answer || !newCard.deck) {
@@ -774,3 +782,45 @@ document.addEventListener('DOMContentLoaded', () => {
         updateClassBlockCounts();
     }
 });
+
+// ============================ CHOICE toggle for admin form =========================
+// Add type toggle functionality
+document.getElementById('card-type')?.addEventListener('change', function() {
+    const mcFields = document.getElementById('multiple-choice-fields');
+    if (this.value === 'multipleChoice') {
+      mcFields.classList.remove('hidden');
+      document.getElementById('options').required = true;
+      document.getElementById('correct-answer').required = true;
+    } else {
+      mcFields.classList.add('hidden');
+      document.getElementById('options').required = false;
+      document.getElementById('correct-answer').required = false;
+    }
+  });
+  
+  // Update preview functionality
+  function updatePreview() {
+    const type = document.getElementById('card-type').value;
+    const question = document.getElementById('question').value;
+    const answer = document.getElementById('answer').value;
+    
+    const previewQuestion = document.querySelector('.preview-question');
+    previewQuestion.innerHTML = question;
+  
+    if (type === 'multipleChoice') {
+      const options = document.getElementById('options').value.split(',').map(s => s.trim());
+      const correctIndex = parseInt(document.getElementById('correct-answer').value);
+      
+      previewQuestion.innerHTML += '<div class="preview-options">';
+      options.forEach((opt, index) => {
+        previewQuestion.innerHTML += `
+          <div class="preview-option ${index === correctIndex ? 'correct' : ''}">
+            ${String.fromCharCode(65 + index)}) ${opt}
+          </div>
+        `;
+      });
+      previewQuestion.innerHTML += '</div>';
+    } else {
+      document.querySelector('.preview-answer').textContent = answer;
+    }
+  }

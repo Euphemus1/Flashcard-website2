@@ -1012,3 +1012,46 @@ p.question-look, p.answer-text {
     color: #27ae60;
     font-weight: bold;
 }
+
+/* ============================= */
+
+/* Multiple Choice Specific Styles */
+#multiple-choice-fields {
+    margin-top: 1rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+  }
+  
+  .option-group {
+    margin-bottom: 1rem;
+  }
+  
+  .type-toggle {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+  }
+
+  .preview-options {
+    margin-top: 1rem;
+  }
+  
+  .preview-option {
+    padding: 0.5rem;
+    margin: 0.3rem 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .preview-option.correct {
+    background: #e3fcec;
+    border-color: #27ae60;
+  }
+  
+  .preview-option:hover {
+    background: #f8f9fa;
+  }

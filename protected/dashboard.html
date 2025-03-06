@@ -171,6 +171,17 @@
                                     <label for="answer">Answer:</label>
                                     <textarea id="answer" rows="3" required></textarea>
                                 </div>
+                                <!-- Add multiple choice fields here -->
+                                <div id="multiple-choice-fields" class="hidden">
+                                    <div class="form-group">
+                                        <label>Options (comma separated):</label>
+                                        <input type="text" id="options">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Correct Answer Index (0-based):</label>
+                                        <input type="number" id="correct-answer" min="0" max="3">
+                                    </div>
+                                </div>
                                 <div class="form-group">
                                     <label for="references">References (comma separated):</label>
                                     <input type="text" id="references">
@@ -178,16 +189,18 @@
                             </div>
                             
                             <div class="form-column">
+                                <!-- Add card type selector here -->
+                                <div class="form-group">
+                                    <label for="card-type">Card Type:</label>
+                                    <select id="card-type" class="type-toggle" required>
+                                        <option value="basic">Basic Q&A</option>
+                                        <option value="multipleChoice">Multiple Choice</option>
+                                    </select>
+                                </div>
                                 <div class="form-group">
                                     <label for="deck-select">Deck:</label>
                                     <select id="deck-select" required>
-                                        <option value="">Select Deck</option>
-                                        <option value="Microbiología">Microbiología</option>
-                                        <option value="Patología">Patología</option>
-                                        <option value="Semiología">Semiología</option>
-                                        <option value="Farmacología">Farmacología</option>
-                                        <option value="Terapéutica1">Terapéutica 1</option>
-                                        <option value="MedicinaInterna1robiología">Medicina Interna 1</option> 
+                                        <!-- existing options -->
                                     </select>
                                 </div>
                                 <div class="form-group">
