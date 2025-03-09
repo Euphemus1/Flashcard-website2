@@ -164,14 +164,14 @@
                         <div class="form-columns">
                             <div class="form-column">
                                 <div class="form-group">
-                                    <label for="question">Question:</label>
-                                    <textarea id="question" rows="3" required></textarea>
+                                    <label for="question">Content Format:</label>
+                                    <textarea id="question" rows="8" required placeholder="Format:
+                                Line 1: Question
+                                Line 2: Subtitle
+                                Lines 3+: Answer content
+                                Use '/note Your note here' for additional notes"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="answer">Answer:</label>
-                                    <textarea id="answer" rows="3" required></textarea>
-                                </div>
-                                <!-- Add multiple choice fields here -->
+                                
                                 <div id="multiple-choice-fields" class="hidden">
                                     <div class="form-group">
                                         <label>Options (comma separated):</label>
@@ -182,6 +182,7 @@
                                         <input type="number" id="correct-answer" min="0" max="3">
                                     </div>
                                 </div>
+                                
                                 <div class="form-group">
                                     <label for="references">References (comma separated):</label>
                                     <input type="text" id="references">
@@ -189,34 +190,31 @@
                             </div>
                             
                             <div class="form-column">
-                                <!-- Add card type selector here -->
                                 <div class="form-group">
                                     <label for="card-type">Card Type:</label>
                                     <select id="card-type" class="type-toggle" required>
-                                        <option value="basic">Basic Q&A</option>
+                                        <option value="Clasic">Clasic</option>
                                         <option value="multipleChoice">Multiple Choice</option>
                                     </select>
                                 </div>
+                                
                                 <div class="form-group">
                                     <label for="deck-select">Deck:</label>
                                     <select id="deck-select" required>
-                                        <!-- existing options -->
+                                        <!-- Deck options will be populated dynamically -->
                                     </select>
                                 </div>
+                                
                                 <div class="form-group">
                                     <label for="subdeck">Subdeck:</label>
                                     <input type="text" id="subdeck" required>
                                 </div>
+                                
                                 <div class="form-group">
                                     <label for="tags">Tags (comma separated):</label>
                                     <input type="text" id="tags">
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="extra-info">Additional Notes:</label>
-                            <textarea id="extra-info" rows="2"></textarea>
                         </div>
                         
                         <div class="form-actions">

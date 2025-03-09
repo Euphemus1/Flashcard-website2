@@ -230,28 +230,28 @@ const isAdmin = (req, res, next) => {
 
 app.post('/api/flashcards', async (req, res) => {
   try {
-    console.log('Incoming flashcard data:', req.body); // Add this line
-    // 1. Add validation for required fields
-    if (!req.body.question || !req.body.answer || !req.body.deck) {
-      return res.status(400).json({ 
-        error: "Missing required fields: question, answer, deck" 
-      });
-    }
+      if (!req.body.question || !req.body.answer || !req.body.deck || !req.body.subdeck) {
+          return res.status(400).json({ 
+              error: "Missing required fields: question, answer, deck, subdeck" 
+          });
+      }
 
-    // 2. Normalize deck name
     const cleanDeck = req.body.deck
-      .trim()           // Remove whitespace
-      .replace(/\s+/g, ' ')  // Fix multiple spaces
+      .trim()
+      .replace(/\s+/g, ' ');
 
-    // 3. Create flashcard with cleaned data
-    const flashcard = await Flashcard.create({
+    const flashcardData = {
       ...req.body,
-      deck: cleanDeck // Use normalized deck name
-    });
+      deck: cleanDeck,
+      subtitle: req.body.subtitle || '' // Ensure subtitle exists
+    };
 
+    console.log('Processed data:', flashcardData); // Verify data
+
+    const flashcard = await Flashcard.create(flashcardData);
     res.status(201).json(flashcard);
   } catch (error) {
-    console.error('Flashcard creation error:', error);
+    console.error('Full error:', error);
     res.status(400).json({ 
       error: `Server error: ${error.message}` 
     });

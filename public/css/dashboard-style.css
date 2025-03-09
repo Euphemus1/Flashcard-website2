@@ -323,16 +323,18 @@ body {
 h3 {
     color: #2c3e50;
     margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
 }
 
-h1.mechanism {
+p.subtitle {
     color: #7f8c8d;
     font-size: 1.4rem;
     margin-bottom: 3rem;
+    font-weight: 600;
+
 }
 
-.mechanism, .answer-text {
+.subtitle, .answer-text {
     color: #7f8c8d;
     font-size: 1.1rem;
     margin-top: 3rem;
@@ -343,6 +345,15 @@ p.question-look, p.answer-text {
     font-size: 1.1rem;
     margin-top: 3rem;
     font-weight: bold;
+}
+
+.preview-question .subtitle {
+    color: #666;
+    font-size: 0.9em;
+    margin: 10px 0;
+    font-style: italic;
+    border-left: 3px solid #429edd;
+    padding-left: 15px;
 }
 
 /* ===== Skip and Review Controls ===== */
@@ -452,7 +463,7 @@ p.question-look, p.answer-text {
     margin-top: 0.5rem;
 }
 
-/* FAQ STUFF */
+/* ===================================== FAQ STUFF =================================*/
 
 /* FAQ Modal Styles */
 .faq-overlay {
@@ -542,6 +553,8 @@ p.question-look, p.answer-text {
     margin: 0.5rem 0;
     line-height: 1.5;
 }
+
+/* ============================ Loggout button ======================== */
 
 /* Loggout button looks */
 #logout {
@@ -1055,3 +1068,29 @@ p.question-look, p.answer-text {
   .preview-option:hover {
     background: #f8f9fa;
   }
+
+  /* NEW FORM IDK LET SEE */ 
+  .preview-card .subtitle {
+    color: #666;
+    font-size: 0.9em;
+    margin: 10px 0;
+    font-style: italic;
+    border-left: 3px solid #429edd;
+    padding-left: 15px;
+}
+
+/* Add to dashboard-style.css */
+.notes {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-left: 3px solid #429edd;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.notes strong {
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 0.5rem;
+}

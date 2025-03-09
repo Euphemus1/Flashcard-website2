@@ -292,15 +292,46 @@ function skipCard() {
 function loadNextCard() {
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
+
+    // 1. Update Question Card
     document.getElementById('card-front').textContent = currentCard.question;
-    document.getElementById('card-back').textContent = currentCard.answer;
+    const subtitleElement = document.getElementById('card-subtitle');
+    
+    // Handle subtitle
+    if (currentCard.subtitle && subtitleElement) {
+        subtitleElement.textContent = currentCard.subtitle;
+        subtitleElement.classList.remove('hidden');
+    } else if (subtitleElement) {
+        subtitleElement.classList.add('hidden');
+    }
+
+    // 2. Update Answer Card
+    const answerContent = document.querySelector('.answer .card-content');
+    answerContent.innerHTML = `
+        <h3>${currentCard.question}</h3>
+        ${currentCard.subtitle ? `<p class="subtitle">${currentCard.subtitle}</p>` : ''}
+        <div class="answer-text">${currentCard.answer.replace(/\n/g, '<br>')}</div>
+        ${currentCard.extraInfo ? `
+            <div class="notes">
+                <strong>Notas:</strong>
+                ${currentCard.extraInfo.replace(/\n/g, '<br>')}
+            </div>
+        ` : ''}
+    `;
+
+    // 3. Update status
     showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
 
-    // Reset card display
-    document.querySelector('.question').classList.remove('hidden');
-    document.querySelector('.answer').classList.add('hidden');
-    document.querySelector('.srs-controls').classList.add('hidden');
-    document.getElementById('review-actions').classList.remove('hidden');
+    // 4. Reset card visibility
+    const questionCard = document.querySelector('.question');
+    const answerCard = document.querySelector('.answer');
+    const srsControls = document.querySelector('.srs-controls');
+    const reviewActions = document.getElementById('review-actions');
+
+    questionCard.classList.remove('hidden');
+    answerCard.classList.add('hidden');
+    srsControls.classList.add('hidden');
+    reviewActions.classList.remove('hidden');
 }
 
 function switchDeck(deckName) {
@@ -386,63 +417,124 @@ document.querySelector('.bueno')?.addEventListener('click', () => rateCard(1440)
 document.querySelector('.fácil')?.addEventListener('click', () => rateCard(2880));
 
 // Admin pannel
-document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    // Existing initializations
+    displayUsername();
+    initializeERA1Cards();
+    document.getElementById('contact-button')?.addEventListener('click', showContact);
     
-    const newCard = {
-      question: document.getElementById('question').value,
-      answer: document.getElementById('answer').value,
-      deck: document.getElementById('deck-select').value,
-      subdeck: document.getElementById('subdeck').value,
-      references: document.getElementById('references').value.split(',').map(s => s.trim()),
-      tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-      extraInfo: document.getElementById('extra-info').value,
-      type: document.getElementById('card-type').value,
-};
-
-if (newCard.type === 'multipleChoice') {
-  newCard.options = document.getElementById('options').value.split(',').map(s => s.trim());
-  newCard.correctAnswer = parseInt(document.getElementById('correct-answer').value);
-  newCard.answer = newCard.options[newCard.correctAnswer]; // Store correct answer text
-}
-
-  
-    // Add validation
-    if (!newCard.question || !newCard.answer || !newCard.deck) {
-      alert('Please fill in all required fields (Question, Answer, Deck)');
-      return;
+    // Calendar initialization
+    if (document.getElementById('study-calendar')) {
+        generateCalendar();
     }
-  
-    try {
-      const response = await fetch('/api/flashcards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newCard)
-      });
-  
-      const data = await response.json();
-      
-      if(response.ok) {
-        alert('Flashcard added successfully!');
-        document.getElementById('admin-modal').classList.add('hidden');
+
+    // Admin panel initialization
+    const adminModal = document.getElementById('admin-modal');
+    const openAdminBtn = document.getElementById('open-admin-btn');
+    const closeAdminBtn = document.querySelector('.admin-close-btn');
+
+    // Open/close admin panel
+    openAdminBtn?.addEventListener('click', () => {
+        adminModal.classList.remove('hidden');
+    });
+    
+    closeAdminBtn?.addEventListener('click', () => {
+        adminModal.classList.add('hidden');
+    });
+
+    // Form submission handler (MOVED HERE)
+    document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        if(window.location.pathname.includes('patologia-era1')) {
-            getDeckData('Patología', 'ERA1').then(data => {
-              flashcards = data;
-              currentCardIndex = 0; // Reset to first card
-              loadNextCard();
+        const type = document.getElementById('card-type').value;
+        const newCard = {
+            question: document.getElementById('question').value,
+            answer: '', // Initialize empty
+            deck: document.getElementById('deck-select').value,
+            subdeck: document.getElementById('subdeck').value,
+            references: document.getElementById('references').value.split(',').map(s => s.trim()),
+            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+            type: type,
+        };
+    
+        // Handle Clasic card parsing
+        if (type === 'Clasic') {
+            const lines = newCard.question.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 3) {
+                alert('Clasic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
+                return;
+            }
+            
+            // Parse answer/extraInfo using "/" separator
+            const answerContent = lines.slice(2).join('\n');
+            const splitIndex = answerContent.indexOf('/');
+            
+            if (splitIndex !== -1) {
+                // Split at first "/" for extrainfo
+                newCard.answer = answerContent.substring(0, splitIndex).trim();
+                newCard.extraInfo = answerContent.substring(splitIndex + 1).trim();
+            } else {
+                // No extrainfo found
+                newCard.answer = answerContent;
+                newCard.extraInfo = '';
+            }
+            
+            newCard.question = lines[0];
+            newCard.subtitle = lines[1];
+        }
+    
+        // Validate required fields
+        if (!newCard.question || !newCard.answer || !newCard.deck || !newCard.subdeck) {
+            alert('Please fill in all required fields');
+            return;
+        }
+    
+        try {
+            const response = await fetch('/api/flashcards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newCard)
             });
-          }
-      } else {
-        alert(`Error: ${data.error || 'Unknown error'}`);
-      }
-    } catch(error) {
-      console.error('Error adding flashcard:', error);
-      alert('Connection error. Please try again.');
+    
+            const data = await response.json();
+            
+            if(response.ok) {
+                alert('Flashcard added successfully!');
+                document.getElementById('admin-modal').classList.add('hidden');
+                
+                // Refresh cards if in relevant view
+                if(window.location.pathname.includes('patologia-era1')) {
+                    getDeckData('Patología', 'ERA1').then(data => {
+                        flashcards = data;
+                        currentCardIndex = 0;
+                        loadNextCard();
+                    });
+                }
+            } else {
+                alert(`Error: ${data.error || 'Unknown error'}`);
+            }
+        } catch(error) {
+            console.error('Error adding flashcard:', error);
+            alert('Connection error. Please try again.');
+        }
+    });
+
+    // Other existing initializations
+    populateDeckDropdown();
+    if (document.querySelector('.class-grid')) {
+        updateClassBlockCounts();
     }
-  });
+    
+    // Preview functionality
+    document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
+    document.querySelector('.toggle-preview')?.addEventListener('click', function() {
+        const answer = document.querySelector('.preview-answer');
+        answer.classList.toggle('hidden');
+        this.textContent = answer.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+    });
+});
 
 // FAQ Button
 document.getElementById('faq-button').addEventListener('click', () => {
@@ -678,13 +770,74 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function updatePreview() {
-    const question = document.getElementById('question').value;
-    const answer = document.getElementById('answer').value;
+    const type = document.getElementById('card-type').value;
+    const content = document.getElementById('question').value;
     const previewPanel = document.getElementById('preview-panel');
-    
-    document.querySelector('.preview-question').textContent = question;
-    document.querySelector('.preview-answer').textContent = answer;
+    const previewQuestion = document.querySelector('.preview-question');
+    const previewAnswer = document.querySelector('.preview-answer');
+
+    // Clear previous content
+    previewQuestion.innerHTML = '';
+    previewAnswer.innerHTML = '';
     previewPanel.classList.remove('hidden');
+
+    if (type === 'Clasic') {
+        const lines = content.split('\n').filter(line => line.trim() !== '');
+        
+        // Question (Line 1)
+        if (lines.length > 0) {
+            previewQuestion.innerHTML += `<h4>${lines[0]}</h4>`;
+        }
+        
+        // Subtitle (Line 2)
+        if (lines.length > 1) {
+            previewQuestion.innerHTML += `<p class="subtitle">${lines[1]}</p>`;
+        }
+
+        // Process answer/extraInfo split
+        const answerContent = lines.slice(2).join('\n');
+        const splitIndex = answerContent.indexOf('/');
+        
+        let answerPart = answerContent;
+        let extraInfoPart = '';
+        
+        if (splitIndex !== -1) {
+            answerPart = answerContent.substring(0, splitIndex).trim();
+            extraInfoPart = answerContent.substring(splitIndex + 1).trim();
+        }
+
+        // Build answer section
+        previewAnswer.innerHTML = `
+            ${answerPart.replace(/\n/g, '<br>')}
+            ${extraInfoPart ? `
+                <div class="notes">
+                    <strong>Notes:</strong>
+                    ${extraInfoPart.replace(/\n/g, '<br>')}
+                </div>
+            ` : ''}
+        `;
+
+        // Show answer toggle functionality
+        const toggleBtn = document.querySelector('.toggle-preview');
+        if (toggleBtn) {
+            toggleBtn.style.display = 'block';
+        }
+    } else if (type === 'multipleChoice') {
+        // Existing multiple choice preview logic
+        const options = document.getElementById('options').value.split(',');
+        const correctIndex = parseInt(document.getElementById('correct-answer').value);
+        
+        previewQuestion.innerHTML = `<h4>${content}</h4>`;
+        previewAnswer.innerHTML = options.map((option, index) => `
+            <div class="preview-option ${index === correctIndex ? 'correct' : ''}">
+                ${option.trim()}
+            </div>
+        `).join('');
+    }
+
+    // Reset toggle state
+    previewAnswer.classList.add('hidden');
+    document.querySelector('.toggle-preview').textContent = 'Show Answer';
 }
 
 function initializeERA1Cards() {
@@ -787,40 +940,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add type toggle functionality
 document.getElementById('card-type')?.addEventListener('change', function() {
     const mcFields = document.getElementById('multiple-choice-fields');
-    if (this.value === 'multipleChoice') {
-      mcFields.classList.remove('hidden');
-      document.getElementById('options').required = true;
-      document.getElementById('correct-answer').required = true;
-    } else {
-      mcFields.classList.add('hidden');
-      document.getElementById('options').required = false;
-      document.getElementById('correct-answer').required = false;
-    }
-  });
-  
-  // Update preview functionality
-  function updatePreview() {
-    const type = document.getElementById('card-type').value;
-    const question = document.getElementById('question').value;
-    const answer = document.getElementById('answer').value;
+    const questionLabel = document.querySelector('label[for="question"]');
     
-    const previewQuestion = document.querySelector('.preview-question');
-    previewQuestion.innerHTML = question;
-  
-    if (type === 'multipleChoice') {
-      const options = document.getElementById('options').value.split(',').map(s => s.trim());
-      const correctIndex = parseInt(document.getElementById('correct-answer').value);
-      
-      previewQuestion.innerHTML += '<div class="preview-options">';
-      options.forEach((opt, index) => {
-        previewQuestion.innerHTML += `
-          <div class="preview-option ${index === correctIndex ? 'correct' : ''}">
-            ${String.fromCharCode(65 + index)}) ${opt}
-          </div>
-        `;
-      });
-      previewQuestion.innerHTML += '</div>';
+    if (this.value === 'multipleChoice') {
+        mcFields.classList.remove('hidden');
+        questionLabel.textContent = 'Question:';
     } else {
-      document.querySelector('.preview-answer').textContent = answer;
+        mcFields.classList.add('hidden');
+        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
     }
-  }
+});
+
+// Add this function to dashboard-script.js
+function populateDeckDropdown() {
+    const deckSelect = document.getElementById('deck-select');
+    if (!deckSelect) return;
+
+    // Clear existing options
+    deckSelect.innerHTML = '';
+
+    // Add decks from your decks structure
+    Object.keys(decks).forEach(deckName => {
+        const option = document.createElement('option');
+        option.value = deckName;
+        option.textContent = deckName;
+        deckSelect.appendChild(option);
+    });
+}
+
+// Call this in your DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', () => {
+    populateDeckDropdown();
+    // ... rest of your existing initialization code ...
+});

@@ -6,6 +6,12 @@ const flashcardSchema = new mongoose.Schema({
       required: [true, 'Question is required'],
       trim: true
   },
+  subtitle: {
+    type: String,
+    trim: true,
+    default: '',
+    required: false // Explicitly mark as optional
+  },
   answer: {
       type: String,
       required: [true, 'Answer is required'],
@@ -29,11 +35,12 @@ const flashcardSchema = new mongoose.Schema({
       type: [String],
       default: []
   },
-  extraInfo: {
-      type: String,
-      trim: true,
-      default: ''
-  },
+extraInfo: {
+    type: String,
+    trim: true,
+    default: '',
+    maxlength: [500, 'Notes cannot exceed 500 characters'] 
+},
   createdAt: {
       type: Date,
       default: Date.now

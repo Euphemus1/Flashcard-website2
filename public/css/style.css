@@ -796,13 +796,14 @@ nav {
 h3 {
     color: #2c3e50;
     margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
 }
 
-h1.mechanism {
+p.mechanism {
     color: #7f8c8d;
-    font-size: 1.4rem;
-    margin-bottom: 1.5rem; /* Add margin to create space below h1 */
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem; 
+    font-weight: 600;
 }
 
 .mechanism, .answer-text {
