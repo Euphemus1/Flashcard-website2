@@ -230,51 +230,132 @@ const isAdmin = (req, res, next) => {
 
 app.post('/api/flashcards', async (req, res) => {
   try {
-      if (!req.body.question || !req.body.answer || !req.body.deck || !req.body.subdeck) {
-          return res.status(400).json({ 
-              error: "Missing required fields: question, answer, deck, subdeck" 
-          });
+    // Validate required fields
+    const requiredFields = ['type', 'question', 'answer', 'deck', 'subdeck'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    // Validate card type
+    if (!['Clasic', 'multipleChoice'].includes(req.body.type)) {
+      return res.status(400).json({ error: 'Invalid card type' });
+    }
+
+    let processedCorrectIndex = -1;
+    let processedOptions = [];
+
+    // Process multiple choice cards
+    if (req.body.type === 'multipleChoice') {
+      // Convert options to array if it's a string
+      if (typeof req.body.options === 'string') {
+        processedOptions = req.body.options.split('\n')
+          .map(opt => opt.trim())
+          .filter(opt => opt !== '');
+      } else {
+        processedOptions = req.body.options.map(opt => opt.trim())
+                          .filter(opt => opt !== '');
       }
 
-    const cleanDeck = req.body.deck
-      .trim()
-      .replace(/\s+/g, ' ');
+      // Validate options array
+      if (processedOptions.length < 2) {
+        return res.status(400).json({
+          error: 'Multiple choice requires at least 2 options'
+        });
+      }
 
+      if (processedOptions.length > 6) {
+        return res.status(400).json({
+          error: 'Maximum 6 options allowed'
+        });
+      }
+
+      // Validate and convert correctIndex
+      const rawIndex = req.body.correctIndex;
+      const parsedIndex = parseInt(rawIndex, 10);
+      
+      if (isNaN(parsedIndex)) {
+        return res.status(400).json({
+          error: 'Correct answer index must be a number'
+        });
+      }
+
+      if (parsedIndex < 0 || parsedIndex >= processedOptions.length) {
+        return res.status(400).json({
+          error: `Invalid correct index. Must be between 0 and ${processedOptions.length - 1}`
+        });
+      }
+
+      processedCorrectIndex = parsedIndex;
+    }
+
+    // Clean and format data
     const flashcardData = {
-      ...req.body,
-      deck: cleanDeck,
-      subtitle: req.body.subtitle || '' // Ensure subtitle exists
+      type: req.body.type,
+      question: req.body.question.trim(),
+      answer: req.body.type === 'multipleChoice' 
+              ? processedOptions[processedCorrectIndex] 
+              : req.body.answer.trim(),
+      deck: req.body.deck.trim().replace(/\s+/g, ' '),
+      subdeck: req.body.subdeck.trim(),
+      options: processedOptions,
+      correctIndex: processedCorrectIndex,
+      subtitle: req.body.subtitle?.trim() || '',
+      extraInfo: req.body.extraInfo?.trim() || '',
+      references: Array.isArray(req.body.references) 
+                ? req.body.references.map(r => r.trim()) 
+                : [],
+      tags: Array.isArray(req.body.tags) 
+          ? req.body.tags.map(t => t.trim()) 
+          : []
     };
 
-    console.log('Processed data:', flashcardData); // Verify data
-
+    // Create the flashcard
     const flashcard = await Flashcard.create(flashcardData);
     res.status(201).json(flashcard);
+
   } catch (error) {
-    console.error('Full error:', error);
+    console.error('Error:', error);
     res.status(400).json({ 
       error: `Server error: ${error.message}` 
     });
   }
 });
 
-app.get('/api/flashcards', async (req, res) => { // Removed passport.authenticate
+app.get('/api/flashcards', async (req, res) => {
   try {
-    // 1. Create a query object with both deck and subdeck
     const query = {
       deck: req.query.deck,
-      subdeck: req.query.subdeck // Add subdeck filtering
+      subdeck: req.query.subdeck
     };
 
-    // 2. Clean undefined parameters
+    // Clean query parameters
     Object.keys(query).forEach(key => {
-      if (query[key] === undefined) delete query[key];
+      if (!query[key]) delete query[key];
+      else query[key] = query[key].trim();
     });
 
-    // 3. Find cards with the combined query
-    const flashcards = await Flashcard.find(query);
-    
-    res.json(flashcards);
+    // Fetch cards with lean() for better performance
+    const flashcards = await Flashcard.find(query)
+      .lean()
+      .select('-__v -createdAt -updatedAt');
+
+    // Format response for different card types
+    const formattedCards = flashcards.map(card => {
+      if (card.type === 'multipleChoice') {
+        return {
+          ...card,
+          options: card.options || [],
+          correctIndex: card.correctIndex || -1
+        };
+      }
+      return card;
+    });
+
+    res.json(formattedCards);
   } catch (error) {
     res.status(500).json({ 
       error: `Failed to load cards: ${error.message}` 
