@@ -293,88 +293,45 @@ function loadNextCard() {
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
 
-    // Clear previous content
-    const questionCard = document.querySelector('.question');
-    const answerCard = document.querySelector('.answer');
-    const mcOptionsContainer = document.getElementById('mc-options');
-    mcOptionsContainer.innerHTML = '';
-    mcOptionsContainer.classList.add('hidden');
-
-    // Reset card visibility
-    questionCard.classList.remove('hidden');
-    answerCard.classList.add('hidden');
-
     // 1. Update Question Card
     document.getElementById('card-front').textContent = currentCard.question;
-
-    // Handle multiple choice options
-    if (currentCard.type === 'multipleChoice' && currentCard.options?.length) {
-        mcOptionsContainer.classList.remove('hidden');
-        currentCard.options.forEach((option, index) => {
-            const optionElement = document.createElement('div');
-            optionElement.className = 'mc-option';
-            optionElement.innerHTML = `
-                <span class="option-letter">${String.fromCharCode(65 + index)}.</span>
-                ${option}
-            `;
-            
-            // Add click handler for immediate feedback
-            optionElement.addEventListener('click', () => handleOptionSelection(index, currentCard));
-            mcOptionsContainer.appendChild(optionElement);
-        });
+    const subtitleElement = document.getElementById('card-subtitle');
+    
+    // Handle subtitle
+    if (currentCard.subtitle && subtitleElement) {
+        subtitleElement.textContent = currentCard.subtitle;
+        subtitleElement.classList.remove('hidden');
+    } else if (subtitleElement) {
+        subtitleElement.classList.add('hidden');
     }
 
     // 2. Update Answer Card
     const answerContent = document.querySelector('.answer .card-content');
     answerContent.innerHTML = `
         <h3>${currentCard.question}</h3>
-        ${currentCard.type === 'multipleChoice' ? `
-            <div class="mc-options-container">
-                ${currentCard.options.map((option, index) => `
-                    <div class="mc-option ${index === currentCard.correctIndex ? 'correct' : ''}">
-                        <span class="option-letter">${String.fromCharCode(65 + index)}.</span>
-                        ${option}
-                        ${index === currentCard.correctIndex ? ' ✓' : ''}
-                    </div>
-                `).join('')}
-            </div>
-        ` : ''}
+        ${currentCard.subtitle ? `<p class="subtitle">${currentCard.subtitle}</p>` : ''}
+        <div class="answer-text">${currentCard.answer.replace(/\n/g, '<br>')}</div>
         ${currentCard.extraInfo ? `
             <div class="notes">
                 <strong>Notas:</strong>
-                ${currentCard.extraInfo}
+                ${currentCard.extraInfo.replace(/\n/g, '<br>')}
             </div>
         ` : ''}
     `;
 
-    // Update status and controls
+    // 3. Update status
     showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
-    document.querySelector('.srs-controls').classList.add('hidden');
-    document.getElementById('review-actions').classList.remove('hidden');
-}
 
-// Add option selection handler
-function handleOptionSelection(selectedIndex, card) {
-    const options = document.querySelectorAll('.mc-option');
-    
-    // Remove previous selections
-    options.forEach(option => {
-        option.classList.remove('selected', 'correct', 'incorrect');
-    });
+    // 4. Reset card visibility
+    const questionCard = document.querySelector('.question');
+    const answerCard = document.querySelector('.answer');
+    const srsControls = document.querySelector('.srs-controls');
+    const reviewActions = document.getElementById('review-actions');
 
-    // Mark selected option
-    options[selectedIndex].classList.add('selected');
-    
-    // Show correct answer if needed
-    if (selectedIndex === card.correctIndex) {
-        options[selectedIndex].classList.add('correct');
-    } else {
-        options[selectedIndex].classList.add('incorrect');
-        options[card.correctIndex].classList.add('correct');
-    }
-    
-    // Show review button
-    document.getElementById('revisar-button').classList.remove('hidden');
+    questionCard.classList.remove('hidden');
+    answerCard.classList.add('hidden');
+    srsControls.classList.add('hidden');
+    reviewActions.classList.remove('hidden');
 }
 
 function switchDeck(deckName) {
@@ -925,35 +882,6 @@ function initializeERA1Cards() {
     }
   }
   
-  function initializeERA2Cards() {
-    if (window.location.pathname.includes('patologia-era2')) {
-        console.log('Initializing ERA2 flashcards...');
-        
-        getDeckData('Patología', 'ERA2').then(data => {
-            flashcards = data;
-            console.log('Loaded ERA2 cards:', flashcards);
-            
-            if(flashcards.length > 0) {
-                currentCardIndex = -1; // Start at -1 so first loadNextCard() shows index 0
-                loadNextCard();
-            } else {
-                showStatus('No hay tarjetas en este mazo');
-            }
-        }).catch(error => {
-            console.error('Error loading ERA2 cards:', error);
-            showStatus('Error al cargar las tarjetas');
-        });
-    }
-}
-
-// Update DOMContentLoaded listener
-document.addEventListener('DOMContentLoaded', () => {
-    displayUsername();
-    initializeERA1Cards();
-    initializeERA2Cards(); // Add this line
-    document.getElementById('contact-button')?.addEventListener('click', showContact);
-});
-
   // Add to existing DOMContentLoaded listener
   document.addEventListener('DOMContentLoaded', () => {
     displayUsername();

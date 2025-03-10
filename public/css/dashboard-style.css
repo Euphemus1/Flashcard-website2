@@ -1125,54 +1125,91 @@ p.question-look, .answer-text {
 
 /* ================================================= CHOICE STYLING ================================================= */
 
-/* Multiple Choice Specific Styles */
-.mc-options-container {
+/* ========================================== CHOICE FLASHCARD ========================================================== */
+
+/* Choice Card Specific Styles */
+.choice-card {
+    margin-top: 2rem;
+}
+
+.choice-options {
     display: grid;
     gap: 1rem;
     margin-top: 2rem;
 }
 
-.mc-option {
+.choice {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
     padding: 1rem;
-    border: 2px solid #429edd;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: white;
     text-align: left;
 }
 
-.mc-option:hover {
-    background: #f0f8ff;
+.choice:hover {
+    background: #429edb;
+    color: white;
     transform: translateY(-2px);
 }
 
-.mc-option.correct {
-    border-color: #27ae60;
-    background: #e3fcec;
+.choice.correct {
+    background: #2ed573;
+    color: white;
+    border-color: #2ed573;
 }
 
-.mc-option.incorrect {
+.choice.wrong {
+    background: #ff4757;
+    color: white;
     border-color: #ff4757;
-    background: #ffe6e6;
 }
 
-.mc-option.selected {
-    border-color: #34495e;
-    background: #f8f9fa;
+
+/* Hidden state for wrong answers */
+.choice.hidden-option {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
 }
 
-.explanation {
-    margin-top: 1.5rem;
+/* Explanation styling */
+.explanation-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    margin-top: 1rem;
+}
+
+.explanation-container.visible {
+    max-height: 200px; /* Adjust based on content size */
+}
+
+.explanation-text {
+    background: #f0faff;
     padding: 1rem;
-    background: #f8f9fa;
-    border-left: 3px solid #429edd;
-    border-radius: 4px;
+    border-radius: 8px;
+    border-left: 4px solid #2ed573;
+    color: #053F5C;
 }
 
-/* Update existing answer styles */
-.answer .card-content {
-    display: flex;
-    flex-direction: column;
+/* Choice Card SRS Positioning */
+.choice-srs-container {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.card-pair.choice-card .srs-controls {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
+}
+
+.card-pair.choice-card .srs-controls.visible {
+    display: grid;
 }
