@@ -293,6 +293,9 @@ function loadNextCard() {
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
 
+    // Enhanced logging for debugging
+    console.log("Loading card:", currentCard);
+    
     // Get card elements
     const questionCard = document.querySelector('.question');
     const answerCard = document.querySelector('.answer');
@@ -311,15 +314,57 @@ function loadNextCard() {
         const choiceOptions = document.getElementById('choice-options');
         
         if (cardFront && choiceOptions) {
+            // Clear previous content
             cardFront.textContent = currentCard.question;
             choiceOptions.innerHTML = '';
             
+            console.log('Loading choice card:', currentCard.question);
+            console.log('Card Options Array:', JSON.stringify(currentCard.options));
+            
+            // Validate the current card has options
+            if (!currentCard.options || !Array.isArray(currentCard.options) || currentCard.options.length === 0) {
+                console.error("Card has no valid options array:", currentCard);
+                return;
+            }
+            
+            // Check which option has the ] marker
+            const correctIndex = currentCard.options.findIndex(opt => opt.includes(']'));
+            console.log('Correct answer index (from ] marker):', correctIndex);
+            
             // Create and add choice buttons
             currentCard.options.forEach((option, index) => {
+                // Create button
                 const choiceButton = document.createElement('button');
+                
+                // Set clean visual text (without the ] marker)
+                const displayText = option.replace(/\]$/, '').trim();
+                
+                // Set basic styling
                 choiceButton.className = 'choice';
-                choiceButton.textContent = option;
+                choiceButton.style.width = '100%';
+                choiceButton.style.padding = '12px 20px';
+                choiceButton.style.margin = '8px 0';
+                choiceButton.style.border = '2px solid #3498db';
+                choiceButton.style.borderRadius = '8px';
+                choiceButton.style.backgroundColor = '#fff';
+                choiceButton.style.color = '#2c3e50';
+                choiceButton.style.fontSize = '16px';
+                choiceButton.style.cursor = 'pointer';
+                choiceButton.style.position = 'relative';
+                
+                // Set the display text (without ])
+                choiceButton.textContent = displayText;
+                choiceButton.disabled = false;
+                
+                // Add event listener
                 choiceButton.addEventListener('click', () => handleChoiceSelection(index));
+                
+                // Log if this is the correct option
+                if (index === correctIndex) {
+                    console.log(`Option ${index} is correct:`, option);
+                }
+                
+                // Add button to container
                 choiceOptions.appendChild(choiceButton);
             });
         }
@@ -1061,36 +1106,110 @@ function initializeERA2Cards() {
     }
 }
 
+// Enhanced logging function
+function logToConsole(message, data) {
+    console.log(`[${new Date().toISOString()}] ${message}`, data);
+}
+
 // Add function to handle choice selection
 function handleChoiceSelection(selectedIndex) {
     const currentCard = flashcards[currentCardIndex];
     const choiceButtons = document.querySelectorAll('.choice');
     const srsControls = document.querySelector('.srs-controls');
     
-    // Disable all choice buttons
-    choiceButtons.forEach(button => button.disabled = true);
+    // Debug logging
+    console.log('handleChoiceSelection called for index:', selectedIndex);
+    console.log('Current card:', currentCard);
     
-    // Mark correct and wrong answers
-    choiceButtons.forEach((button, index) => {
-        if (index === currentCard.correctIndex) {
-            button.classList.add('correct');
-        }
-        if (index === selectedIndex && selectedIndex !== currentCard.correctIndex) {
-            button.classList.add('wrong');
-        }
-    });
-
-    // Show SRS controls after selection only if answer was correct
-    if (srsControls && selectedIndex === currentCard.correctIndex) {
-        setTimeout(() => {
-            srsControls.classList.remove('hidden');
-        }, 1000);
-    } else if (srsControls) {
-        // If answer was wrong, wait a moment and load next card
-        setTimeout(() => {
-            loadNextCard();
-        }, 2000);
+    // IMPORTANT: Find the correct answer in the original options array from the card data
+    let correctIndex = currentCard.options.findIndex(option => 
+        option.trim().endsWith(']') || // Check for ] at the end after trimming
+        option.includes(']')); // Also check for ] anywhere
+    
+    console.log('Correct index in options array:', correctIndex);
+    
+    // If we can't find the ] marker, try using the correctIndex property directly
+    if (correctIndex === -1 && currentCard.correctIndex !== undefined) {
+        console.log('No ] marker found, using correctIndex property:', currentCard.correctIndex);
+        correctIndex = currentCard.correctIndex;
     }
+    
+    // Last resort: if still no correctIndex found, use the selected index as correct
+    if (correctIndex === -1) {
+        console.warn('No correct answer found at all. Treating selected answer as correct');
+        correctIndex = selectedIndex;
+    }
+    
+    // Disable all buttons to prevent multiple selections
+    choiceButtons.forEach(button => {
+        button.disabled = true;
+    });
+    
+    // DIRECT STYLE MANIPULATION - no reliance on CSS classes
+    
+    // First, mark the correct answer with direct styles
+    if (correctIndex >= 0 && correctIndex < choiceButtons.length) {
+        const correctButton = choiceButtons[correctIndex];
+        console.log('Styling correct button at index:', correctIndex);
+        
+        // Apply green color directly
+        correctButton.style.backgroundColor = '#2ed573';
+        correctButton.style.borderColor = '#2ed573';
+        correctButton.style.color = 'white';
+        correctButton.style.fontWeight = 'bold';
+        
+        // Add checkmark directly
+        const checkmark = document.createElement('span');
+        checkmark.textContent = '✓';
+        checkmark.style.position = 'absolute';
+        checkmark.style.right = '20px';
+        checkmark.style.color = 'white';
+        checkmark.style.fontWeight = 'bold';
+        correctButton.appendChild(checkmark);
+    }
+    
+    // Only mark selected answer as wrong if it's not the correct one
+    if (selectedIndex !== correctIndex) {
+        console.log('Selected wrong answer at index:', selectedIndex);
+        
+        // Make sure the selected index is valid
+        if (selectedIndex >= 0 && selectedIndex < choiceButtons.length) {
+            const selectedButton = choiceButtons[selectedIndex];
+            
+            // Apply red color directly
+            selectedButton.style.backgroundColor = '#ff4757';
+            selectedButton.style.borderColor = '#ff4757';
+            selectedButton.style.color = 'white';
+            selectedButton.style.fontWeight = 'bold';
+            
+            // Add X mark directly
+            const xmark = document.createElement('span');
+            xmark.textContent = '✗';
+            xmark.style.position = 'absolute';
+            xmark.style.right = '20px';
+            xmark.style.color = 'white';
+            xmark.style.fontWeight = 'bold';
+            selectedButton.appendChild(xmark);
+        } else {
+            console.error('Selected index is out of bounds:', selectedIndex);
+        }
+    } else {
+        console.log('Correct answer selected!');
+    }
+    
+    // Show SRS controls after marking the answer
+    if (srsControls) {
+        srsControls.classList.remove('hidden');
+    }
+    
+    // Final debugging check - print the final state of all buttons
+    choiceButtons.forEach((button, idx) => {
+        console.log(`Button ${idx} final state:`, {
+            backgroundColor: button.style.backgroundColor,
+            color: button.style.color,
+            isDisabled: button.disabled
+        });
+    });
 }
 
 // Add to existing DOMContentLoaded listener
