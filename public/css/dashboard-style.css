@@ -1166,7 +1166,6 @@ p.question-look, .answer-text {
     border-color: #ff4757;
 }
 
-
 /* Hidden state for wrong answers */
 .choice.hidden-option {
     opacity: 0;

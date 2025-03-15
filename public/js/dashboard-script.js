@@ -293,45 +293,73 @@ function loadNextCard() {
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
 
-    // 1. Update Question Card
-    document.getElementById('card-front').textContent = currentCard.question;
-    const subtitleElement = document.getElementById('card-subtitle');
-    
-    // Handle subtitle
-    if (currentCard.subtitle && subtitleElement) {
-        subtitleElement.textContent = currentCard.subtitle;
-        subtitleElement.classList.remove('hidden');
-    } else if (subtitleElement) {
-        subtitleElement.classList.add('hidden');
-    }
-
-    // 2. Update Answer Card
-    const answerContent = document.querySelector('.answer .card-content');
-    answerContent.innerHTML = `
-        <h3>${currentCard.question}</h3>
-        ${currentCard.subtitle ? `<p class="subtitle">${currentCard.subtitle}</p>` : ''}
-        <div class="answer-text">${currentCard.answer.replace(/\n/g, '<br>')}</div>
-        ${currentCard.extraInfo ? `
-            <div class="notes">
-                <strong>Notas:</strong>
-                ${currentCard.extraInfo.replace(/\n/g, '<br>')}
-            </div>
-        ` : ''}
-    `;
-
-    // 3. Update status
-    showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
-
-    // 4. Reset card visibility
+    // Get card elements
     const questionCard = document.querySelector('.question');
     const answerCard = document.querySelector('.answer');
-    const srsControls = document.querySelector('.srs-controls');
     const reviewActions = document.getElementById('review-actions');
+    const srsControls = document.querySelector('.srs-controls');
 
+    // Reset card visibility
     questionCard.classList.remove('hidden');
-    answerCard.classList.add('hidden');
-    srsControls.classList.add('hidden');
-    reviewActions.classList.remove('hidden');
+    if (answerCard) answerCard.classList.add('hidden');
+    if (srsControls) srsControls.classList.add('hidden');
+    if (reviewActions) reviewActions.classList.remove('hidden');
+
+    if (currentCard.type === 'multipleChoice') {
+        // Handle choice card
+        const cardFront = document.getElementById('card-front');
+        const choiceOptions = document.getElementById('choice-options');
+        
+        if (cardFront && choiceOptions) {
+            cardFront.textContent = currentCard.question;
+            choiceOptions.innerHTML = '';
+            
+            // Create and add choice buttons
+            currentCard.options.forEach((option, index) => {
+                const choiceButton = document.createElement('button');
+                choiceButton.className = 'choice';
+                choiceButton.textContent = option;
+                choiceButton.addEventListener('click', () => handleChoiceSelection(index));
+                choiceOptions.appendChild(choiceButton);
+            });
+        }
+    } else {
+        // Handle classic card
+        const cardFront = document.getElementById('card-front');
+        const cardSubtitle = document.getElementById('card-subtitle');
+        
+        if (cardFront) {
+            cardFront.textContent = currentCard.question;
+            
+            if (cardSubtitle) {
+                if (currentCard.subtitle) {
+                    cardSubtitle.textContent = currentCard.subtitle;
+                    cardSubtitle.classList.remove('hidden');
+                } else {
+                    cardSubtitle.classList.add('hidden');
+                }
+            }
+        }
+
+        if (answerCard) {
+            const answerContent = answerCard.querySelector('.card-content');
+            if (answerContent) {
+                answerContent.innerHTML = `
+                    <h3>${currentCard.question}</h3>
+                    ${currentCard.subtitle ? `<p class="subtitle">${currentCard.subtitle}</p>` : ''}
+                    <div class="answer-text">${currentCard.answer.replace(/\n/g, '<br>')}</div>
+                    ${currentCard.extraInfo ? `
+                        <div class="notes">
+                            <strong>Notas:</strong>
+                            ${currentCard.extraInfo.replace(/\n/g, '<br>')}
+                        </div>
+                    ` : ''}
+                `;
+            }
+        }
+    }
+
+    showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
 }
 
 function switchDeck(deckName) {
@@ -421,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Existing initializations
     displayUsername();
     initializeERA1Cards();
+    initializeERA2Cards();
     document.getElementById('contact-button')?.addEventListener('click', showContact);
     
     // Calendar initialization
@@ -1009,4 +1038,65 @@ document.querySelectorAll('input[name="card-type"]').forEach(radio => {
             questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
         }
     });
+});
+
+function initializeERA2Cards() {
+    if (window.location.pathname.includes('patologia-era2')) {
+        console.log('Initializing ERA2 flashcards...');
+        
+        getDeckData('Patología', 'ERA2').then(data => {
+            flashcards = data;
+            console.log('Loaded ERA2 cards:', flashcards);
+            
+            if(flashcards.length > 0) {
+                currentCardIndex = 0;
+                loadNextCard();
+            } else {
+                showStatus('No hay tarjetas en este mazo');
+            }
+        }).catch(error => {
+            console.error('Error loading ERA2 cards:', error);
+            showStatus('Error al cargar las tarjetas');
+        });
+    }
+}
+
+// Add function to handle choice selection
+function handleChoiceSelection(selectedIndex) {
+    const currentCard = flashcards[currentCardIndex];
+    const choiceButtons = document.querySelectorAll('.choice');
+    const srsControls = document.querySelector('.srs-controls');
+    
+    // Disable all choice buttons
+    choiceButtons.forEach(button => button.disabled = true);
+    
+    // Mark correct and wrong answers
+    choiceButtons.forEach((button, index) => {
+        if (index === currentCard.correctIndex) {
+            button.classList.add('correct');
+        }
+        if (index === selectedIndex && selectedIndex !== currentCard.correctIndex) {
+            button.classList.add('wrong');
+        }
+    });
+
+    // Show SRS controls after selection only if answer was correct
+    if (srsControls && selectedIndex === currentCard.correctIndex) {
+        setTimeout(() => {
+            srsControls.classList.remove('hidden');
+        }, 1000);
+    } else if (srsControls) {
+        // If answer was wrong, wait a moment and load next card
+        setTimeout(() => {
+            loadNextCard();
+        }, 2000);
+    }
+}
+
+// Add to existing DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', () => {
+    displayUsername();
+    initializeERA1Cards();
+    initializeERA2Cards();
+    document.getElementById('contact-button')?.addEventListener('click', showContact);
 });
