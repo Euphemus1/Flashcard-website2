@@ -165,7 +165,7 @@ function createOverviewRow(name, stats, isSubdeck) {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>${isSubdeck ? `<span class="subdeck-padding">${name}</span>` : `<span class="toggle-deck">+</span> ${name}`}</td>
-        <td class="total-cards">${stats.totalCards}</td>
+        <td class="total-cards ${stats.totalCards > 0 ? 'new-positive' : ''}">${stats.totalCards}</td>
     `;
     if (isSubdeck) row.classList.add('subdeck-row', 'hidden');
     return row;
