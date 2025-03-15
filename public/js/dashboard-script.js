@@ -289,6 +289,25 @@ function skipCard() {
     loadNextCard();
 }
 
+// Add this function to inject CSS styles once at the beginning
+function addCustomStyles() {
+    // This function is no longer needed since we added the styles directly to the CSS file
+    // Keeping this as an empty function for backward compatibility
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', addCustomStyles);
+
+// Helper function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    const shuffled = [...array]; // Create a copy of the array
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Swap elements
+    }
+    return shuffled;
+}
+
 function loadNextCard() {
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
@@ -301,6 +320,8 @@ function loadNextCard() {
     const answerCard = document.querySelector('.answer');
     const reviewActions = document.getElementById('review-actions');
     const srsControls = document.querySelector('.srs-controls');
+    const skipButton = document.getElementById('skip-button');
+    const cardPair = document.querySelector('.card-pair');
 
     // Reset card visibility
     questionCard.classList.remove('hidden');
@@ -312,6 +333,17 @@ function loadNextCard() {
         // Handle choice card
         const cardFront = document.getElementById('card-front');
         const choiceOptions = document.getElementById('choice-options');
+        
+        // Add choice-card class to the card-pair element
+        if (cardPair) {
+            cardPair.classList.add('choice-card');
+        }
+        
+        // Reset the skip button text and remove seguir-button class if it exists
+        if (skipButton) {
+            skipButton.textContent = 'Saltar';
+            skipButton.classList.remove('seguir-button');
+        }
         
         if (cardFront && choiceOptions) {
             // Clear previous content
@@ -331,8 +363,23 @@ function loadNextCard() {
             const correctIndex = currentCard.options.findIndex(opt => opt.includes(']'));
             console.log('Correct answer index (from ] marker):', correctIndex);
             
+            // Create shuffled options with tracked original indices
+            const optionsWithIndices = currentCard.options.map((option, index) => ({
+                option,
+                originalIndex: index,
+                isCorrect: index === correctIndex
+            }));
+            
+            // Shuffle the options
+            const shuffledOptions = shuffleArray(optionsWithIndices);
+            
             // Create and add choice buttons
-            currentCard.options.forEach((option, index) => {
+            shuffledOptions.forEach((item, displayIndex) => {
+                // Extract original option and index
+                const option = item.option;
+                const originalIndex = item.originalIndex;
+                const isCorrect = item.isCorrect;
+                
                 // Create button
                 const choiceButton = document.createElement('button');
                 
@@ -356,12 +403,16 @@ function loadNextCard() {
                 choiceButton.textContent = displayText;
                 choiceButton.disabled = false;
                 
-                // Add event listener
-                choiceButton.addEventListener('click', () => handleChoiceSelection(index));
+                // Add data attributes to track both original index and correctness
+                choiceButton.dataset.originalIndex = originalIndex.toString();
+                choiceButton.dataset.isCorrect = isCorrect.toString();
+                
+                // Add event listener - pass the original index to maintain correct answer tracking
+                choiceButton.addEventListener('click', () => handleChoiceSelection(originalIndex));
                 
                 // Log if this is the correct option
-                if (index === correctIndex) {
-                    console.log(`Option ${index} is correct:`, option);
+                if (originalIndex === correctIndex) {
+                    console.log(`Option ${displayIndex} (original ${originalIndex}) is correct:`, option);
                 }
                 
                 // Add button to container
@@ -372,6 +423,17 @@ function loadNextCard() {
         // Handle classic card
         const cardFront = document.getElementById('card-front');
         const cardSubtitle = document.getElementById('card-subtitle');
+        
+        // Remove choice-card class from the card-pair element
+        if (cardPair) {
+            cardPair.classList.remove('choice-card');
+        }
+        
+        // Reset the skip button text and remove seguir-button class if it exists
+        if (skipButton) {
+            skipButton.textContent = 'Saltar';
+            skipButton.classList.remove('seguir-button');
+        }
         
         if (cardFront) {
             cardFront.textContent = currentCard.question;
@@ -403,6 +465,9 @@ function loadNextCard() {
             }
         }
     }
+
+    // Ensure skip button has the correct event handler
+    updateSkipButtonHandler();
 
     showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
 }
@@ -1111,11 +1176,31 @@ function logToConsole(message, data) {
     console.log(`[${new Date().toISOString()}] ${message}`, data);
 }
 
+// Add this helper function to apply the right click handler to the skip button
+function updateSkipButtonHandler() {
+    const skipButton = document.getElementById('skip-button');
+    if (skipButton) {
+        // Remove any existing event listeners
+        const newButton = skipButton.cloneNode(true);
+        skipButton.parentNode.replaceChild(newButton, skipButton);
+        
+        if (newButton.textContent === 'Seguir') {
+            // If it's in "Seguir" mode, it should act like the "Good" SRS button
+            newButton.addEventListener('click', () => rateCard(1440)); // Same as "Good" button
+        } else {
+            // Otherwise it's the regular skip button
+            newButton.addEventListener('click', skipCard);
+        }
+    }
+}
+
 // Add function to handle choice selection
 function handleChoiceSelection(selectedIndex) {
     const currentCard = flashcards[currentCardIndex];
     const choiceButtons = document.querySelectorAll('.choice');
     const srsControls = document.querySelector('.srs-controls');
+    const skipButton = document.getElementById('skip-button');
+    const reviewActions = document.getElementById('review-actions');
     
     // Debug logging
     console.log('handleChoiceSelection called for index:', selectedIndex);
@@ -1140,43 +1225,70 @@ function handleChoiceSelection(selectedIndex) {
         correctIndex = selectedIndex;
     }
     
-    // Disable all buttons to prevent multiple selections
-    choiceButtons.forEach(button => {
-        button.disabled = true;
-    });
+    // Check if the selected option is correct
+    const isCorrect = selectedIndex === correctIndex;
     
-    // DIRECT STYLE MANIPULATION - no reliance on CSS classes
+    // Find the selected button and correct button using data attributes
+    const selectedButton = Array.from(choiceButtons).find(
+        button => parseInt(button.dataset.originalIndex) === selectedIndex
+    );
     
-    // First, mark the correct answer with direct styles
-    if (correctIndex >= 0 && correctIndex < choiceButtons.length) {
-        const correctButton = choiceButtons[correctIndex];
-        console.log('Styling correct button at index:', correctIndex);
+    const correctButton = Array.from(choiceButtons).find(
+        button => button.dataset.isCorrect === "true"
+    );
+    
+    console.log('Selected Button:', selectedButton);
+    console.log('Correct Button:', correctButton);
+    
+    if (isCorrect) {
+        // Handle correct answer selection
+        console.log('Correct answer selected!');
         
-        // Apply green color directly
-        correctButton.style.backgroundColor = '#2ed573';
-        correctButton.style.borderColor = '#2ed573';
-        correctButton.style.color = 'white';
-        correctButton.style.fontWeight = 'bold';
+        // Apply green color directly to the correct button (which is also the selected button)
+        if (selectedButton) {
+            selectedButton.style.backgroundColor = '#2ed573';
+            selectedButton.style.borderColor = '#2ed573';
+            selectedButton.style.color = 'white';
+            selectedButton.style.fontWeight = 'bold';
+            
+            // Add checkmark directly
+            const checkmark = document.createElement('span');
+            checkmark.textContent = '✓';
+            checkmark.style.position = 'absolute';
+            checkmark.style.right = '20px';
+            checkmark.style.color = 'white';
+            checkmark.style.fontWeight = 'bold';
+            selectedButton.appendChild(checkmark);
+            
+            // Also add correct class for CSS styling
+            selectedButton.classList.add('correct');
+        }
         
-        // Add checkmark directly
-        const checkmark = document.createElement('span');
-        checkmark.textContent = '✓';
-        checkmark.style.position = 'absolute';
-        checkmark.style.right = '20px';
-        checkmark.style.color = 'white';
-        checkmark.style.fontWeight = 'bold';
-        correctButton.appendChild(checkmark);
-    }
-    
-    // Only mark selected answer as wrong if it's not the correct one
-    if (selectedIndex !== correctIndex) {
+        // Disable ALL buttons when correct answer is found
+        choiceButtons.forEach(button => {
+            button.disabled = true;
+        });
+        
+        // Transform the skip button into a "continue" button
+        if (skipButton) {
+            skipButton.textContent = 'Seguir';
+            skipButton.classList.add('seguir-button');
+            
+            // Update the button's click handler
+            updateSkipButtonHandler();
+        }
+        
+        // Show SRS controls after finding the correct answer (let's hide them for now since we're using the Seguir button)
+        if (srsControls) {
+            srsControls.classList.add('hidden');
+        }
+    } else {
+        // Handle incorrect answer selection
         console.log('Selected wrong answer at index:', selectedIndex);
         
-        // Make sure the selected index is valid
-        if (selectedIndex >= 0 && selectedIndex < choiceButtons.length) {
-            const selectedButton = choiceButtons[selectedIndex];
-            
-            // Apply red color directly
+        // Make sure we found the selected button
+        if (selectedButton) {
+            // Apply red color directly to ONLY the wrong button that was clicked
             selectedButton.style.backgroundColor = '#ff4757';
             selectedButton.style.borderColor = '#ff4757';
             selectedButton.style.color = 'white';
@@ -1190,21 +1302,24 @@ function handleChoiceSelection(selectedIndex) {
             xmark.style.color = 'white';
             xmark.style.fontWeight = 'bold';
             selectedButton.appendChild(xmark);
+            
+            // Also add wrong class for CSS styling
+            selectedButton.classList.add('wrong');
+            
+            // Disable ONLY the wrong button that was clicked
+            selectedButton.disabled = true;
         } else {
-            console.error('Selected index is out of bounds:', selectedIndex);
+            console.error('Could not find the selected button with index:', selectedIndex);
         }
-    } else {
-        console.log('Correct answer selected!');
-    }
-    
-    // Show SRS controls after marking the answer
-    if (srsControls) {
-        srsControls.classList.remove('hidden');
+        
+        // Do NOT show SRS controls yet - user should keep trying
     }
     
     // Final debugging check - print the final state of all buttons
     choiceButtons.forEach((button, idx) => {
         console.log(`Button ${idx} final state:`, {
+            originalIndex: button.dataset.originalIndex,
+            isCorrect: button.dataset.isCorrect,
             backgroundColor: button.style.backgroundColor,
             color: button.style.color,
             isDisabled: button.disabled

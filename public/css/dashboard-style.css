@@ -407,6 +407,30 @@ p.question-look, .answer-text {
     background-color: #1e90ff;
 }
 
+/* Choice Card Review Actions Styling - Added for full width skip button */
+.card-pair.choice-card #review-actions {
+    display: block; /* Stack elements vertically */
+    width: 100%;
+}
+
+.card-pair.choice-card #skip-button {
+    width: 100%; /* Make skip button take full width for choice cards */
+    margin-top: 1rem;
+    padding: 12px;
+    text-align: center;
+}
+
+/* For the "Seguir" state after finding the correct answer */
+.card-pair.choice-card #skip-button.seguir-button {
+    background-color: #3498db;
+    font-weight: bold;
+}
+
+/* Hide the revisar button for choice cards */
+.card-pair.choice-card #revisar-button {
+    display: none;
+}
+
 /* Review Options */
 .srs-controls {
     display: grid;
