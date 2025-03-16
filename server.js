@@ -16,6 +16,7 @@ import crypto from 'crypto';
 import Flashcard from './models/Flashcard.js';
 import User from './models/User.js';
 import configurePassport from './config/passport.js';
+import fs from 'fs';
 
 // Configure __dirname equivalent for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -50,23 +51,31 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", 'trusted-cdn.com'],
+      scriptSrc: [
+        "'self'", 
+        'trusted-cdn.com', 
+        "'unsafe-inline'", 
+        "'unsafe-eval'"
+      ],
       styleSrc: [
         "'self'",
-        'fonts.googleapis.com',    // Google Fonts
-        'cdnjs.cloudflare.com',    // Font Awesome
+        'fonts.googleapis.com',
+        'cdnjs.cloudflare.com',
+        "'unsafe-inline'"
       ],
       connectSrc: [
         "'self'",
-        'https://medical-decks-backend.onrender.com', // Your backend
-        'http://localhost:10000'   // For local development
+        'https://medical-decks-backend.onrender.com',
+        'http://localhost:10000'
       ],
-      imgSrc: ["'self'", 'data:'], // Allow images from self and data URLs
+      imgSrc: ["'self'", 'data:'],
       fontSrc: [
         "'self'",
-        'fonts.gstatic.com',       // Google Fonts
-        'cdnjs.cloudflare.com' // For Font Awesome fonts
-      ]
+        'fonts.gstatic.com',
+        'cdnjs.cloudflare.com'
+      ],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
     }
   },
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
@@ -100,8 +109,34 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Rate limiting
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
-app.use('/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+const generalLimiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes 
+  max: 500, // increased from 200
+  message: "Too many requests, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const authLimiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
+  message: "Too many authentication attempts, please try again later", 
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const apiLimiter = rateLimit({ 
+  windowMs: 1 * 60 * 1000, // 1 minute 
+  max: 200, // higher limit for API calls
+  message: "Too many API requests, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Apply rate limiters
+app.use(generalLimiter); // General rate limiting for all routes
+app.use('/auth', authLimiter); // Specific rate limiting for auth routes
+app.use('/api', apiLimiter); // Specific rate limiting for API routes
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI, { 
@@ -202,31 +237,92 @@ app.get('/patologia-era3', (req, res) => {
   res.sendFile(path.join(__dirname, 'protected/patologia-era3.html'));
 });
 
+// Dynamic deck route - add this after the existing static routes
+app.get('/deck/:deckName', (req, res) => {
+  console.log(`Serving dynamic deck page for: ${req.params.deckName}`);
+  const fullPath = path.join(__dirname, 'protected', 'deck-template.html');
+  console.log(`Attempting to serve file at: ${fullPath}`);
+  
+  try {
+    if (fs.existsSync(fullPath)) {
+      res.sendFile(fullPath);
+    } else {
+      console.error(`File not found: ${fullPath}`);
+      res.status(404).send(`Template file not found. Please check server logs.`);
+    }
+  } catch (error) {
+    console.error(`Error serving dynamic deck page: ${error.message}`);
+    res.status(500).send(`Server error: ${error.message}`);
+  }
+});
+
 // API endpoints
 const isAdmin = (req, res, next) => {
   if (req.user?.isAdmin) return next();
   res.status(403).json({ error: 'Admin access required' });
 };
 
-//app.post('/api/flashcards', 
-//passport.authenticate('jwt', { session: false }), // Keep JWT auth
-//  async (req, res) => { // Remove isAdmin check temporarily
-//    try {
-      // Add admin check INSIDE the route handler
- //     if (!req.user.isAdmin) {
- //       return res.status(403).json({ error: "Admin access required" });
- //     }
-
- //     const flashcard = await Flashcard.create({ 
-     //   deck: req.query.deck,
-   //     subdeck: req.query.subdeck // Add this line
-//        createdBy: req.user._id 
-  //    });
-  //    res.status(201).json(flashcard);
- //   } catch (error) {
-  //    res.status(400).json({ error: error.message });
-  //  }
-//});
+// New API endpoint to get subdecks for a specific deck
+app.get('/api/decks/:deckName/subdecks', async (req, res) => {
+  try {
+    const { deckName } = req.params;
+    
+    console.log('API - Requested subdecks for deck:', deckName);
+    
+    if (!deckName) {
+      console.error('API - Missing deck name parameter');
+      return res.status(400).json({ error: 'Deck name is required' });
+    }
+    
+    const decodedDeckName = decodeURIComponent(deckName);
+    console.log('API - Decoded deck name:', decodedDeckName);
+    
+    // Find all unique subdecks for the given deck
+    const subdecks = await Flashcard.distinct('subdeck', { 
+      deck: decodedDeckName
+    });
+    
+    console.log(`API - Found ${subdecks.length} subdecks for deck:`, decodedDeckName);
+    console.log('API - Raw subdecks:', subdecks);
+    
+    // Filter out empty subdecks
+    let validSubdecks = subdecks.filter(subdeck => subdeck && subdeck.trim() !== '');
+    
+    console.log(`API - Filtered to ${validSubdecks.length} valid subdecks`);
+    
+    // If no subdecks found, check if we have predefined ones in our decks structure
+    if (validSubdecks.length === 0) {
+      console.log('API - No subdecks found in database, checking hardcoded defaults');
+      
+      // Hardcoded deck structure (similar to what's in dashboard-script.js)
+      const defaultDecks = {
+        'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+        'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
+        'Patología': ['ERA1', 'ERA2', 'ERA3'],
+        'Farmacología': ['ERA1', 'ERA2'],
+        'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
+        'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo Digestivo', 'Neurología', 'Anexos'],
+        'Revalida': ['Bling', 'Blang', 'Blong'],
+        'MIR': ['Bling', 'Blang', 'Blong'],
+      };
+      
+      // Check if we have default subdecks for this deck
+      if (defaultDecks[decodedDeckName]) {
+        validSubdecks = defaultDecks[decodedDeckName];
+        console.log(`API - Using ${validSubdecks.length} default subdecks from hardcoded structure`);
+      }
+    }
+    
+    res.json(validSubdecks);
+  } catch (error) {
+    console.error('API - Error fetching subdecks:', error);
+    res.status(500).json({ 
+      error: 'Server error', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
 
 app.post('/api/flashcards', async (req, res) => {
   try {

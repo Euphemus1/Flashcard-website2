@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Dynamic Deck</title>
+    <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
+    <!-- Additional CSS in external file instead of inline styles -->
+    <style>
+        /* Debug panel styling */
+        #debug-info {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        /* Debug button styling */
+        #debug-button {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: none !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            margin-right: 5px !important;
+            font-weight: bold !important;
+        }
+        
+        /* Error message styling */
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+        
+        .error-message i {
+            font-size: 3rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div id="top-nav">
+        <button id="sidebar-toggle" class="nav-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">Med Memory</div>
+        <div class="nav-buttons">
+            <span id="username-display"></span>
+            <button id="overview-button">General</button>
+            <button id="debug-button">Debug</button>
+            <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
+            <button id="contact-button">Contacto</button>
+            <button class="nav-btn" id="logout">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div id="sidebar">
+        <h2>Mis Mazos</h2>
+        <ul id="deck-list">
+            <!-- Dynamically populated by dynamic-deck.js -->
+        </ul>
+        <div class="sidebar-footer">
+            <a href="https://wa.me/+5547924yg4gg88336792" target="_blank" class="social-icon">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="https://instdfgfdgfdgagram.com/medmemory.ar" target="_blank" class="social-icon">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="mailto:medmem69yfvyfvy6fory@outlook.com" class="social-icon">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div class="title-container">
+            <button id="back-to-dashboard" class="nav-btn back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="deck-title">Loading...</h1>
+        </div>
+        <div id="debug-info"></div>
+        <div class="class-grid" id="subdeck-grid">
+            <!-- Will be dynamically populated with subdeck blocks -->
+            <div class="loading-message" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <h3>Loading subdecks...</h3>
+                <p>If this message persists, please check the debug panel for errors.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORTANT: Load scripts in the correct order -->
+    <script src="/js/console-capture.js"></script>
+    <script src="/js/dashboard-script.js"></script>
+    <script src="/js/debug-button.js"></script>
+    <script src="/js/dynamic-deck.js"></script>
+</body>
+</html> 

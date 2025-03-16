@@ -121,21 +121,59 @@ body {
     margin-top: 10px;
 }
 
+/* Deck button styling improvements for better click areas */
 .deck-btn {
+    display: flex;
+    align-items: center;
     width: 100%;
-    padding: 12px;
-    text-align: left;
+    justify-content: space-between;
+    padding: 0;
+    background-color: #4978a6;
     border: none;
-    background-color: #34495e;
-    color: white;
-    font-size: 16px;
     border-radius: 6px;
-    cursor: pointer;
     transition: background-color 0.3s ease;
+    overflow: hidden;
 }
 
 .deck-btn:hover {
     background-color: #16a085;
+}
+
+/* Make the plus sign more distinctive */
+.plus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+    /* Distinctive styling to show it's clickable */
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.plus:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Make deck names take most of the space */
+.deck-name {
+    cursor: pointer;
+    color: white !important;
+    flex-grow: 1;
+    text-align: left;
+    padding: 12px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    display: block;
+    width: calc(100% - 35px);
+}
+
+.deck-name:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .subdeck-btn {
@@ -144,7 +182,7 @@ body {
     width: 70%;
     height: 1.5rem;
     padding: 0 9px; */
-    background-color: #2440db; 
+    background-color: #7886d5; 
     padding: 6px;
     font-size: 14px;
     width: 100%;
@@ -175,12 +213,6 @@ body {
 
 .subdeck-list > li {
     margin: 1px 0;
-}
-
-.plus {
-    float: right;
-    font-size: 18px;
-    font-weight: bold;
 }
 
 /* Sidebar Footer */
@@ -999,14 +1031,19 @@ p.question-look, .answer-text {
 }
 
 .class-block {
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 15px;
     padding: 1.5rem;
     text-align: center;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-decoration: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e0e0e0;
+    min-height: 225px;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .class-block:hover {
@@ -1024,6 +1061,7 @@ p.question-look, .answer-text {
     justify-content: center;
     font-size: 1.8rem;
     color: white;
+    background: #3498db;
 }
 
 .class-block h3 {
@@ -1034,47 +1072,90 @@ p.question-look, .answer-text {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    word-break: break-word;
 }
 
 .class-progress {
-    height: 6px;
-    background: #f0f0f0;
-    border-radius: 3px;
+    width: 100%;
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
     overflow: hidden;
+    margin-top: auto;
 }
 
 .progress-bar {
     height: 100%;
+    background-color: #3498db;
+    width: 0;
     transition: width 0.5s ease;
 }
 
 /* Progress percentages */
 .progress-5 { width: 5%; }
 .progress-10 { width: 10%; }
-.progress-15 { width: 15%; }
 .progress-20 { width: 20%; }
-.progress-25 { width: 25%; }
 .progress-30 { width: 30%; }
 .progress-40 { width: 40%; }
-.progress-45 { width: 45%; }
+.progress-50 { width: 50%; }
 .progress-60 { width: 60%; }
-.progress-75 { width: 75%; }
+.progress-70 { width: 70%; }
+.progress-80 { width: 80%; }
+.progress-90 { width: 90%; }
+.progress-100 { width: 100%; }
 
-/* Color Schemes */
-.class-block.endocrine .class-icon { background: #4CAF50; }
-.class-block.hematology .class-icon { background: #F44336; }
-.class-block.genital .class-icon { background: #9C27B0; }
-.class-block.skeletal .class-icon { background: #795548; }
-.class-block.neuro .class-icon { background: #3F51B5; }
-.class-block.dermatology .class-icon { background: #FF9800; }
-.class-block.urinary .class-icon { background: #00BCD4; }
-.class-block.ocular .class-icon { background: #E91E63; }
-
-/* Progress bar colors */
-.class-block .progress-bar {
-    background: inherit;
-    opacity: 0.8;
+/* Color Schemes - Enhanced with gradients */
+.class-block.endocrine .class-icon { 
+    background: linear-gradient(145deg, #4CAF50, #2E7D32); 
 }
+.class-block.hematology .class-icon { 
+    background: linear-gradient(145deg, #F44336, #C62828); 
+}
+.class-block.genital .class-icon { 
+    background: linear-gradient(145deg, #9C27B0, #7B1FA2); 
+}
+.class-block.skeletal .class-icon { 
+    background: linear-gradient(145deg, #795548, #5D4037); 
+}
+.class-block.neuro .class-icon { 
+    background: linear-gradient(145deg, #3F51B5, #303F9F); 
+}
+.class-block.dermatology .class-icon { 
+    background: linear-gradient(145deg, #FF9800, #F57C00); 
+}
+.class-block.urinary .class-icon { 
+    background: linear-gradient(145deg, #00BCD4, #0097A7); 
+}
+.class-block.ocular .class-icon { 
+    background: linear-gradient(145deg, #E91E63, #C2185B); 
+}
+.class-block.respiratory .class-icon { 
+    background: linear-gradient(145deg, #5bc0eb, #4a9ac0);
+}
+.class-block.cardio .class-icon { 
+    background: linear-gradient(145deg, #e55934, #c44a2a);
+}
+.class-block.digestive .class-icon { 
+    background: linear-gradient(145deg, #fa7921, #cf6519);
+}
+.class-block.infectious .class-icon { 
+    background: linear-gradient(145deg, #9bc53d, #7e9f31);
+}
+
+/* Progress bar colors to match the icons */
+.class-block.endocrine .progress-bar { background: #4CAF50; }
+.class-block.hematology .progress-bar { background: #F44336; }
+.class-block.genital .progress-bar { background: #9C27B0; }
+.class-block.skeletal .progress-bar { background: #795548; }
+.class-block.neuro .progress-bar { background: #3F51B5; }
+.class-block.dermatology .progress-bar { background: #FF9800; }
+.class-block.urinary .progress-bar { background: #00BCD4; }
+.class-block.ocular .progress-bar { background: #E91E63; }
+.class-block.respiratory .progress-bar { background: #5bc0eb; }
+.class-block.cardio .progress-bar { background: #e55934; }
+.class-block.digestive .progress-bar { background: #fa7921; }
+.class-block.infectious .progress-bar { background: #9bc53d; }
 
 .card-counts {
     display: flex;
@@ -1274,4 +1355,192 @@ button.choice.wrong::after,
 
 .card-pair.choice-card .srs-controls.visible {
     display: grid;
+}
+
+/* Styles for dynamic deck pages */
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.error-message i {
+    font-size: 3rem;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.error-message h2 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.error-message button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.error-message button:hover {
+    background-color: #2980b9;
+}
+
+/* Additional class styles for variety */
+.class-block.respiratory {
+    background: linear-gradient(145deg, #5bc0eb, #4a9ac0);
+}
+
+.class-block.cardio {
+    background: linear-gradient(145deg, #e55934, #c44a2a);
+}
+
+.class-block.digestive {
+    background: linear-gradient(145deg, #fa7921, #cf6519);
+}
+
+.class-block.infectious {
+    background: linear-gradient(145deg, #9bc53d, #7e9f31);
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+#deck-title.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive improvements for small screens */
+@media (max-width: 768px) {
+    .class-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .class-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Make deck names look clickable */
+span.deck-name {
+    cursor: pointer;
+    color: #333;
+    margin-left: 5px;
+    flex-grow: 1;
+    text-align: left;
+    padding: 0 5px;
+}
+
+span.deck-name:hover {
+    color: #3498db;
+}
+
+span.plus {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.deck-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+/* Add styling for active deck button */
+.deck-btn.active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.deck-btn.active .deck-name {
+    font-weight: bold;
+    color: white;
+}
+
+.deck-btn.active:hover {
+    background-color: #138a72;
+}
+
+/* Back button styling */
+.back-btn {
+    margin-right: 5px;
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    padding: 8px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
+}
+
+.back-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Title container styling for deck pages */
+.title-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+    width: 100%;
+    padding: 0 40px; /* Add padding to account for the back button */
+}
+
+.title-container h1 {
+    margin: 0;
+    text-align: center;
+}
+
+/* Updated back button styling for main content area */
+.title-container .back-btn {
+    position: absolute;
+    left: 0;
+    margin-right: 0;
+    background-color: #429edd;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.title-container .back-btn:hover {
+    background-color: #3498db;
+    transform: translateX(-2px);
+}
+
+.title-container .back-btn:active {
+    background-color: #2980b9;
 }

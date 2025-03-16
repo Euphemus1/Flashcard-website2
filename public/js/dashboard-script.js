@@ -19,6 +19,11 @@
 //            }
 //        ];
 
+// Define global variables
+let currentDeck = 'Microbiología';
+let flashcards = []; // Initialize empty array for flashcards
+let currentCardIndex = 0;
+
 // Display username immediately when page loads
 function displayUsername() {
     console.log('CHECKING LOCALSTORAGE...');
@@ -54,168 +59,123 @@ function displayUsername() {
 document.addEventListener('DOMContentLoaded', () => {
     displayUsername();
     
+    // Setup deck button navigation
+    setupDeckButtonNavigation();
+    
+    // Add event listener for test dynamic deck button
+    const testDynamicDeckBtn = document.getElementById('test-dynamic-deck-btn');
+    if (testDynamicDeckBtn) {
+        testDynamicDeckBtn.addEventListener('click', () => {
+            console.log('Test button clicked - navigating to Microbiología dynamic deck page');
+            window.location.href = '/deck/Microbiología';
+        });
+    }
+    
     // Add contact button functionality
     document.getElementById('contact-button')?.addEventListener('click', showContact);
 });
 
-// Add Contact Modal Functionality
-function showContact() {
-    const contactContent = `
-    <div class="faq-overlay">
-        <div class="faq-modal">
-            <div class="faq-header">
-                <h2>Información de Contacto</h2>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="faq-content">
-                <div class="faq-item">
-                    <div class="answer show">
-                        <p><strong>Soporte Técnico:</strong></p>
-                        <ul>
-                            <li>📧 Email: soporte@medupgrade.com</li>
-                            <li>📞 Teléfono: +34 123 456 789</li>
-                        </ul>
-                        <p class="contact-schedule"><strong>Horario de Atención:</strong></p>
-                        <ul>
-                            <li>Lunes-Viernes: 9:00 - 18:00</li>
-                            <li>Sábados: 10:00 - 14:00</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    const contactOverlay = document.createElement('div');
-    contactOverlay.className = 'faq-overlay';
-    contactOverlay.innerHTML = contactContent;
-    document.body.appendChild(contactOverlay);
-
-    contactOverlay.querySelector('.close-btn').addEventListener('click', () => {
-        contactOverlay.remove();
-    });
-
-    contactOverlay.addEventListener('click', (e) => {
-        if(e.target === contactOverlay) contactOverlay.remove();
-    });
-}
-
-// Add event listener for contact button
-document.getElementById('contact-button').addEventListener('click', showContact);
-
-let currentCardIndex = 0;
-
-// Deck and subdeck structure
-const decks = {
-    'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
-    'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
-    'Patología': ['ERA1', 'ERA2', 'ERA3'],
-    'Farmacología': ['ERA1', 'ERA2'],
-    'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
-    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos'],
-    'Revalida': ['Bling', 'Blang', 'Blong'],
-    'MIR': ['Bling', 'Blang', 'Blong'],
-};
-
-// OPTIMIZED VERSION - FETCH ALL CARDS ONCE
-let allCardsCache = null; // Add this at the top of your file
-
-// MODIFIED VERSION - SIMPLE COUNTING
-async function calculateCards(deckName, subdeckName = null) {
-    try {
-        const params = new URLSearchParams({ 
-            deck: deckName,
-            ...(subdeckName && { subdeck: subdeckName })
-        });
-
-        const response = await fetch(`/api/flashcards?${params.toString()}`);
-        if (!response.ok) return { totalCards: 0 };
-        
-        const cards = await response.json();
-        return { totalCards: cards.length };
-
-    } catch (error) {
-        console.error('Error counting cards:', error);
-        return { totalCards: 0 };
-    }
-}
-
-// MODIFIED GENERATE TABLE FUNCTION
-async function generateOverviewTable() {
-    const tableBody = document.createElement('tbody');
+// Function to set up deck button navigation to dynamic pages
+function setupDeckButtonNavigation() {
+    // Get all deck buttons
+    const deckButtons = document.querySelectorAll('.deck-btn');
     
-    for (const [deckName, subdecks] of Object.entries(decks)) {
-        // Main deck row
-        const deckStats = await calculateCards(deckName);
-        const deckRow = createOverviewRow(deckName, deckStats, false);
-        tableBody.appendChild(deckRow);
+    deckButtons.forEach(button => {
+        // First remove any existing click listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        // Create a span for the deck name text if it doesn't exist
+        let deckNameSpan = newButton.querySelector('.deck-name');
+        if (!deckNameSpan) {
+            // Extract the text content and + symbol
+            const buttonText = newButton.textContent.trim();
+            const plusSymbol = buttonText.includes('+') ? '+' : '-';
+            const deckNameText = buttonText.replace('+', '').replace('-', '').trim();
+            
+            // Clear the button's content
+            newButton.innerHTML = '';
+            
+            // Add a span for the deck name FIRST
+            deckNameSpan = document.createElement('span');
+            deckNameSpan.className = 'deck-name';
+            deckNameSpan.textContent = deckNameText;
+            newButton.appendChild(deckNameSpan);
+            
+            // Add a span for the plus/minus symbol SECOND
+            const plusSpan = document.createElement('span');
+            plusSpan.className = 'plus';
+            plusSpan.textContent = plusSymbol;
+            newButton.appendChild(plusSpan);
+        }
+        
+        // Now add our click listener for toggling subdecks
+        newButton.addEventListener('click', function(e) {
+            const plusSymbol = this.querySelector('.plus');
+            const subdeckList = this.nextElementSibling;
+            
+            // Only toggle if we're clicking the plus/minus symbol or if there's no subdeck list
+            if (e.target === plusSymbol || !subdeckList || !subdeckList.classList.contains('subdeck-list')) {
+                if (subdeckList && subdeckList.classList.contains('subdeck-list')) {
+                    e.preventDefault();
+                    if (subdeckList.style.display === 'block') {
+                        subdeckList.style.display = 'none';
+                        plusSymbol.textContent = '+';
+                    } else {
+                        subdeckList.style.display = 'block';
+                        plusSymbol.textContent = '-';
+                    }
+                }
+            }
+        });
+        
+        // Add click handler for the deck name span to navigate to the deck page
+        deckNameSpan.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent the parent's click event from firing
+            
+            const deckName = this.textContent.trim().split(' ')[0];
+            console.log('Clicked on deck name:', deckName);
+            navigateToDeckPage(deckName);
+        });
+    });
+}
 
-        // Subdeck rows
-        for (const subdeck of subdecks) {
-            const subdeckStats = await calculateCards(deckName, subdeck);
-            const subdeckRow = createOverviewRow(subdeck, subdeckStats, true);
-            tableBody.appendChild(subdeckRow);
+// Function to navigate to a dynamic deck page
+function navigateToDeckPage(deckName) {
+    console.log('Navigating to deck page for:', deckName);
+    
+    // Special case handling for existing static pages
+    if (deckName === 'Patología') {
+        // Keep the existing links for patologia pages if they exist
+        const pathSegments = window.location.pathname.split('/');
+        const currentPage = pathSegments[pathSegments.length - 1];
+        
+        if (currentPage === 'patologia-era1.html' || 
+            currentPage === 'patologia-era2.html' || 
+            currentPage === 'patologia-era3.html') {
+            console.log('Already on a patologia page, not navigating');
+            return; // Keep on the current patologia page
         }
     }
-    return tableBody;
+    
+    // Navigate to the dynamic deck page
+    const url = `/deck/${encodeURIComponent(deckName)}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
 }
 
-// MODIFIED ROW CREATION
-function createOverviewRow(name, stats, isSubdeck) {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${isSubdeck ? `<span class="subdeck-padding">${name}</span>` : `<span class="toggle-deck">+</span> ${name}`}</td>
-        <td class="total-cards ${stats.totalCards > 0 ? 'new-positive' : ''}">${stats.totalCards}</td>
-    `;
-    if (isSubdeck) row.classList.add('subdeck-row', 'hidden');
-    return row;
-}
-
-// NEW VERSION - ASYNC VERSION
-async function showOverview() {
-    const overviewSection = document.getElementById('overview-section');
-    // ... keep existing null checks ...
-
-    // Clear table
-    const oldTableBody = overviewSection.querySelector('tbody');
-    if (oldTableBody) oldTableBody.remove();
-
-    // Generate new content
-    const newTableBody = await generateOverviewTable();
-    const table = overviewSection.querySelector('table');
-    if (table) table.appendChild(newTableBody);
-
-    // Rest of existing code remains the same...
-    addToggleListeners();
-    showStatus('Overview');
-}
-
-// Function to toggle subdeck visibility
+// Modified toggleSubdecks function that works with the new click handlers
 function toggleSubdecks(event) {
-    const toggleButton = event.target;
-    const deckRow = toggleButton.closest('tr');
-    const subdeckRows = [];
-    
-    // Collect all consecutive subdeck rows
-    let nextRow = deckRow.nextElementSibling;
-    while (nextRow && nextRow.classList.contains('subdeck-row')) {
-        subdeckRows.push(nextRow);
-        nextRow = nextRow.nextElementSibling;
-    }
-
-    // Toggle visibility
-    subdeckRows.forEach(row => row.classList.toggle('hidden'));
-    
-    // Update toggle icon
-    toggleButton.textContent = toggleButton.textContent === '+' ? '-' : '+';
+    // This function is now handled inside setupDeckButtonNavigation
+    // Keeping it for backward compatibility
 }
 
-// Add event listeners for toggle buttons in the overview table
+// Modified addToggleListeners function
 function addToggleListeners() {
-    const toggleButtons = document.querySelectorAll('.toggle-deck');
-    toggleButtons.forEach(button => {
-        button.addEventListener('click', toggleSubdecks);
-    });
+    // This function is now handled inside setupDeckButtonNavigation
+    // Don't need to do anything here as setupDeckButtonNavigation will handle it all
+    console.log('Deck button navigation set up');
 }
 
 // Function to show the main content (flashcard system)
@@ -309,6 +269,30 @@ function shuffleArray(array) {
 }
 
 function loadNextCard() {
+    // Check if flashcards array is empty or undefined
+    if (!flashcards || flashcards.length === 0) {
+        console.warn('No flashcards available to load');
+        
+        // Display a message to the user
+        const questionCard = document.querySelector('.question');
+        const answerCard = document.querySelector('.answer');
+        
+        if (questionCard) {
+            questionCard.innerHTML = `
+                <h3>No Flashcards Available</h3>
+                <p>Please select a deck with flashcards or add new flashcards to this deck.</p>
+            `;
+        }
+        
+        if (answerCard) {
+            answerCard.innerHTML = `
+                <p>No answer available</p>
+            `;
+        }
+        
+        return;
+    }
+    
     currentCardIndex = (currentCardIndex + 1) % flashcards.length;
     const currentCard = flashcards[currentCardIndex];
 
@@ -1334,3 +1318,212 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeERA2Cards();
     document.getElementById('contact-button')?.addEventListener('click', showContact);
 });
+
+// Add Contact Modal Functionality
+function showContact() {
+    const contactContent = `
+    <div class="faq-overlay">
+        <div class="faq-modal">
+            <div class="faq-header">
+                <h2>Información de Contacto</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="faq-content">
+                <div class="faq-item">
+                    <div class="answer show">
+                        <p><strong>Soporte Técnico:</strong></p>
+                        <ul>
+                            <li>📧 Email: soporte@medupgrade.com</li>
+                            <li>📞 Teléfono: +34 123 456 789</li>
+                        </ul>
+                        <p class="contact-schedule"><strong>Horario de Atención:</strong></p>
+                        <ul>
+                            <li>Lunes-Viernes: 9:00 - 18:00</li>
+                            <li>Sábados: 10:00 - 14:00</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    const contactOverlay = document.createElement('div');
+    contactOverlay.className = 'faq-overlay';
+    contactOverlay.innerHTML = contactContent;
+    document.body.appendChild(contactOverlay);
+
+    contactOverlay.querySelector('.close-btn').addEventListener('click', () => {
+        contactOverlay.remove();
+    });
+
+    contactOverlay.addEventListener('click', (e) => {
+        if(e.target === contactOverlay) contactOverlay.remove();
+    });
+}
+
+// Add event listener for contact button
+document.getElementById('contact-button')?.addEventListener('click', showContact);
+
+// Deck and subdeck structure
+const decks = {
+    'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+    'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
+    'Patología': ['ERA1', 'ERA2', 'ERA3'],
+    'Farmacología': ['ERA1', 'ERA2'],
+    'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
+    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos'],
+    'Revalida': ['Bling', 'Blang', 'Blong'],
+    'MIR': ['Bling', 'Blang', 'Blong'],
+};
+
+// OPTIMIZED VERSION - FETCH ALL CARDS ONCE
+let allCardsCache = null; // Add this at the top of your file
+
+// MODIFIED VERSION - SIMPLE COUNTING
+async function calculateCards(deckName, subdeckName = null) {
+    try {
+        const params = new URLSearchParams({ 
+            deck: deckName,
+            ...(subdeckName && { subdeck: subdeckName })
+        });
+
+        const response = await fetch(`/api/flashcards?${params.toString()}`);
+        if (!response.ok) return { totalCards: 0 };
+        
+        const cards = await response.json();
+        return { totalCards: cards.length };
+
+    } catch (error) {
+        console.error('Error counting cards:', error);
+        return { totalCards: 0 };
+    }
+}
+
+// MODIFIED GENERATE TABLE FUNCTION
+async function generateOverviewTable() {
+    const tableBody = document.createElement('tbody');
+    
+    try {
+        // Fetch all card counts at once instead of individual calls for each deck/subdeck
+        const allCounts = await fetchAllCardCounts();
+        
+        for (const [deckName, subdecks] of Object.entries(decks)) {
+            // Main deck row - use the cached results from our batch call
+            const deckStats = allCounts[deckName] || { totalCards: 0 };
+            const deckRow = createOverviewRow(deckName, deckStats, false);
+            tableBody.appendChild(deckRow);
+    
+            // Subdeck rows - again, use cached results
+            for (const subdeck of subdecks) {
+                const subdeckKey = `${deckName}-${subdeck}`;
+                const subdeckStats = allCounts[subdeckKey] || { totalCards: 0 };
+                const subdeckRow = createOverviewRow(subdeck, subdeckStats, true);
+                tableBody.appendChild(subdeckRow);
+            }
+        }
+    } catch (error) {
+        console.error('Error generating overview table:', error);
+        // Create a fallback row with error message
+        const errorRow = document.createElement('tr');
+        errorRow.innerHTML = `
+            <td colspan="2">Error loading card counts. Please try again later.</td>
+        `;
+        tableBody.appendChild(errorRow);
+    }
+    
+    return tableBody;
+}
+
+// New function to fetch all card counts in one batch to avoid rate limiting
+async function fetchAllCardCounts() {
+    let counts = {};
+    
+    try {
+        // Create an array of all deck/subdeck combinations we need
+        let countRequests = [];
+        
+        for (const [deckName, subdecks] of Object.entries(decks)) {
+            // Add main deck (total across all subdecks)
+            countRequests.push({
+                key: deckName,
+                params: new URLSearchParams({ deck: deckName }).toString()
+            });
+            
+            // Add each subdeck
+            for (const subdeck of subdecks) {
+                countRequests.push({
+                    key: `${deckName}-${subdeck}`,
+                    params: new URLSearchParams({ 
+                        deck: deckName,
+                        subdeck: subdeck 
+                    }).toString()
+                });
+            }
+        }
+        
+        // Use Promise.all to make requests in parallel (but not too many)
+        // Only process 5 requests at a time to avoid overwhelming the server
+        const batchSize = 5;
+        for (let i = 0; i < countRequests.length; i += batchSize) {
+            const batch = countRequests.slice(i, i + batchSize);
+            const batchResults = await Promise.all(
+                batch.map(async (req) => {
+                    try {
+                        const response = await fetch(`/api/flashcards?${req.params}`);
+                        if (!response.ok) return { key: req.key, totalCards: 0 };
+                        
+                        const cards = await response.json();
+                        return { key: req.key, totalCards: cards.length };
+                    } catch (error) {
+                        console.error(`Error fetching ${req.key}:`, error);
+                        return { key: req.key, totalCards: 0 };
+                    }
+                })
+            );
+            
+            // Add a short delay between batches
+            if (i + batchSize < countRequests.length) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            // Add batch results to our counts object
+            batchResults.forEach(result => {
+                counts[result.key] = { totalCards: result.totalCards };
+            });
+        }
+    } catch (error) {
+        console.error('Error in batch fetching card counts:', error);
+    }
+    
+    return counts;
+}
+
+// MODIFIED ROW CREATION
+function createOverviewRow(name, stats, isSubdeck) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${isSubdeck ? `<span class="subdeck-padding">${name}</span>` : `<span class="toggle-deck">+</span> ${name}`}</td>
+        <td class="total-cards ${stats.totalCards > 0 ? 'new-positive' : ''}">${stats.totalCards}</td>
+    `;
+    if (isSubdeck) row.classList.add('subdeck-row', 'hidden');
+    return row;
+}
+
+// NEW VERSION - ASYNC VERSION
+async function showOverview() {
+    const overviewSection = document.getElementById('overview-section');
+    // ... keep existing null checks ...
+
+    // Clear table
+    const oldTableBody = overviewSection.querySelector('tbody');
+    if (oldTableBody) oldTableBody.remove();
+
+    // Generate new content
+    const newTableBody = await generateOverviewTable();
+    const table = overviewSection.querySelector('table');
+    if (table) table.appendChild(newTableBody);
+
+    // Rest of existing code remains the same...
+    addToggleListeners();
+    showStatus('Overview');
+}
