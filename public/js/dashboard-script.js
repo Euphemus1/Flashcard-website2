@@ -299,6 +299,18 @@ function loadNextCard() {
     // Enhanced logging for debugging
     console.log("Loading card:", currentCard);
     
+    // FIX: Validate correctIndex - if it's -1 or invalid, set it to 0 as fallback
+    if (currentCard.type === 'multipleChoice') {
+        if (currentCard.correctIndex === -1 || 
+            currentCard.correctIndex === undefined || 
+            currentCard.correctIndex === null || 
+            currentCard.correctIndex >= currentCard.options.length) {
+            
+            console.warn(`Card ${currentCard._id} has invalid correctIndex (${currentCard.correctIndex}), setting to 0 as fallback`);
+            currentCard.correctIndex = 0;
+        }
+    }
+    
     // Get card elements
     const questionCard = document.querySelector('.question');
     const answerCard = document.querySelector('.answer');
@@ -336,6 +348,8 @@ function loadNextCard() {
             
             console.log('Loading choice card:', currentCard.question);
             console.log('Card Options Array:', JSON.stringify(currentCard.options));
+            console.log('Card correctIndex (RAW):', currentCard.correctIndex, typeof currentCard.correctIndex);
+            console.log('Card full data:', JSON.stringify(currentCard));
             
             // Validate the current card has options
             if (!currentCard.options || !Array.isArray(currentCard.options) || currentCard.options.length === 0) {
@@ -345,17 +359,40 @@ function loadNextCard() {
             
             // Get the correct answer index from the card data
             const correctIndex = currentCard.correctIndex;
-            console.log('Correct answer index (from card data):', correctIndex);
+            console.log('DEBUG [loadNextCard]: Card data:', {
+                question: currentCard.question,
+                correctIndex: correctIndex,
+                typeOfCorrectIndex: typeof correctIndex,
+                options: currentCard.options,
+                _id: currentCard._id
+            });
+            
+            // Add detailed logging about the card and options
+            console.log('======== CARD DEBUG IN LOAD NEXT CARD ========');
+            console.log('Card question:', currentCard.question);
+            console.log('Card type:', currentCard.type);
+            console.log('Card options:', currentCard.options);
+            console.log('Card correctIndex (raw):', currentCard.correctIndex, typeof currentCard.correctIndex);
+            console.log('Card correctIndex (as number):', Number(correctIndex), typeof Number(correctIndex));
+            
+            if (correctIndex !== undefined && currentCard.options && currentCard.options.length > 0) {
+                console.log('Correct option text should be:', currentCard.options[Number(correctIndex)]);
+            }
             
             // Create shuffled options with tracked original indices
             const optionsWithIndices = currentCard.options.map((option, index) => ({
                 option,
                 originalIndex: index,
-                isCorrect: index === correctIndex
+                isCorrect: index === Number(correctIndex)
             }));
+            
+            console.log('Options with indices (before shuffle):', JSON.stringify(optionsWithIndices));
             
             // Shuffle the options
             const shuffledOptions = shuffleArray(optionsWithIndices);
+            
+            console.log('Shuffled options (after shuffle):', JSON.stringify(shuffledOptions));
+            console.log('======== END CARD DEBUG ========');
             
             // Create and add choice buttons
             shuffledOptions.forEach((item, displayIndex) => {
@@ -396,20 +433,22 @@ function loadNextCard() {
                 
                 // Add data attributes to track both original index and correctness
                 choiceButton.dataset.originalIndex = originalIndex.toString();
-                choiceButton.dataset.displayIndex = displayIndex.toString();
                 choiceButton.dataset.isCorrect = isCorrect.toString();
                 
-                // DEV DEBUGGING: Make the correct answer visible during testing
-                console.log(`Button ${displayIndex}: originalIndex=${originalIndex}, isCorrect=${isCorrect}`);
-                
-                // Add event listener to handle click
-                choiceButton.addEventListener('click', function() {
-                    // Direct click handler instead of passing index
-                    handleDirectChoiceClick(this);
+                // DEBUG START
+                console.log(`DEBUG [Button ${displayIndex}]:`, {
+                    text: cleanDisplayText,
+                    originalIndex: originalIndex,
+                    isCorrect: isCorrect,
+                    isCorrectCheck: originalIndex === Number(correctIndex)
                 });
+                // DEBUG END
+                
+                // Add event listener - pass the original index as a number to maintain correct answer tracking
+                choiceButton.addEventListener('click', () => handleChoiceSelection(Number(originalIndex)));
                 
                 // Log if this is the correct option
-                if (isCorrect) {
+                if (originalIndex === correctIndex) {
                     console.log(`Option ${displayIndex} (original ${originalIndex}) is correct:`, option);
                 }
                 
@@ -494,6 +533,23 @@ async function getDeckData(deckName, subdeckName = null) {
       
       const data = await response.json();
       console.log(`Received ${data.length} cards from server:`, data);
+      
+      // IMPORTANT: Debug the structure of the cards (especially correctIndex)
+      console.log("===== DETAILED CARD DEBUG =====");
+      data.forEach((card, i) => {
+        console.log(`Card ${i+1}:`);
+        console.log(`- question: ${card.question}`);
+        console.log(`- type: ${card.type}`);
+        console.log(`- correctIndex: ${card.correctIndex} (type: ${typeof card.correctIndex})`);
+        console.log(`- options: ${JSON.stringify(card.options)}`);
+        
+        // If correctIndex is defined, check if it points to a valid option
+        if (card.correctIndex !== undefined && card.options && card.options.length > 0) {
+          const correctOption = card.options[Number(card.correctIndex)];
+          console.log(`- correct option value: ${correctOption}`);
+        }
+      });
+      console.log("===== END DETAILED CARD DEBUG =====");
       
       // Log any cards with extraInfo for debugging
       const cardsWithExtraInfo = data.filter(card => card.extraInfo);
@@ -622,6 +678,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (results.some(r => r.success)) {
                     alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
                     document.getElementById('admin-modal').classList.add('hidden');
+                    
+                    // Reload current deck to show the new card
+                    reloadCurrentDeck();
                 } else {
                     alert('Failed to add any flashcards. Please check your input format and try again.');
                 }
@@ -673,13 +732,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Flashcard added successfully!');
                 document.getElementById('admin-modal').classList.add('hidden');
                 
-                if(window.location.pathname.includes('patologia-era1')) {
-                    getDeckData('Patología', 'ERA1').then(data => {
-                        flashcards = data;
-                        currentCardIndex = 0;
-                        loadNextCard();
-                    });
-                }
+                // Reload current deck to show the new card
+                reloadCurrentDeck();
             } else {
                 alert(`Error: ${data.error || 'Unknown error'}`);
                 }
@@ -973,8 +1027,8 @@ function updatePreview() {
                 );
                 
                 // Add choice buttons exactly as they would appear in the app
-                options.forEach((option, index) => {
-                    const isCorrect = option.trim().endsWith(']');
+            options.forEach((option, index) => {
+                const isCorrect = option.trim().endsWith(']');
                     let cleanOption = option.replace(/\]$/, '').trim();
                     
                     // Create button with the same styling as in the actual card
@@ -1293,7 +1347,7 @@ function initializeERA2Cards() {
         
         getDeckData('Patología', 'ERA2').then(data => {
             flashcards = data;
-            console.log('Loaded ERA2 cards:', flashcards);
+            console.log('Loaded ERA2 cards:', data);
             
             if(flashcards.length > 0) {
                 currentCardIndex = 0;
@@ -1339,22 +1393,51 @@ function handleChoiceSelection(selectedIndex) {
     const skipButton = document.getElementById('skip-button');
     const reviewActions = document.getElementById('review-actions');
     
-    // Debug logging
-    console.log('handleChoiceSelection called for index:', selectedIndex);
-    console.log('Current card:', currentCard);
-    console.log('Current card correctIndex:', currentCard.correctIndex);
+    // DEBUG START
+    console.log('=================================');
+    console.log('DEBUG [handleChoiceSelection]: Selection analysis');
+    console.log('Card ID:', currentCard._id);
+    console.log('Card question:', currentCard.question);
+    console.log('Raw correctIndex from card:', currentCard.correctIndex, typeof currentCard.correctIndex);
+    console.log('Selected index (raw):', selectedIndex, typeof selectedIndex);
+    // DEBUG END
     
-    // Find the selected button by its original index
+    // Always convert to numbers to ensure proper comparison
+    const correctIndex = Number(currentCard.correctIndex);
+    const selectedIdxNumber = Number(selectedIndex);
+    
+    // DEBUG START
+    console.log('Converted correctIndex:', correctIndex, typeof correctIndex);
+    console.log('Converted selectedIndex:', selectedIdxNumber, typeof selectedIdxNumber);
+    console.log('Are they equal?', selectedIdxNumber === correctIndex);
+    console.log('=================================');
+    // DEBUG END
+    
+    // Try multiple approaches to determine if the answer is correct
+    // 1. Direct number comparison 
+    let isCorrect = selectedIdxNumber === correctIndex;
+    
+    // 2. Try string comparison if number comparison fails
+    if (!isCorrect) {
+        isCorrect = String(selectedIdxNumber) === String(correctIndex);
+    }
+    
+    // Find the selected button using the original index
     const selectedButton = Array.from(choiceButtons).find(
-        button => parseInt(button.dataset.originalIndex) === selectedIndex
+        button => Number(button.dataset.originalIndex) === selectedIdxNumber
     );
     
-    // Look at the dataset to determine if this is the correct answer
-    // This is more reliable than comparing indices after shuffling
-    const isCorrect = selectedButton && selectedButton.dataset.isCorrect === "true";
+    // Find the correct button using the original index
+    const correctButton = Array.from(choiceButtons).find(
+        button => Number(button.dataset.originalIndex) === correctIndex
+    );
     
-    console.log('Is selected option correct?', isCorrect);
-    console.log('Selected button dataset:', selectedButton ? selectedButton.dataset : 'Button not found');
+    // 3. Try comparison using the button's isCorrect attribute
+    if (!isCorrect && selectedButton) {
+        isCorrect = selectedButton.dataset.isCorrect === "true";
+    }
+    
+    console.log('Final isCorrect determination:', isCorrect);
     
     if (isCorrect) {
         // Handle correct answer selection
@@ -1373,6 +1456,7 @@ function handleChoiceSelection(selectedIndex) {
         }
         
         console.log('Extra info content found:', extraInfoContent);
+        console.log('Full card data:', JSON.stringify(currentCard));
         
         // Apply green color directly to the correct button (which is also the selected button)
         if (selectedButton) {
@@ -1984,14 +2068,26 @@ async function saveMultipleChoiceCard(lines) {
         // Set the correct index in the card object
         newCard.correctIndex = correctOptionIndex;
         
+        // VALIDATION: Ensure correctIndex is valid
+        if (newCard.correctIndex < 0) {
+            console.warn('Invalid correctIndex detected, forcing to 0');
+            newCard.correctIndex = 0;
+        }
+        
         // Clean up options (remove ] marker) and add to card
         for (const option of options) {
             const cleanedText = option.text.replace(/\]$/, '').trim();
             newCard.options.push(cleanedText);
         }
         
+        // ADDITIONAL VALIDATION: Ensure correctIndex is within range of options
+        if (newCard.correctIndex >= newCard.options.length) {
+            console.warn(`correctIndex (${newCard.correctIndex}) out of range, setting to 0`);
+            newCard.correctIndex = 0;
+        }
+        
         // Set the answer to the correct option's text (without ])
-        newCard.answer = newCard.options[correctOptionIndex];
+        newCard.answer = newCard.options[newCard.correctIndex];
         
         // Extract extra info if present
         if (extraInfoLine) {
@@ -2027,115 +2123,68 @@ async function saveMultipleChoiceCard(lines) {
     }
 }
 
-// Add function to handle direct choice button click
-function handleDirectChoiceClick(clickedButton) {
-    const currentCard = flashcards[currentCardIndex];
-    const choiceButtons = document.querySelectorAll('.choice');
-    const srsControls = document.querySelector('.srs-controls');
-    const skipButton = document.getElementById('skip-button');
-    const reviewActions = document.getElementById('review-actions');
+// Function to reload the current deck
+function reloadCurrentDeck() {
+    // Get the current URL path to determine which deck we're on
+    const path = window.location.pathname;
     
-    // Check directly if this button is the correct one
-    const isCorrect = clickedButton.dataset.isCorrect === "true";
+    console.log('Reloading deck based on path:', path);
     
-    console.log('Button clicked:', clickedButton);
-    console.log('Is correct?', isCorrect);
-    console.log('Button dataset:', clickedButton.dataset);
-    
-    if (isCorrect) {
-        // Handle correct answer selection
-        console.log('Correct answer selected!');
-        
-        // Check for extra info
-        let extraInfoContent = currentCard.extraInfo || '';
-        
-        // Apply green color to the correct button
-        clickedButton.style.backgroundColor = '#2ed573';
-        clickedButton.style.borderColor = '#2ed573';
-        clickedButton.style.color = 'white';
-        clickedButton.style.fontWeight = 'bold';
-        
-        // Add checkmark
-        const checkmark = document.createElement('span');
-        checkmark.textContent = '✓';
-        checkmark.style.position = 'absolute';
-        checkmark.style.right = '20px';
-        checkmark.style.color = 'white';
-        checkmark.style.fontWeight = 'bold';
-        clickedButton.appendChild(checkmark);
-        
-        // Add correct class for CSS styling
-        clickedButton.classList.add('correct');
-        
-        // Hide all incorrect options
-        choiceButtons.forEach(button => {
-            if (button !== clickedButton) {
-                button.style.display = 'none';
+    if (path.includes('patologia-era2')) {
+        console.log('Reloading ERA2 cards...');
+        getDeckData('Patología', 'ERA2').then(data => {
+            flashcards = data;
+            console.log(`Reloaded ${data.length} ERA2 cards:`, data);
+            if (flashcards.length > 0) {
+                currentCardIndex = 0;
+                loadNextCard();
+                showStatus(`${data.length} cards loaded`);
+            } else {
+                showStatus('No hay tarjetas en este mazo');
             }
-            button.disabled = true;
         });
-        
-        // Display extra information if available
-        if (extraInfoContent) {
-            console.log('Displaying extra info:', extraInfoContent);
-            const choiceOptions = document.getElementById('choice-options');
-            const explanationDiv = document.createElement('div');
-            explanationDiv.className = 'explanation-container visible';
-            explanationDiv.style.marginTop = '20px';
-            explanationDiv.style.padding = '15px';
-            explanationDiv.style.backgroundColor = '#f8f9fa';
-            explanationDiv.style.border = '1px solid #dee2e6';
-            explanationDiv.style.borderRadius = '5px';
-            
-            explanationDiv.innerHTML = `
-                <div class="notes">
-                    <strong>Notas:</strong>
-                    ${extraInfoContent.replace(/\n/g, '<br>')}
-                </div>
-            `;
-            
-            // Add the explanation
-            if (choiceOptions) {
-                choiceOptions.appendChild(explanationDiv);
+    } else if (path.includes('patologia-era1')) {
+        console.log('Reloading ERA1 cards...');
+        getDeckData('Patología', 'ERA1').then(data => {
+            flashcards = data;
+            console.log(`Reloaded ${data.length} ERA1 cards`);
+            if (flashcards.length > 0) {
+                currentCardIndex = 0;
+                loadNextCard();
+                showStatus(`${data.length} cards loaded`);
+            } else {
+                showStatus('No hay tarjetas en este mazo');
             }
+        });
+    } else if (path.includes('patologia-era3')) {
+        console.log('Reloading ERA3 cards...');
+        getDeckData('Patología', 'ERA3').then(data => {
+            flashcards = data;
+            console.log(`Reloaded ${data.length} ERA3 cards`);
+            if (flashcards.length > 0) {
+                currentCardIndex = 0;
+                loadNextCard();
+                showStatus(`${data.length} cards loaded`);
+            } else {
+                showStatus('No hay tarjetas en este mazo');
+            }
+        });
+    } else if (path.includes('deck/')) {
+        // Handle dynamic deck pages
+        const deckName = path.split('/').pop();
+        if (deckName) {
+            console.log('Reloading deck:', deckName);
+            getDeckData(deckName).then(data => {
+                flashcards = data;
+                console.log(`Reloaded ${data.length} cards for ${deckName}`);
+                if (flashcards.length > 0) {
+                    currentCardIndex = 0;
+                    loadNextCard();
+                    showStatus(`${data.length} cards loaded`);
+                } else {
+                    showStatus('No hay tarjetas en este mazo');
+                }
+            });
         }
-        
-        // Transform the skip button into a "continue" button
-        if (skipButton) {
-            skipButton.textContent = 'Seguir';
-            skipButton.classList.add('seguir-button');
-            
-            // Update the button's click handler
-            updateSkipButtonHandler();
-        }
-        
-        // Hide SRS controls
-        if (srsControls) {
-            srsControls.classList.add('hidden');
-        }
-    } else {
-        // Handle incorrect answer selection
-        console.log('Wrong answer selected');
-        
-        // Apply red color to the wrong button
-        clickedButton.style.backgroundColor = '#ff4757';
-        clickedButton.style.borderColor = '#ff4757';
-        clickedButton.style.color = 'white';
-        clickedButton.style.fontWeight = 'bold';
-        
-        // Add X mark
-        const xmark = document.createElement('span');
-        xmark.textContent = '✗';
-        xmark.style.position = 'absolute';
-        xmark.style.right = '20px';
-        xmark.style.color = 'white';
-        xmark.style.fontWeight = 'bold';
-        clickedButton.appendChild(xmark);
-        
-        // Add wrong class for CSS styling
-        clickedButton.classList.add('wrong');
-        
-        // Disable only this wrong button
-        clickedButton.disabled = true;
     }
 }
