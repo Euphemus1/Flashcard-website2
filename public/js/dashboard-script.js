@@ -1917,31 +1917,30 @@ function parseMultipleChoiceQuestions(rawContent, isPreview = false) {
             continue;
         }
         
+        // FIX: Improved detection of new questions vs complex options
+        // Check if this is definitely a correct answer (ends with ])
+        const isCorrectAnswer = line.trim().endsWith(']');
+        
         // Check if this is the start of a new question
-        // This is a new question if:
-        // 1. We already have at least 2 lines in the block (question + at least 1 option)
-        // 2. The current line is not an extra info line (doesn't start with /)
-        // 3. There's a significant gap in the input suggesting a new question format
         const isPotentialNewQuestion = 
             currentBlock.length >= 2 && 
             !line.startsWith('/') &&
+            !isCorrectAnswer &&  // If it's marked as correct, it's definitely an option, not a question
             nextLine !== null && 
             !nextLine.startsWith('/') &&
             !nextLine.trim().endsWith(']');
         
         // Look for patterns that indicate we're transitioning to a new question:
-        // 1. Empty lines between questions (already filtered out)
-        // 2. After an extra info line, the next line that's not an option is likely a new question
-        // 3. A line that has a very different format compared to options
         if (!inQuestion && isPotentialNewQuestion) {
-            // Check if this might be a question line rather than an option
-            // Options are typically short, while questions are longer and might have ? at the end
-            const looksLikeQuestion = 
-                (line.includes('?')) || 
-                (nextLine && (nextLine.length < line.length - 10)) || // Next line is significantly shorter
-                (currentBlock.length >= 5); // We already have enough lines for a complete question block
+            // These are stronger indicators that we have a new question:
+            const strongQuestionIndicators = [
+                line.endsWith('?'),                                   // Ends with question mark
+                /^(What|Which|When|Where|Why|How|Is|Are|Can|Do)/i.test(line), // Starts with question word
+                currentBlock.length >= 6                              // We already have a full set of options
+            ];
             
-            if (looksLikeQuestion) {
+            // Only consider it a new question if it has strong question indicators
+            if (strongQuestionIndicators.some(indicator => indicator === true)) {
                 // Save the current block and start a new one
                 questions.push([...currentBlock]);
                 currentBlock = [line];
@@ -1957,7 +1956,7 @@ function parseMultipleChoiceQuestions(rawContent, isPreview = false) {
         currentBlock.push(line);
         
         // Check if this line is a correct answer (ends with ])
-        if (line.trim().endsWith(']')) {
+        if (isCorrectAnswer) {
             foundCorrectAnswer = true;
             console.log('Found correct answer:', line);
         }
