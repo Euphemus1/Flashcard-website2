@@ -370,6 +370,13 @@ function loadNextCard() {
                 // Set clean visual text (without the ] marker)
                 const displayText = option.replace(/\]$/, '').trim();
                 
+                // Clean up the display text - remove anything after a slash
+                let cleanDisplayText = displayText;
+                const slashIndex = displayText.indexOf('/');
+                if (slashIndex !== -1) {
+                    cleanDisplayText = displayText.substring(0, slashIndex).trim();
+                }
+                
                 // Set basic styling
                 choiceButton.className = 'choice';
                 choiceButton.style.width = '100%';
@@ -383,8 +390,8 @@ function loadNextCard() {
                 choiceButton.style.cursor = 'pointer';
                 choiceButton.style.position = 'relative';
                 
-                // Set the display text (without ])
-                choiceButton.textContent = displayText;
+                // Set the display text (without ] and without anything after /)
+                choiceButton.textContent = cleanDisplayText;
                 choiceButton.disabled = false;
                 
                 // Add data attributes to track both original index and correctness
@@ -469,6 +476,7 @@ async function getDeckData(deckName, subdeckName = null) {
       if (subdeckName) params.set('subdeck', subdeckName);
   
       // 2. Make API call with both parameters
+      console.log(`Fetching cards for deck: ${deckName}${subdeckName ? ', subdeck: ' + subdeckName : ''}`);
       const response = await fetch(`/api/flashcards?${params.toString()}`);
       
       // 3. Handle response
@@ -477,7 +485,18 @@ async function getDeckData(deckName, subdeckName = null) {
         return getDefaultCards();
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log(`Received ${data.length} cards from server:`, data);
+      
+      // Log any cards with extraInfo for debugging
+      const cardsWithExtraInfo = data.filter(card => card.extraInfo);
+      if (cardsWithExtraInfo.length > 0) {
+        console.log(`Found ${cardsWithExtraInfo.length} cards with extraInfo:`, cardsWithExtraInfo);
+      } else {
+        console.log('No cards with extraInfo found');
+      }
+      
+      return data;
     } catch (error) {
       console.error('Error loading deck:', error);
       return getDefaultCards();
@@ -559,6 +578,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Open/close admin panel
     openAdminBtn?.addEventListener('click', () => {
         adminModal.classList.remove('hidden');
+        
+        // Initialize UI for the currently selected card type
+        const selectedCardType = document.querySelector('input[name="card-type"]:checked')?.value || 'Clasic';
+        updateCardTypeUI(selectedCardType);
     });
     
     closeAdminBtn?.addEventListener('click', () => {
@@ -571,61 +594,48 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const type = document.querySelector('input[name="card-type"]:checked').value;
         const rawContent = document.getElementById('question').value;
-        const lines = rawContent.split('\n').filter(line => line.trim() !== '');
-        
-        const newCard = {
-            question: '',
-            answer: '',
-            deck: document.getElementById('deck-select').value,
-            subdeck: document.getElementById('subdeck').value,
-            references: document.getElementById('references').value.split(',').map(s => s.trim()),
-            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-            type: type,
-            options: [],
-            correctIndex: -1
-        };
     
         try {
             if (type === 'multipleChoice') {
-                // Validate multi-choice format
-                if (lines.length < 2) {
-                    throw new Error('Multiple choice requires at least 1 question and 1 option');
-                }
-                if (lines.length > 7) {
-                    throw new Error('Maximum 6 options allowed');
-                }
-    
-                newCard.question = lines[0];
-                const options = lines.slice(1);
-    
-                // Process options with error tracking
-                let correctCount = 0;
-                for (const [index, option] of options.entries()) {
-                    const isCorrect = option.trim().endsWith(']');
-                    const cleanOption = option.replace(/\]$/, '').trim();
-                    
-                    if (isCorrect) {
-                        correctCount++;
-                        newCard.correctIndex = index;
-                    }
-                    
-                    if (correctCount > 1) {
-                        throw new Error('Only one correct answer allowed (mark with ])');
-                    }
-    
-                    newCard.options.push(cleanOption);
-                }
-    
-                if (newCard.correctIndex === -1) {
-                    throw new Error('No correct answer specified - add ] at end of correct option');
-                }
-    
-                newCard.answer = newCard.options[newCard.correctIndex];
+                // Handle multiple choice cards, potentially multiple questions
+                const questionBlocks = parseMultipleChoiceQuestions(rawContent);
                 
-            } else { // Classic format
-                if (lines.length < 3) {
-                    throw new Error('Clasic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
+                console.log(`Found ${questionBlocks.length} multiple choice questions to process`);
+                
+                // Create promises for all card creations
+                const savePromises = questionBlocks.map(async (block) => {
+                    return await saveMultipleChoiceCard(block);
+                });
+                
+                // Wait for all cards to be saved
+                const results = await Promise.all(savePromises);
+                console.log(`Successfully saved ${results.filter(r => r.success).length} of ${results.length} cards`);
+                
+                // Show success message
+                if (results.some(r => r.success)) {
+                    alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
+                    document.getElementById('admin-modal').classList.add('hidden');
+                } else {
+                    alert('Failed to add any flashcards. Please check your input format and try again.');
                 }
+            } else { // Classic format
+                const lines = rawContent.split('\n').filter(line => line.trim() !== '');
+                
+                if (lines.length < 3) {
+                    throw new Error('Classic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
+                }
+                
+                // Initialize with explicit extraInfo property
+                const newCard = {
+                    question: lines[0],
+                    subtitle: lines[1],
+                    answer: '',
+                    extraInfo: '',
+                    deck: document.getElementById('deck-select').value,
+                    subdeck: document.getElementById('subdeck').value,
+                    tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+                    type: type
+                };
                 
                 const answerContent = lines.slice(2).join('\n');
                 const splitIndex = answerContent.indexOf('/');
@@ -637,11 +647,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     newCard.answer = answerContent;
                 }
                 
-                newCard.question = lines[0];
-                newCard.subtitle = lines[1];
-            }
+                // Log the card before submission for debugging
+                console.log('Classic card to be submitted:', JSON.stringify(newCard));
     
-            // Rest of your submission code...
+                // Submit the classic card
             const response = await fetch('/api/flashcards', {
                 method: 'POST',
                 headers: {
@@ -651,6 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     
             const data = await response.json();
+                console.log('Server response:', data);
             
             if(response.ok) {
                 alert('Flashcard added successfully!');
@@ -665,6 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 alert(`Error: ${data.error || 'Unknown error'}`);
+                }
             }
         } catch(error) {
             alert(error.message);
@@ -888,39 +899,9 @@ displayUsername();
 document.getElementById('contact-button')?.addEventListener('click', showContact);
 });
 
-// Admin Panel Functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const adminModal = document.getElementById('admin-modal');
-    const openAdminBtn = document.getElementById('open-admin-btn'); // Add this button in your UI
-    const closeAdminBtn = document.querySelector('.admin-close-btn');
-    
-    // Open admin panel
-    openAdminBtn?.addEventListener('click', () => {
-        adminModal.classList.remove('hidden');
-    });
-    
-    // Close admin panel
-    closeAdminBtn?.addEventListener('click', () => {
-        adminModal.classList.add('hidden');
-    });
-    
-    // Close when clicking outside
-    adminModal?.addEventListener('click', (e) => {
-        if(e.target === adminModal) adminModal.classList.add('hidden');
-    });
-    
-    // Preview functionality
-    document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
-    
-    // Toggle preview answer
-    document.querySelector('.toggle-preview')?.addEventListener('click', function() {
-        const answer = document.querySelector('.preview-answer');
-        answer.classList.toggle('hidden');
-        this.textContent = answer.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
-    });
-});
+// Admin Panel Functionality - REMOVED DUPLICATE CODE
+// The admin panel initialization is already handled in the DOMContentLoaded event listener at lines 570-590
 
-// Updated preview functionality
 function updatePreview() {
     const type = document.querySelector('input[name="card-type"]:checked').value;
     const content = document.getElementById('question').value;
@@ -933,13 +914,41 @@ function updatePreview() {
     previewAnswer.classList.add('hidden');
 
     if (type === 'multipleChoice') {
-        if (lines.length > 0) {
-            previewQuestion.innerHTML = `<h4>${lines[0]}</h4>`;
-            const options = lines.slice(1);
+        // Parse the first question block using our multi-question parser
+        const questionBlocks = parseMultipleChoiceQuestions(content);
+        
+        if (questionBlocks.length > 0) {
+            const firstBlock = questionBlocks[0];
+            
+            // Display the question
+            previewQuestion.innerHTML = `<h4>${firstBlock[0]}</h4>`;
+            
+            // Find the correct option and any extra info
+            let correctIndex = -1;
+            let extraInfo = '';
+            
+            for (let i = 1; i < firstBlock.length; i++) {
+                const line = firstBlock[i];
+                
+                if (line.startsWith('/')) {
+                    // This is an extra info line
+                    extraInfo = line.substring(1).trim();
+                    console.log('Preview - found extra info:', extraInfo);
+                } else if (line.endsWith(']')) {
+                    // This is the correct answer
+                    correctIndex = i - 1; // Adjust for 0-based index
+                    console.log('Preview - found correct answer at index:', correctIndex);
+                }
+            }
+            
+            // Display options (skip the question and any extra info line)
+            const options = firstBlock.filter((line, index) => 
+                index > 0 && !line.startsWith('/')
+            );
             
             options.forEach((option, index) => {
                 const isCorrect = option.trim().endsWith(']');
-                const cleanOption = option.replace(/\]$/, '').trim();
+                let cleanOption = option.replace(/\]$/, '').trim();
                 
                 previewAnswer.innerHTML += `
                     <div class="preview-option ${isCorrect ? 'correct' : ''}">
@@ -948,8 +957,18 @@ function updatePreview() {
                     </div>
                 `;
             });
+            
+            // If there's extra info, add it to the preview
+            if (extraInfo) {
+                previewAnswer.innerHTML += `
+                    <div class="notes" style="margin-top: 15px;">
+                        <strong>Notas:</strong>
+                        ${extraInfo.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            }
         }
-    } else {
+    } else { // Classic card format
         if (lines.length > 0) {
             previewQuestion.innerHTML += `<h4>${lines[0]}</h4>`;
         }
@@ -1081,16 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================ CHOICE toggle for admin form =========================
 // Add type toggle functionality
 document.getElementById('card-type')?.addEventListener('change', function() {
-    const mcFields = document.getElementById('multiple-choice-fields');
-    const questionLabel = document.querySelector('label[for="question"]');
-    
-    if (this.value === 'multipleChoice') {
-        mcFields.classList.remove('hidden');
-        questionLabel.textContent = 'Question:';
-    } else {
-        mcFields.classList.add('hidden');
-        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
-    }
+    updateCardTypeUI(this.value);
 });
 
 // Add this function to dashboard-script.js
@@ -1116,23 +1126,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... rest of your existing initialization code ...
 });
 
-// ================================ a =================================
-
 // Change from dropdown to radio buttons
 document.querySelectorAll('input[name="card-type"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        const mcFields = document.getElementById('multiple-choice-fields');
-        const questionLabel = document.querySelector('label[for="question"]');
-        
-        if (this.value === 'multipleChoice') {
-            mcFields.classList.remove('hidden');
-            questionLabel.textContent = 'Question:';
-        } else {
-            mcFields.classList.add('hidden');
-            questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
-        }
+        updateCardTypeUI(this.value);
     });
 });
+
+// Unified function to update UI based on card type
+function updateCardTypeUI(cardType) {
+    const questionLabel = document.querySelector('label[for="question"]');
+    const textarea = document.getElementById('question');
+    
+    if (cardType === 'multipleChoice') {
+        questionLabel.textContent = 'Multiple Choice Question Format:';
+        // Ensure consistent size for multiple choice
+        textarea.style.height = '350px';
+        textarea.style.minHeight = '350px';
+    } else {
+        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
+        // Ensure consistent size for classic
+        textarea.style.height = '350px';
+        textarea.style.minHeight = '350px';
+    }
+}
 
 function initializeERA2Cards() {
     if (window.location.pathname.includes('patologia-era2')) {
@@ -1189,6 +1206,8 @@ function handleChoiceSelection(selectedIndex) {
     // Debug logging
     console.log('handleChoiceSelection called for index:', selectedIndex);
     console.log('Current card:', currentCard);
+    console.log('Current card extraInfo:', currentCard.extraInfo);
+    console.log('Card keys:', Object.keys(currentCard));
     
     // IMPORTANT: Find the correct answer in the original options array from the card data
     let correctIndex = currentCard.options.findIndex(option => 
@@ -1228,6 +1247,21 @@ function handleChoiceSelection(selectedIndex) {
         // Handle correct answer selection
         console.log('Correct answer selected!');
         
+        // Check all possible variations of the extraInfo property
+        const possibleExtraInfoProps = ['extraInfo', 'extrainfo', 'ExtraInfo', 'EXTRAINFO'];
+        let extraInfoContent = null;
+        
+        for (const prop of possibleExtraInfoProps) {
+            if (currentCard[prop] && currentCard[prop].trim() !== '') {
+                extraInfoContent = currentCard[prop];
+                console.log(`Found extraInfo in property "${prop}":`, extraInfoContent);
+                break;
+            }
+        }
+        
+        console.log('Extra info content found:', extraInfoContent);
+        console.log('Full card data:', JSON.stringify(currentCard));
+        
         // Apply green color directly to the correct button (which is also the selected button)
         if (selectedButton) {
             selectedButton.style.backgroundColor = '#2ed573';
@@ -1248,10 +1282,43 @@ function handleChoiceSelection(selectedIndex) {
             selectedButton.classList.add('correct');
         }
         
-        // Disable ALL buttons when correct answer is found
+        // Hide all incorrect options
         choiceButtons.forEach(button => {
+            if (button !== selectedButton) {
+                button.style.display = 'none';
+            }
             button.disabled = true;
         });
+        
+        // Display extra information if available
+        if (extraInfoContent) {
+            console.log('Displaying extra info:', extraInfoContent);
+            const choiceOptions = document.getElementById('choice-options');
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'explanation-container visible';
+            explanationDiv.style.marginTop = '20px';
+            explanationDiv.style.padding = '15px';
+            explanationDiv.style.backgroundColor = '#f8f9fa';
+            explanationDiv.style.border = '1px solid #dee2e6';
+            explanationDiv.style.borderRadius = '5px';
+            
+            explanationDiv.innerHTML = `
+                <div class="notes">
+                    <strong>Notas:</strong>
+                    ${extraInfoContent.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            
+            // Add the explanation after the selected button
+            if (choiceOptions) {
+                console.log('Appending extra info to choice options');
+                choiceOptions.appendChild(explanationDiv);
+            } else {
+                console.error('Could not find choice-options element');
+            }
+        } else {
+            console.log('No extra info content to display');
+        }
         
         // Transform the skip button into a "continue" button
         if (skipButton) {
@@ -1526,4 +1593,295 @@ async function showOverview() {
     // Rest of existing code remains the same...
     addToggleListeners();
     showStatus('Overview');
+}
+
+// Call the test function - you can open browser console to see results
+// Uncomment this line to run the test
+testExtraInfoExtraction();
+
+// Add this at the end of your file
+// Test function to validate extraInfo extraction
+function testExtraInfoExtraction() {
+    console.log("=== TESTING EXTRA INFO EXTRACTION ===");
+    
+    // Test case 1: Option with / and ]
+    const testOption1 = "Strait of Malacca/It's located between Malaysia and Indonesia]";
+    let cleanOption1 = testOption1.replace(/\]$/, '').trim();
+    const slashIndex1 = cleanOption1.indexOf('/');
+    
+    if (slashIndex1 !== -1) {
+        const cleanOptionText1 = cleanOption1.substring(0, slashIndex1).trim();
+        const extraInfoText1 = cleanOption1.substring(slashIndex1 + 1).trim();
+        console.log("Test 1 - Option with / and ]:");
+        console.log("Original:", testOption1);
+        console.log("Clean option:", cleanOptionText1);
+        console.log("Extra info:", extraInfoText1);
+    }
+    
+    // Test case 2: Option without /
+    const testOption2 = "Strait of Gibraltar]";
+    let cleanOption2 = testOption2.replace(/\]$/, '').trim();
+    const slashIndex2 = cleanOption2.indexOf('/');
+    
+    console.log("\nTest 2 - Option without /:");
+    console.log("Original:", testOption2);
+    if (slashIndex2 !== -1) {
+        const cleanOptionText2 = cleanOption2.substring(0, slashIndex2).trim();
+        const extraInfoText2 = cleanOption2.substring(slashIndex2 + 1).trim();
+        console.log("Clean option:", cleanOptionText2);
+        console.log("Extra info:", extraInfoText2);
+    } else {
+        console.log("No slash found - Clean option:", cleanOption2);
+        console.log("Extra info: none");
+    }
+    
+    // Test case 3: Simulated form submission for multiple choice
+    console.log("\nTest 3 - Simulated multiple choice card creation:");
+    const mockOptions = [
+        "Strait of Gibraltar",
+        "Bering Strait",
+        "Strait of Hormuz",
+        "Strait of Malacca/It's located between Malaysia and Indonesia]"
+    ];
+    
+    const mockCard = {
+        options: [],
+        correctIndex: -1,
+        extraInfo: ''
+    };
+    
+    console.log("Mock options:", mockOptions);
+    
+    for (const [index, option] of mockOptions.entries()) {
+        const isCorrect = option.trim().endsWith(']');
+        let cleanOption = option.replace(/\]$/, '').trim();
+        
+        if (isCorrect) {
+            mockCard.correctIndex = index;
+            
+            const slashIndex = cleanOption.indexOf('/');
+            if (slashIndex !== -1) {
+                const cleanOptionText = cleanOption.substring(0, slashIndex).trim();
+                const extraInfoText = cleanOption.substring(slashIndex + 1).trim();
+                
+                mockCard.extraInfo = extraInfoText;
+                mockCard.options.push(cleanOptionText);
+                
+                console.log("Found correct option at index:", index);
+                console.log("Clean option text:", cleanOptionText);
+                console.log("Extra info text:", mockCard.extraInfo);
+            } else {
+                mockCard.options.push(cleanOption);
+            }
+        } else {
+            const slashIndex = cleanOption.indexOf('/');
+            if (slashIndex !== -1) {
+                cleanOption = cleanOption.substring(0, slashIndex).trim();
+            }
+            mockCard.options.push(cleanOption);
+        }
+    }
+    
+    console.log("Final mock card:", mockCard);
+    console.log("=== TEST COMPLETE ===");
+}
+
+// Call the test function - you can see results in browser console
+testExtraInfoExtraction();
+
+// Function to parse multiple choice questions from text input
+function parseMultipleChoiceQuestions(rawContent) {
+    const allLines = rawContent.split('\n').map(line => line.trim()).filter(line => line !== '');
+    const questions = [];
+    
+    let currentBlock = [];
+    let foundCorrectAnswer = false;
+    let foundExtraInfo = false;
+    
+    console.log('Parsing multiple questions from input with new format...');
+    console.log('Raw lines:', allLines);
+    
+    // If there are no lines, return empty array
+    if (allLines.length === 0) {
+        return [];
+    }
+    
+    // Process each line
+    for (let i = 0; i < allLines.length; i++) {
+        const line = allLines[i];
+        
+        // Check if this line is for extra info (starts with /)
+        if (foundCorrectAnswer && !foundExtraInfo && line.startsWith('/')) {
+            // This is an extra info line, add it to the current block
+            currentBlock.push(line);
+            foundExtraInfo = true;
+            console.log('Found extra info:', line);
+            
+            // If this is the last line, we're done with this question
+            if (i === allLines.length - 1) {
+                questions.push([...currentBlock]);
+                console.log('Adding final question block with extra info');
+            }
+            
+            continue;
+        }
+        
+        // If we found a correct answer in the previous iteration
+        // and either we already found extra info or this line doesn't start with /
+        // then this line is the start of a new question
+        if (foundCorrectAnswer && (foundExtraInfo || !line.startsWith('/'))) {
+            // Save current block and start a new one
+            questions.push([...currentBlock]);
+            currentBlock = [];
+            foundCorrectAnswer = false;
+            foundExtraInfo = false;
+            console.log('Starting new question block');
+        }
+        
+        // Add the current line to the block
+        currentBlock.push(line);
+        
+        // Check if this line is a correct answer (ends with ])
+        if (line.trim().endsWith(']')) {
+            foundCorrectAnswer = true;
+            console.log('Found correct answer:', line);
+            
+            // If this is the last line, add the block
+            if (i === allLines.length - 1) {
+                questions.push([...currentBlock]);
+                console.log('Adding final question block with correct answer');
+            }
+        }
+    }
+    
+    // Add the last block if it has content and wasn't already added
+    if (currentBlock.length > 0 && 
+        (questions.length === 0 || 
+         JSON.stringify(questions[questions.length - 1]) !== JSON.stringify(currentBlock))) {
+        questions.push(currentBlock);
+        console.log('Adding final remaining question block');
+    }
+    
+    console.log('Parsed question blocks:', questions);
+    
+    // Validate each question block has at least a question and one option
+    questions.forEach((block, index) => {
+        if (block.length < 2) {
+            throw new Error(`Question block ${index + 1} is invalid. Each question needs at least a question and one option.`);
+        }
+        
+        // Verify at least one option has the ] marker
+        const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
+        if (!hasCorrectOption) {
+            throw new Error(`Question block ${index + 1} has no correct answer marked with ]. Please add ] at the end of the correct option.`);
+        }
+    });
+    
+    console.log(`Successfully parsed ${questions.length} questions`);
+    return questions;
+}
+
+// Function to save a multiple choice card
+async function saveMultipleChoiceCard(lines) {
+    try {
+        // Validate format
+        if (lines.length < 2) {
+            throw new Error('Multiple choice requires at least 1 question and 1 option');
+        }
+        if (lines.length > 8) { // Increased to 8 to allow for extra info line
+            throw new Error('Maximum 6 options allowed (plus question and extra info)');
+        }
+        
+        // Initialize card object
+        const newCard = {
+            question: lines[0],
+            answer: '',
+            deck: document.getElementById('deck-select').value,
+            subdeck: document.getElementById('subdeck').value,
+            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+            type: 'multipleChoice',
+            options: [],
+            correctIndex: -1,
+            extraInfo: ''
+        };
+        
+        console.log(`Processing card: ${newCard.question}`);
+        console.log('All lines:', lines);
+        
+        // First identify the correct option and any extra info line
+        let correctIndex = -1;
+        let correctCount = 0;
+        let extraInfoLine = null;
+        
+        // Find the correct option (the one with ])
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim().endsWith(']')) {
+                correctIndex = i - 1; // -1 because we'll be skipping the question line when creating options array
+                correctCount++;
+                
+                // Check if the next line is an extra info line
+                if (i + 1 < lines.length && lines[i + 1].startsWith('/')) {
+                    extraInfoLine = lines[i + 1];
+                    console.log('Found extra info line:', extraInfoLine);
+                }
+            }
+        }
+        
+        if (correctCount > 1) {
+            throw new Error('Only one correct answer allowed (mark with ])');
+        }
+        
+        if (correctIndex === -1) {
+            throw new Error('No correct answer specified - add ] at end of correct option');
+        }
+        
+        // Extract extra info if present
+        if (extraInfoLine) {
+            // Remove the starting / character
+            newCard.extraInfo = extraInfoLine.substring(1).trim();
+            console.log('Extracted extra info:', newCard.extraInfo);
+        }
+        
+        // Process all options (skip the question and any extra info line)
+        newCard.correctIndex = correctIndex;
+        
+        // Add options (skip the question line)
+        const options = lines.filter((line, index) => 
+            index > 0 && !line.startsWith('/')
+        );
+        
+        for (let i = 0; i < options.length; i++) {
+            // Clean up the option text (remove ])
+            let optionText = options[i].trim().replace(/\]$/, '').trim();
+            newCard.options.push(optionText);
+        }
+        
+        // Set the answer to the correct option
+        newCard.answer = newCard.options[correctIndex];
+        
+        console.log('Multiple choice card to be submitted:', JSON.stringify(newCard));
+        
+        // Submit the card
+        const response = await fetch('/api/flashcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newCard)
+        });
+        
+        const data = await response.json();
+        
+        return { 
+            success: response.ok,
+            data,
+            card: newCard.question
+        };
+    } catch (error) {
+        console.error('Error saving multiple choice card:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
 }

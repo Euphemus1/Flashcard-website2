@@ -326,6 +326,9 @@ app.get('/api/decks/:deckName/subdecks', async (req, res) => {
 
 app.post('/api/flashcards', async (req, res) => {
   try {
+    // Log the incoming request body for debugging
+    console.log('Received flashcard data:', JSON.stringify(req.body));
+    
     // Validate required fields
     const requiredFields = ['type', 'question', 'answer', 'deck', 'subdeck'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -388,6 +391,9 @@ app.post('/api/flashcards', async (req, res) => {
       processedCorrectIndex = parsedIndex;
     }
 
+    // Check if extraInfo exists and log it
+    console.log('extraInfo from request:', req.body.extraInfo);
+
     // Clean and format data
     const flashcardData = {
       type: req.body.type,
@@ -409,8 +415,12 @@ app.post('/api/flashcards', async (req, res) => {
           : []
     };
 
+    // Log the final flashcard data before saving
+    console.log('Flashcard data to be saved:', JSON.stringify(flashcardData));
+
     // Create the flashcard
     const flashcard = await Flashcard.create(flashcardData);
+    console.log('Flashcard saved to MongoDB with ID:', flashcard._id);
     res.status(201).json(flashcard);
 
   } catch (error) {

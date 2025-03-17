@@ -163,44 +163,45 @@
                 <div class="admin-form-container">
                     <form id="add-flashcard-form">
                         <div class="form-columns">
-                            <div class="form-column">
+                            <div class="form-column form-column-left">
                                 <div class="form-group">
                                     <label for="question">Content Format:</label>
-                                    <textarea id="question" rows="8" required placeholder="Format:
-                                Line 1: Question
-                                Line 2: Subtitle
-                                Lines 3+: Answer content
-                                Use '/note Your note here' for additional notes"></textarea>
-                                </div>
+                                    <textarea id="question" required placeholder="For Classic Cards:
+Line 1: Question
+Line 2: Subtitle
+Lines 3+: Answer content
+Use '/note Your note here' for additional notes
                                 
-                                <div id="multiple-choice-fields" class="hidden">
-                                    <div class="form-group">
-                                        <label>Options (comma separated):</label>
-                                        <input type="text" id="options">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Correct Answer Index (0-based):</label>
-                                        <input type="number" id="correct-answer" min="0" max="3">
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="references">References (comma separated):</label>
-                                    <input type="text" id="references">
+For Multiple Choice:
+Line 1: Question
+Lines 2-7: Options (mark correct answer with ] at the end)
+           Extra info can be added on its own line after the correct answer, starting with /
+           A new question starts on the line after the extra info (or after correct answer if no extra info)
+Example: What is the capital of France?
+         London
+         Berlin
+         Paris]
+         /Paris is also known as the City of Light
+         What is the largest planet in our solar system?
+         Jupiter]
+         Saturn
+         Mars"></textarea>
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>Card Type:</label>
-                                <div class="radio-group">
-                                    <label>
-                                        <input type="radio" name="card-type" value="Clasic" checked>
-                                        Clasic
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="card-type" value="multipleChoice">
-                                        Multiple Choice
-                                    </label>
+                            <div class="form-column form-column-right">
+                                <div class="form-group">
+                                    <label>Card Type:</label>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="card-type" value="Clasic" checked>
+                                            Clasic
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="card-type" value="multipleChoice">
+                                            Multiple Choice
+                                        </label>
+                                    </div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -219,23 +220,27 @@
                                     <label for="tags">Tags (comma separated):</label>
                                     <input type="text" id="tags">
                                 </div>
+                                
+                                <div class="preview-section">
+                                    <h3>Card Preview</h3>
+                                    <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
+                                    <div class="card-preview">
+                                        <div class="preview-question">
+                                            <!-- Question preview will be shown here -->
+                                        </div>
+                                        <button type="button" class="toggle-preview">Show Answer</button>
+                                        <div class="preview-answer hidden">
+                                            <!-- Answer preview will be shown here -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-actions">
-                            <button type="button" id="preview-btn">Preview</button>
-                            <button type="submit">Save Flashcard</button>
+                            <button type="submit" class="btn btn-primary">Add Flashcard</button>
                         </div>
                     </form>
-                    
-                    <div id="preview-panel" class="hidden">
-                        <h3>Flashcard Preview</h3>
-                        <div class="preview-card">
-                            <div class="preview-question"></div>
-                            <div class="preview-answer hidden"></div>
-                            <button class="toggle-preview">Show Answer</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

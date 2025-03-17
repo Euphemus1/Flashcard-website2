@@ -872,7 +872,7 @@ p.question-look, .answer-text {
     padding: 2rem;
     border-radius: 10px;
     width: 90%;
-    max-width: 800px;
+    max-width: 900px;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -893,19 +893,23 @@ p.question-look, .answer-text {
 }
 
 .admin-form-container {
-    display: flex;
-    gap: 2rem;
+    width: 100%;
 }
 
 .form-columns {
     display: flex;
-    gap: 2rem;
     width: 100%;
 }
 
-.form-column {
-    flex: 1;
-    min-width: 300px;
+.form-column-left {
+    width: 70%;
+    padding-right: 20px;
+}
+
+.form-column-right {
+    width: 30%;
+    padding-left: 20px;
+    border-left: 1px solid #eee;
 }
 
 .form-group {
@@ -920,7 +924,6 @@ p.question-look, .answer-text {
 }
 
 .form-group input,
-.form-group textarea,
 .form-group select {
     width: 100%;
     padding: 0.8rem;
@@ -930,8 +933,69 @@ p.question-look, .answer-text {
 }
 
 .form-group textarea {
+    width: 100%;
+    height: 350px;
+    min-height: 350px;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
     resize: vertical;
-    min-height: 100px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.preview-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.card-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: white;
+}
+
+.preview-question {
+    margin-bottom: 1rem;
+}
+
+.preview-answer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #dee2e6;
+}
+
+.toggle-preview {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #e9ecef;
+    border: none;
+    border-radius: 4px;
+    color: #495057;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-preview:hover {
+    background-color: #dee2e6;
 }
 
 .form-actions {
@@ -941,82 +1005,31 @@ p.question-look, .answer-text {
     justify-content: flex-end;
 }
 
-.form-actions button {
+.btn {
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-.form-actions button[type="submit"] {
-    background: #27ae60;
+.btn-primary {
+    background-color: #3498db;
     color: white;
 }
 
-.form-actions button[type="button"] {
-    background: #3498db;
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-preview {
+    background-color: #6c757d;
     color: white;
 }
 
-/* Radio button styling */
-.radio-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: background 0.3s ease;
-}
-
-.radio-group label:hover {
-    background: #f0f0f0;
-}
-
-.radio-group input[type="radio"] {
-    margin: 0;
-    width: 1.1em;
-    height: 1.1em;
-}
-
-/* Preview Panel */
-#preview-panel {
-    margin-top: 2rem;
-    border-top: 1px solid #eee;
-    padding-top: 2rem;
-}
-
-.preview-card {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-.preview-question {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-}
-
-.preview-answer {
-    color: #666;
-    margin-bottom: 1rem;
-}
-
-.toggle-preview {
-    background: none;
-    border: none;
-    color: #3498db;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
+.btn-preview:hover {
+    background-color: #5a6268;
 }
 
 /* ============================================= CLASS GRID SYSTEM ================================================= */
