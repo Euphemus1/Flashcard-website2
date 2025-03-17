@@ -167,35 +167,33 @@
                                 <div class="form-group">
                                     <label for="question">Content Format:</label>
                                     <textarea id="question" required placeholder="For Classic Cards:
-Line 1: Question
-Line 2: Subtitle
-Lines 3+: Answer content
-Use '/note Your note here' for additional notes
-                                
-For Multiple Choice:
-Line 1: Question
-Lines 2-7: Options (mark correct answer with ] at the end)
-           Extra info can be added on its own line after the correct answer, starting with /
-           A new question starts on the line after the extra info (or after correct answer if no extra info)
+Linha 1: Pergunta
+Linha 2: Subtítulo
+Linhas 3+: Conteúdo da resposta
+Use '/note Sua nota aqui' para notas adicionais
+
+Para Múltipla Escolha:
+Linha 1: Pergunta
+Linhas 2-7: Opções (marque a resposta correta com ] no final)
+Comentario: Comecar frase com /
+
 Example: What is the capital of France?
-         London
-         Berlin
-         Paris]
-         /Paris is also known as the City of Light
-         What is the largest planet in our solar system?
-         Jupiter]
-         Saturn
-         Mars"></textarea>
+Qual é a capital da França?
+Londres
+Berlim
+Amsterdam
+Paris]
+/Paris também é conhecida como Cidade Luz"></textarea>
                                 </div>
                             </div>
                             
-                            <div class="form-column form-column-right">
+                            <div class="form-column form-column-middle">
                                 <div class="form-group">
                                     <label>Card Type:</label>
                                     <div class="radio-group">
                                         <label>
-                                            <input type="radio" name="card-type" value="Clasic" checked>
-                                            Clasic
+                                            <input type="radio" name="card-type" value="classic" checked>
+                                            Classic
                                         </label>
                                         <label>
                                             <input type="radio" name="card-type" value="multipleChoice">
@@ -220,18 +218,14 @@ Example: What is the capital of France?
                                     <label for="tags">Tags (comma separated):</label>
                                     <input type="text" id="tags">
                                 </div>
-                                
+                            </div>
+                            
+                            <div class="form-column form-column-preview">
                                 <div class="preview-section">
-                                    <h3>Card Preview</h3>
+                                    <h3>Live Preview</h3>
                                     <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
                                     <div class="card-preview">
-                                        <div class="preview-question">
-                                            <!-- Question preview will be shown here -->
-                                        </div>
-                                        <button type="button" class="toggle-preview">Show Answer</button>
-                                        <div class="preview-answer hidden">
-                                            <!-- Answer preview will be shown here -->
-                                        </div>
+                                        <!-- Card preview will be dynamically generated here -->
                                     </div>
                                 </div>
                             </div>

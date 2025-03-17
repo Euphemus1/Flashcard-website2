@@ -343,9 +343,9 @@ function loadNextCard() {
                 return;
             }
             
-            // Check which option has the ] marker
-            const correctIndex = currentCard.options.findIndex(opt => opt.includes(']'));
-            console.log('Correct answer index (from ] marker):', correctIndex);
+            // Get the correct answer index from the card data
+            const correctIndex = currentCard.correctIndex;
+            console.log('Correct answer index (from card data):', correctIndex);
             
             // Create shuffled options with tracked original indices
             const optionsWithIndices = currentCard.options.map((option, index) => ({
@@ -396,13 +396,20 @@ function loadNextCard() {
                 
                 // Add data attributes to track both original index and correctness
                 choiceButton.dataset.originalIndex = originalIndex.toString();
+                choiceButton.dataset.displayIndex = displayIndex.toString();
                 choiceButton.dataset.isCorrect = isCorrect.toString();
                 
-                // Add event listener - pass the original index to maintain correct answer tracking
-                choiceButton.addEventListener('click', () => handleChoiceSelection(originalIndex));
+                // DEV DEBUGGING: Make the correct answer visible during testing
+                console.log(`Button ${displayIndex}: originalIndex=${originalIndex}, isCorrect=${isCorrect}`);
+                
+                // Add event listener to handle click
+                choiceButton.addEventListener('click', function() {
+                    // Direct click handler instead of passing index
+                    handleDirectChoiceClick(this);
+                });
                 
                 // Log if this is the correct option
-                if (originalIndex === correctIndex) {
+                if (isCorrect) {
                     console.log(`Option ${displayIndex} (original ${originalIndex}) is correct:`, option);
                 }
                 
@@ -689,8 +696,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updateClassBlockCounts();
     }
     
-    // Preview functionality
+    // Set up the enhanced live preview functionality
+    setupLivePreview();
+    
+    // Preview button still useful for manual refresh
     document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
+    
+    // Toggle answer preview
     document.querySelector('.toggle-preview')?.addEventListener('click', function() {
         const answer = document.querySelector('.preview-answer');
         answer.classList.toggle('hidden');
@@ -902,103 +914,245 @@ document.getElementById('contact-button')?.addEventListener('click', showContact
 // Admin Panel Functionality - REMOVED DUPLICATE CODE
 // The admin panel initialization is already handled in the DOMContentLoaded event listener at lines 570-590
 
+// Enhanced card preview functionality - Make it actually look like the real cards
 function updatePreview() {
     const type = document.querySelector('input[name="card-type"]:checked').value;
     const content = document.getElementById('question').value;
-    const previewQuestion = document.querySelector('.preview-question');
-    const previewAnswer = document.querySelector('.preview-answer');
+    const previewContainer = document.querySelector('.card-preview');
     const lines = content.split('\n').filter(line => line.trim() !== '');
 
-    previewQuestion.innerHTML = '';
-    previewAnswer.innerHTML = '';
-    previewAnswer.classList.add('hidden');
-
-    if (type === 'multipleChoice') {
-        // Parse the first question block using our multi-question parser
-        const questionBlocks = parseMultipleChoiceQuestions(content);
-        
-        if (questionBlocks.length > 0) {
-            const firstBlock = questionBlocks[0];
-            
-            // Display the question
-            previewQuestion.innerHTML = `<h4>${firstBlock[0]}</h4>`;
-            
-            // Find the correct option and any extra info
-            let correctIndex = -1;
-            let extraInfo = '';
-            
-            for (let i = 1; i < firstBlock.length; i++) {
-                const line = firstBlock[i];
-                
-                if (line.startsWith('/')) {
-                    // This is an extra info line
-                    extraInfo = line.substring(1).trim();
-                    console.log('Preview - found extra info:', extraInfo);
-                } else if (line.endsWith(']')) {
-                    // This is the correct answer
-                    correctIndex = i - 1; // Adjust for 0-based index
-                    console.log('Preview - found correct answer at index:', correctIndex);
-                }
-            }
-            
-            // Display options (skip the question and any extra info line)
-            const options = firstBlock.filter((line, index) => 
-                index > 0 && !line.startsWith('/')
-            );
-            
-            options.forEach((option, index) => {
-                const isCorrect = option.trim().endsWith(']');
-                let cleanOption = option.replace(/\]$/, '').trim();
-                
-                previewAnswer.innerHTML += `
-                    <div class="preview-option ${isCorrect ? 'correct' : ''}">
-                        ${String.fromCharCode(65 + index)}. ${cleanOption}
-                        ${isCorrect ? '<span class="correct-marker">✓</span>' : ''}
-                    </div>
-                `;
-            });
-            
-            // If there's extra info, add it to the preview
-            if (extraInfo) {
-                previewAnswer.innerHTML += `
-                    <div class="notes" style="margin-top: 15px;">
-                        <strong>Notas:</strong>
-                        ${extraInfo.replace(/\n/g, '<br>')}
-                    </div>
-                `;
-            }
-        }
-    } else { // Classic card format
-        if (lines.length > 0) {
-            previewQuestion.innerHTML += `<h4>${lines[0]}</h4>`;
-        }
-        if (lines.length > 1) {
-            previewQuestion.innerHTML += `<p class="subtitle">${lines[1]}</p>`;
-        }
-        
-        const answerContent = lines.slice(2).join('\n');
-        const splitIndex = answerContent.indexOf('/');
-        
-        let answerPart = answerContent;
-        let extraInfoPart = '';
-        
-        if (splitIndex !== -1) {
-            answerPart = answerContent.substring(0, splitIndex).trim();
-            extraInfoPart = answerContent.substring(splitIndex + 1).trim();
-        }
-
-        previewAnswer.innerHTML = `
-            ${answerPart.replace(/\n/g, '<br>')}
-            ${extraInfoPart ? `
-                <div class="notes">
-                    <strong>Notes:</strong>
-                    ${extraInfoPart.replace(/\n/g, '<br>')}
-                </div>
-            ` : ''}
-        `;
+    // Clear previous content
+    previewContainer.innerHTML = '';
+    
+    // Default content for empty preview
+    if (lines.length === 0) {
+        previewContainer.innerHTML = '<div class="empty-preview">Your card preview will appear here as you type...</div>';
+        return;
     }
 
-    document.querySelector('.toggle-preview').textContent = 'Show Answer';
+    if (type === 'multipleChoice') {
+        try {
+            // Create a realistic multiple choice card preview
+            const questionBlocks = parseMultipleChoiceQuestions(content, true);
+            
+            if (questionBlocks.length > 0) {
+                const firstBlock = questionBlocks[0];
+                
+                // Create the card structure similar to the actual card
+                previewContainer.innerHTML = `
+                    <div class="card question" style="min-height: unset; min-width: unset; width: 100%;">
+                        <div class="card-content">
+                            <h3 id="card-front">${firstBlock[0]}</h3>
+                            <div id="choice-options" class="choice-options"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // Find the correct option and any extra info
+                let correctIndex = -1;
+                let extraInfo = '';
+                
+                for (let i = 1; i < firstBlock.length; i++) {
+                    const line = firstBlock[i];
+                    
+                    if (line.startsWith('/')) {
+                        // This is an extra info line
+                        extraInfo = line.substring(1).trim();
+                    } else if (line.endsWith(']')) {
+                        // This is the correct answer
+                        correctIndex = i - 1; // Adjust for 0-based index
+                    }
+                }
+                
+                // Get choice options container
+                const choiceOptions = previewContainer.querySelector('#choice-options');
+                
+                // Display options (skip the question and any extra info line)
+                const options = firstBlock.filter((line, index) => 
+                    index > 0 && !line.startsWith('/')
+                );
+                
+                // Add choice buttons exactly as they would appear in the app
+                options.forEach((option, index) => {
+                    const isCorrect = option.trim().endsWith(']');
+                    let cleanOption = option.replace(/\]$/, '').trim();
+                    
+                    // Create button with the same styling as in the actual card
+                    const choiceButton = document.createElement('button');
+                    choiceButton.className = 'choice';
+                    choiceButton.textContent = cleanOption;
+                    
+                    // Make correct answer visually different
+                    if (isCorrect) {
+                        choiceButton.dataset.correct = 'true';
+                    }
+                    
+                    choiceOptions.appendChild(choiceButton);
+                });
+                
+                // Show the extra info section if available
+                if (extraInfo) {
+                    previewContainer.innerHTML += `
+                        <div class="explanation-container" style="max-height: unset; margin-top: 1rem;">
+                            <div class="explanation-text">
+                                <strong>Extra Information:</strong>
+                                ${extraInfo.replace(/\n/g, '<br>')}
+                            </div>
+                    </div>
+                `;
+                }
+                
+                // Add event listeners to buttons to simulate selection
+                previewContainer.querySelectorAll('.choice').forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Reset all buttons
+                        previewContainer.querySelectorAll('.choice').forEach(btn => {
+                            btn.classList.remove('correct', 'wrong');
+                        });
+                        
+                        // Show the button as correct or wrong
+                        if (this.dataset.correct === 'true') {
+                            this.classList.add('correct');
+                            
+                            // Show any explanation
+                            const explanationContainer = previewContainer.querySelector('.explanation-container');
+                            if (explanationContainer) {
+                                explanationContainer.style.display = 'block';
+        }
+    } else {
+                            this.classList.add('wrong');
+                        }
+                    });
+                });
+            } else {
+                // No valid question blocks found
+                previewContainer.innerHTML = '<div class="empty-preview">Enter a question and at least one option. Mark the correct option with ] at the end.</div>';
+            }
+        } catch (error) {
+            // Show a helpful message about the format
+            previewContainer.innerHTML = `
+                <div class="empty-preview">
+                    <p>Format your multiple choice card like this:</p>
+                    <pre style="text-align: left; margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+What is the capital of France?
+London
+Berlin
+Paris]
+/Paris is also known as the City of Light</pre>
+                    <p style="margin-top: 10px; color: #e74c3c;">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+    else {
+        // Create a realistic classic card preview
+        // First show the question card
+        let question = '';
+        let subtitle = '';
+        
+        if (lines.length > 0) {
+            question = lines[0];
+        }
+        
+        if (lines.length > 1) {
+            subtitle = lines[1];
+        }
+        
+        // Create card structure exactly as in the actual app
+        previewContainer.innerHTML = `
+            <div class="card question" style="min-height: unset; min-width: unset; width: 100%;">
+                <div class="card-content">
+                    <h3 id="card-front">${question}</h3>
+                    ${subtitle ? `<p class="subtitle" id="card-subtitle">${subtitle}</p>` : ''}
+                    <p class="question-look">[...]</p>
+                </div>
+            </div>
+            <button id="preview-flip-btn" class="btn" style="margin-top: 1rem; background-color: #429edb; color: white; width: 100%;">Show Answer</button>
+            <div class="card answer hidden" style="min-height: unset; min-width: unset; width: 100%; margin-top: 1rem;">
+                <div class="card-content">
+                    <h3>${question}</h3>
+                    ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ''}
+                    <div class="answer-text"></div>
+                </div>
+            </div>
+        `;
+        
+        // Add content to the answer card
+        const answerTextDiv = previewContainer.querySelector('.answer-text');
+        if (answerTextDiv && lines.length > 2) {
+            const answerContent = lines.slice(2).join('<br>');
+            answerTextDiv.innerHTML = answerContent;
+        }
+        
+        // Add functionality to the flip button
+        const flipButton = document.getElementById('preview-flip-btn');
+        if (flipButton) {
+            flipButton.addEventListener('click', function() {
+                const answerCard = previewContainer.querySelector('.card.answer');
+                if (answerCard) {
+                    answerCard.classList.toggle('hidden');
+                    this.textContent = answerCard.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+                }
+            });
+        }
+    }
+}
+
+// Function to set up live preview
+function setupLivePreview() {
+    // Update the preview when the textarea content changes
+    const questionTextarea = document.getElementById('question');
+    if (questionTextarea) {
+        questionTextarea.addEventListener('input', debounce(updatePreview, 300));
+        
+        // Also update preview when card type changes
+        const cardTypeInputs = document.querySelectorAll('input[name="card-type"]');
+        cardTypeInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                updateCardTypeUI(this.value);
+                updatePreview();
+            });
+        });
+        
+        // Initial preview on modal open
+        document.getElementById('open-admin-btn')?.addEventListener('click', function() {
+            setTimeout(updatePreview, 100); // Short delay to ensure modal is visible
+        });
+    }
+}
+
+// Debounce function to limit the rate at which a function can fire
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Unified function to update UI based on card type
+function updateCardTypeUI(cardType) {
+    const questionLabel = document.querySelector('label[for="question"]');
+    const textarea = document.getElementById('question');
+    
+    if (cardType === 'multipleChoice') {
+        questionLabel.textContent = 'Multiple Choice Question Format:';
+        // Ensure consistent size for multiple choice
+        textarea.style.height = '350px';
+        textarea.style.minHeight = '350px';
+    } else {
+        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
+        // Ensure consistent size for classic
+        textarea.style.height = '350px';
+        textarea.style.minHeight = '350px';
+    }
+    
+    // Update the preview to match the new card type
+    updatePreview();
 }
 
 function initializeERA1Cards() {
@@ -1133,24 +1287,6 @@ document.querySelectorAll('input[name="card-type"]').forEach(radio => {
     });
 });
 
-// Unified function to update UI based on card type
-function updateCardTypeUI(cardType) {
-    const questionLabel = document.querySelector('label[for="question"]');
-    const textarea = document.getElementById('question');
-    
-    if (cardType === 'multipleChoice') {
-        questionLabel.textContent = 'Multiple Choice Question Format:';
-        // Ensure consistent size for multiple choice
-        textarea.style.height = '350px';
-        textarea.style.minHeight = '350px';
-    } else {
-        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
-        // Ensure consistent size for classic
-        textarea.style.height = '350px';
-        textarea.style.minHeight = '350px';
-    }
-}
-
 function initializeERA2Cards() {
     if (window.location.pathname.includes('patologia-era2')) {
         console.log('Initializing ERA2 flashcards...');
@@ -1206,42 +1342,19 @@ function handleChoiceSelection(selectedIndex) {
     // Debug logging
     console.log('handleChoiceSelection called for index:', selectedIndex);
     console.log('Current card:', currentCard);
-    console.log('Current card extraInfo:', currentCard.extraInfo);
-    console.log('Card keys:', Object.keys(currentCard));
+    console.log('Current card correctIndex:', currentCard.correctIndex);
     
-    // IMPORTANT: Find the correct answer in the original options array from the card data
-    let correctIndex = currentCard.options.findIndex(option => 
-        option.trim().endsWith(']') || // Check for ] at the end after trimming
-        option.includes(']')); // Also check for ] anywhere
-    
-    console.log('Correct index in options array:', correctIndex);
-    
-    // If we can't find the ] marker, try using the correctIndex property directly
-    if (correctIndex === -1 && currentCard.correctIndex !== undefined) {
-        console.log('No ] marker found, using correctIndex property:', currentCard.correctIndex);
-        correctIndex = currentCard.correctIndex;
-    }
-    
-    // Last resort: if still no correctIndex found, use the selected index as correct
-    if (correctIndex === -1) {
-        console.warn('No correct answer found at all. Treating selected answer as correct');
-        correctIndex = selectedIndex;
-    }
-    
-    // Check if the selected option is correct
-    const isCorrect = selectedIndex === correctIndex;
-    
-    // Find the selected button and correct button using data attributes
+    // Find the selected button by its original index
     const selectedButton = Array.from(choiceButtons).find(
         button => parseInt(button.dataset.originalIndex) === selectedIndex
     );
     
-    const correctButton = Array.from(choiceButtons).find(
-        button => button.dataset.isCorrect === "true"
-    );
+    // Look at the dataset to determine if this is the correct answer
+    // This is more reliable than comparing indices after shuffling
+    const isCorrect = selectedButton && selectedButton.dataset.isCorrect === "true";
     
-    console.log('Selected Button:', selectedButton);
-    console.log('Correct Button:', correctButton);
+    console.log('Is selected option correct?', isCorrect);
+    console.log('Selected button dataset:', selectedButton ? selectedButton.dataset : 'Button not found');
     
     if (isCorrect) {
         // Handle correct answer selection
@@ -1260,7 +1373,6 @@ function handleChoiceSelection(selectedIndex) {
         }
         
         console.log('Extra info content found:', extraInfoContent);
-        console.log('Full card data:', JSON.stringify(currentCard));
         
         // Apply green color directly to the correct button (which is also the selected button)
         if (selectedButton) {
@@ -1365,17 +1477,6 @@ function handleChoiceSelection(selectedIndex) {
         
         // Do NOT show SRS controls yet - user should keep trying
     }
-    
-    // Final debugging check - print the final state of all buttons
-    choiceButtons.forEach((button, idx) => {
-        console.log(`Button ${idx} final state:`, {
-            originalIndex: button.dataset.originalIndex,
-            isCorrect: button.dataset.isCorrect,
-            backgroundColor: button.style.backgroundColor,
-            color: button.style.color,
-            isDisabled: button.disabled
-        });
-    });
 }
 
 // Add to existing DOMContentLoaded listener
@@ -1690,13 +1791,14 @@ function testExtraInfoExtraction() {
 testExtraInfoExtraction();
 
 // Function to parse multiple choice questions from text input
-function parseMultipleChoiceQuestions(rawContent) {
+function parseMultipleChoiceQuestions(rawContent, isPreview = false) {
     const allLines = rawContent.split('\n').map(line => line.trim()).filter(line => line !== '');
     const questions = [];
     
     let currentBlock = [];
     let foundCorrectAnswer = false;
     let foundExtraInfo = false;
+    let inQuestion = true; // Tracks whether we're processing the question or options
     
     console.log('Parsing multiple questions from input with new format...');
     console.log('Raw lines:', allLines);
@@ -1706,12 +1808,17 @@ function parseMultipleChoiceQuestions(rawContent) {
         return [];
     }
     
-    // Process each line
-    for (let i = 0; i < allLines.length; i++) {
+    // First line is always a question
+    currentBlock.push(allLines[0]);
+    inQuestion = false; // Now we're expecting options
+    
+    // Process each line starting from the second line
+    for (let i = 1; i < allLines.length; i++) {
         const line = allLines[i];
+        const nextLine = i < allLines.length - 1 ? allLines[i + 1] : null;
         
         // Check if this line is for extra info (starts with /)
-        if (foundCorrectAnswer && !foundExtraInfo && line.startsWith('/')) {
+        if (!inQuestion && line.startsWith('/')) {
             // This is an extra info line, add it to the current block
             currentBlock.push(line);
             foundExtraInfo = true;
@@ -1726,16 +1833,40 @@ function parseMultipleChoiceQuestions(rawContent) {
             continue;
         }
         
-        // If we found a correct answer in the previous iteration
-        // and either we already found extra info or this line doesn't start with /
-        // then this line is the start of a new question
-        if (foundCorrectAnswer && (foundExtraInfo || !line.startsWith('/'))) {
-            // Save current block and start a new one
-            questions.push([...currentBlock]);
-            currentBlock = [];
-            foundCorrectAnswer = false;
-            foundExtraInfo = false;
-            console.log('Starting new question block');
+        // Check if this is the start of a new question
+        // This is a new question if:
+        // 1. We already have at least 2 lines in the block (question + at least 1 option)
+        // 2. The current line is not an extra info line (doesn't start with /)
+        // 3. There's a significant gap in the input suggesting a new question format
+        const isPotentialNewQuestion = 
+            currentBlock.length >= 2 && 
+            !line.startsWith('/') &&
+            nextLine !== null && 
+            !nextLine.startsWith('/') &&
+            !nextLine.trim().endsWith(']');
+        
+        // Look for patterns that indicate we're transitioning to a new question:
+        // 1. Empty lines between questions (already filtered out)
+        // 2. After an extra info line, the next line that's not an option is likely a new question
+        // 3. A line that has a very different format compared to options
+        if (!inQuestion && isPotentialNewQuestion) {
+            // Check if this might be a question line rather than an option
+            // Options are typically short, while questions are longer and might have ? at the end
+            const looksLikeQuestion = 
+                (line.includes('?')) || 
+                (nextLine && (nextLine.length < line.length - 10)) || // Next line is significantly shorter
+                (currentBlock.length >= 5); // We already have enough lines for a complete question block
+            
+            if (looksLikeQuestion) {
+                // Save the current block and start a new one
+                questions.push([...currentBlock]);
+                currentBlock = [line];
+                foundCorrectAnswer = false;
+                foundExtraInfo = false;
+                inQuestion = false; // Now expecting options again
+                console.log('Starting new question block with:', line);
+                continue;
+            }
         }
         
         // Add the current line to the block
@@ -1745,37 +1876,49 @@ function parseMultipleChoiceQuestions(rawContent) {
         if (line.trim().endsWith(']')) {
             foundCorrectAnswer = true;
             console.log('Found correct answer:', line);
-            
-            // If this is the last line, add the block
-            if (i === allLines.length - 1) {
-                questions.push([...currentBlock]);
-                console.log('Adding final question block with correct answer');
-            }
         }
-    }
-    
-    // Add the last block if it has content and wasn't already added
-    if (currentBlock.length > 0 && 
-        (questions.length === 0 || 
-         JSON.stringify(questions[questions.length - 1]) !== JSON.stringify(currentBlock))) {
-        questions.push(currentBlock);
-        console.log('Adding final remaining question block');
+        
+        // If this is the last line, add the final block
+        if (i === allLines.length - 1) {
+            questions.push([...currentBlock]);
+            console.log('Adding final question block');
+        }
     }
     
     console.log('Parsed question blocks:', questions);
     
-    // Validate each question block has at least a question and one option
-    questions.forEach((block, index) => {
-        if (block.length < 2) {
-            throw new Error(`Question block ${index + 1} is invalid. Each question needs at least a question and one option.`);
+    // For preview mode, or if we're just testing the format, be more lenient
+    if (!isPreview) {
+        // Add ] to the first option of any question blocks without a marked correct answer
+        for (let i = 0; i < questions.length; i++) {
+            const block = questions[i];
+            // Verify at least one option has the ] marker
+            const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
+            
+            if (!hasCorrectOption && block.length >= 2) {
+                // If no correct option is marked and we're in production mode,
+                // mark the first option as correct
+                console.log(`No correct answer marked in block ${i+1}, automatically marking first option as correct`);
+                if (block.length >= 2) {
+                    // Replace the first option with a version that has ] at the end
+                    block[1] = block[1].trim() + ']';
+                }
+            }
         }
         
-        // Verify at least one option has the ] marker
-        const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
-        if (!hasCorrectOption) {
-            throw new Error(`Question block ${index + 1} has no correct answer marked with ]. Please add ] at the end of the correct option.`);
-        }
-    });
+        // Final validation
+        questions.forEach((block, index) => {
+            if (block.length < 2) {
+                throw new Error(`Question block ${index + 1} is invalid. Each question needs at least a question and one option.`);
+            }
+            
+            // Verify at least one option has the ] marker
+            const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
+            if (!hasCorrectOption) {
+                throw new Error(`Question block ${index + 1} has no correct answer marked with ]. Please add ] at the end of the correct option.`);
+            }
+        });
+    }
     
     console.log(`Successfully parsed ${questions.length} questions`);
     return questions;
@@ -1808,32 +1951,47 @@ async function saveMultipleChoiceCard(lines) {
         console.log(`Processing card: ${newCard.question}`);
         console.log('All lines:', lines);
         
-        // First identify the correct option and any extra info line
-        let correctIndex = -1;
-        let correctCount = 0;
+        // Extract all options and identify extra info line
+        const options = [];
         let extraInfoLine = null;
         
-        // Find the correct option (the one with ])
         for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim().endsWith(']')) {
-                correctIndex = i - 1; // -1 because we'll be skipping the question line when creating options array
-                correctCount++;
-                
-                // Check if the next line is an extra info line
-                if (i + 1 < lines.length && lines[i + 1].startsWith('/')) {
-                    extraInfoLine = lines[i + 1];
-                    console.log('Found extra info line:', extraInfoLine);
-                }
+            const line = lines[i];
+            if (line.startsWith('/')) {
+                extraInfoLine = line;
+            } else {
+                options.push({
+                    text: line,
+                    originalIndex: i - 1,  // -1 because we skip the question line
+                    isCorrect: line.trim().endsWith(']')
+                });
             }
         }
         
-        if (correctCount > 1) {
+        console.log('Extracted options:', options);
+        
+        // Find the correct option
+        const correctOptionIndex = options.findIndex(opt => opt.isCorrect);
+        
+        if (correctOptionIndex === -1) {
+            throw new Error('No correct answer specified - add ] at end of the correct option');
+        }
+        
+        if (options.filter(opt => opt.isCorrect).length > 1) {
             throw new Error('Only one correct answer allowed (mark with ])');
         }
         
-        if (correctIndex === -1) {
-            throw new Error('No correct answer specified - add ] at end of correct option');
+        // Set the correct index in the card object
+        newCard.correctIndex = correctOptionIndex;
+        
+        // Clean up options (remove ] marker) and add to card
+        for (const option of options) {
+            const cleanedText = option.text.replace(/\]$/, '').trim();
+            newCard.options.push(cleanedText);
         }
+        
+        // Set the answer to the correct option's text (without ])
+        newCard.answer = newCard.options[correctOptionIndex];
         
         // Extract extra info if present
         if (extraInfoLine) {
@@ -1841,23 +1999,6 @@ async function saveMultipleChoiceCard(lines) {
             newCard.extraInfo = extraInfoLine.substring(1).trim();
             console.log('Extracted extra info:', newCard.extraInfo);
         }
-        
-        // Process all options (skip the question and any extra info line)
-        newCard.correctIndex = correctIndex;
-        
-        // Add options (skip the question line)
-        const options = lines.filter((line, index) => 
-            index > 0 && !line.startsWith('/')
-        );
-        
-        for (let i = 0; i < options.length; i++) {
-            // Clean up the option text (remove ])
-            let optionText = options[i].trim().replace(/\]$/, '').trim();
-            newCard.options.push(optionText);
-        }
-        
-        // Set the answer to the correct option
-        newCard.answer = newCard.options[correctIndex];
         
         console.log('Multiple choice card to be submitted:', JSON.stringify(newCard));
         
@@ -1883,5 +2024,118 @@ async function saveMultipleChoiceCard(lines) {
             success: false,
             error: error.message
         };
+    }
+}
+
+// Add function to handle direct choice button click
+function handleDirectChoiceClick(clickedButton) {
+    const currentCard = flashcards[currentCardIndex];
+    const choiceButtons = document.querySelectorAll('.choice');
+    const srsControls = document.querySelector('.srs-controls');
+    const skipButton = document.getElementById('skip-button');
+    const reviewActions = document.getElementById('review-actions');
+    
+    // Check directly if this button is the correct one
+    const isCorrect = clickedButton.dataset.isCorrect === "true";
+    
+    console.log('Button clicked:', clickedButton);
+    console.log('Is correct?', isCorrect);
+    console.log('Button dataset:', clickedButton.dataset);
+    
+    if (isCorrect) {
+        // Handle correct answer selection
+        console.log('Correct answer selected!');
+        
+        // Check for extra info
+        let extraInfoContent = currentCard.extraInfo || '';
+        
+        // Apply green color to the correct button
+        clickedButton.style.backgroundColor = '#2ed573';
+        clickedButton.style.borderColor = '#2ed573';
+        clickedButton.style.color = 'white';
+        clickedButton.style.fontWeight = 'bold';
+        
+        // Add checkmark
+        const checkmark = document.createElement('span');
+        checkmark.textContent = '✓';
+        checkmark.style.position = 'absolute';
+        checkmark.style.right = '20px';
+        checkmark.style.color = 'white';
+        checkmark.style.fontWeight = 'bold';
+        clickedButton.appendChild(checkmark);
+        
+        // Add correct class for CSS styling
+        clickedButton.classList.add('correct');
+        
+        // Hide all incorrect options
+        choiceButtons.forEach(button => {
+            if (button !== clickedButton) {
+                button.style.display = 'none';
+            }
+            button.disabled = true;
+        });
+        
+        // Display extra information if available
+        if (extraInfoContent) {
+            console.log('Displaying extra info:', extraInfoContent);
+            const choiceOptions = document.getElementById('choice-options');
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'explanation-container visible';
+            explanationDiv.style.marginTop = '20px';
+            explanationDiv.style.padding = '15px';
+            explanationDiv.style.backgroundColor = '#f8f9fa';
+            explanationDiv.style.border = '1px solid #dee2e6';
+            explanationDiv.style.borderRadius = '5px';
+            
+            explanationDiv.innerHTML = `
+                <div class="notes">
+                    <strong>Notas:</strong>
+                    ${extraInfoContent.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            
+            // Add the explanation
+            if (choiceOptions) {
+                choiceOptions.appendChild(explanationDiv);
+            }
+        }
+        
+        // Transform the skip button into a "continue" button
+        if (skipButton) {
+            skipButton.textContent = 'Seguir';
+            skipButton.classList.add('seguir-button');
+            
+            // Update the button's click handler
+            updateSkipButtonHandler();
+        }
+        
+        // Hide SRS controls
+        if (srsControls) {
+            srsControls.classList.add('hidden');
+        }
+    } else {
+        // Handle incorrect answer selection
+        console.log('Wrong answer selected');
+        
+        // Apply red color to the wrong button
+        clickedButton.style.backgroundColor = '#ff4757';
+        clickedButton.style.borderColor = '#ff4757';
+        clickedButton.style.color = 'white';
+        clickedButton.style.fontWeight = 'bold';
+        
+        // Add X mark
+        const xmark = document.createElement('span');
+        xmark.textContent = '✗';
+        xmark.style.position = 'absolute';
+        xmark.style.right = '20px';
+        xmark.style.color = 'white';
+        xmark.style.fontWeight = 'bold';
+        clickedButton.appendChild(xmark);
+        
+        // Add wrong class for CSS styling
+        clickedButton.classList.add('wrong');
+        
+        // Disable only this wrong button
+        clickedButton.disabled = true;
     }
 }
