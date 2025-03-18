@@ -135,23 +135,75 @@
 
     <!-- Main Content Section -->
     <div id="main-content">
-        <!-- Updates Dropdown Container -->
-        <div class="updates-dropdown">
-            <button class="dropdown-toggle">
-                Noticias y Actualizaciones ▼
-            </button>
-            <div class="dropdown-content">
-                <!-- Update Items -->
-                <div class="update-item">
-                    <h4>Última Actualización - 15/07/2024</h4>
-                    <p>• Nuevo contenido de Microbiología agregado</p>
-                    <p>• Mejoras en el sistema de repetición espaciada</p>
+        <div class="stats-container">
+            <div id="stats-panel">
+                <h2>Your Stats</h2>
+                <div class="stat-item">
+                    <i class="fas fa-eye"></i>
+                    <div class="stat-content">
+                        <div class="stat-value">42</div>
+                        <div class="stat-label">Cards Viewed Today</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-fire"></i>
+                    <div class="stat-content">
+                        <div class="stat-value">7</div>
+                        <div class="stat-label">Current Streak</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-trophy"></i>
+                    <div class="stat-content">
+                        <div class="stat-value">14</div>
+                        <div class="stat-label">Longest Streak</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-award"></i>
+                    <div class="stat-content">
+                        <div class="stat-value">108</div>
+                        <div class="stat-label">Record Cards in a Day</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="main-content-column">
+                <!-- Updates Dropdown Container -->
+                <div class="updates-dropdown">
+                    <button class="dropdown-toggle">
+                        Noticias y Actualizaciones ▼
+                    </button>
+                    <div class="dropdown-content">
+                        <!-- Update Items -->
+                        <div class="update-item">
+                            <h4>Última Actualización - 15/07/2024</h4>
+                            <p>• Nuevo contenido de Microbiología agregado</p>
+                            <p>• Mejoras en el sistema de repetición espaciada</p>
+                        </div>
+                        
+                        <div class="update-item">
+                            <h4>Próximas Novedades</h4>
+                            <p>• Contenido MIR en desarrollo (¡muy pronto!)</p>
+                            <p>• Nuevo diseño de tarjetas interactivas</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="update-item">
-                    <h4>Próximas Novedades</h4>
-                    <p>• Contenido MIR en desarrollo (¡muy pronto!)</p>
-                    <p>• Nuevo diseño de tarjetas interactivas</p>
+                <!-- Overview Section with explicit table structure -->
+                <div id="overview-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mazo</th>
+                                <th>Nuevas</th>
+                                <th>Pendientes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overview-table-body">
+                            <!-- Rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -223,9 +275,15 @@ Paris]
                             <div class="form-column form-column-preview">
                                 <div class="preview-section">
                                     <h3>Live Preview</h3>
-                                    <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
+                                    <div class="preview-buttons">
+                                        <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
+                                        <button type="button" id="expand-preview-btn" class="btn btn-preview">Show All Cards</button>
+                                    </div>
                                     <div class="card-preview">
                                         <!-- Card preview will be dynamically generated here -->
+                                    </div>
+                                    <div class="expanded-preview">
+                                        <!-- Multiple card previews will be shown here -->
                                     </div>
                                 </div>
                             </div>
@@ -239,48 +297,40 @@ Paris]
             </div>
         </div>
 
-        <!-- Overview Section -->
-        <div id="overview-section">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mazo</th>
-                        <th>Nuevas</th>
-                        <th>Pendientes</th>
-                    </tr>
-                </thead>
-                <tbody id="overview-table-body">
-                    <!-- Rows will be dynamically populated here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Preview overlay for fullscreen mode -->
+        <div class="preview-overlay"></div>
+        
+        <!-- Fixed position close buttons for expanded preview -->
+        <button id="preview-close-x" style="display: none; position: fixed; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #ff3b30; color: white; border: 3px solid white; border-radius: 50%; font-size: 40px; line-height: 50px; text-align: center; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">&times;</button>
+        
+        <button id="preview-return-btn" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Return to Admin Panel</button>
 
         <!-- Calendar Section -->
-<div id="study-calendar">
-    <h3>Calendario de Estudio</h3>
-    <div class="calendar-header">
-        <span class="month-year">Enero 2025</span>
-    </div>
-    <div class="calendar-grid">
-        <div class="day-header">L</div>
-        <div class="day-header">M</div>
-        <div class="day-header">M</div>
-        <div class="day-header">J</div>
-        <div class="day-header">V</div>
-        <div class="day-header">S</div>
-        <div class="day-header">D</div>
-        
-        <!-- Blank days for February 2025 (starts on Saturday) -->
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day empty"></div>
-        <div class="calendar-day highlighted">1<span class="due-count">14</span></div>
-        <!-- Add more days as needed -->
-    </div>
-</div>
+        <div id="study-calendar">
+            <h3>Calendario de Estudio</h3>
+            <div class="calendar-header">
+                <span class="month-year">Enero 2025</span>
+            </div>
+            <div class="calendar-grid">
+                <div class="day-header">L</div>
+                <div class="day-header">M</div>
+                <div class="day-header">M</div>
+                <div class="day-header">J</div>
+                <div class="day-header">V</div>
+                <div class="day-header">S</div>
+                <div class="day-header">D</div>
+                
+                <!-- Blank days for February 2025 (starts on Saturday) -->
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day highlighted">1<span class="due-count">14</span></div>
+                <!-- Add more days as needed -->
+            </div>
+        </div>
 
         <!-- Flashcard Section -->
         <div id="flashcard-system" class="hidden">

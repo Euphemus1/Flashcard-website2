@@ -708,11 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show success message
                 if (results.some(r => r.success)) {
                     alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
-                    document.getElementById('admin-modal').classList.add('hidden');
-                    
+                document.getElementById('admin-modal').classList.add('hidden');
+                
                     // Reload current deck to show the new cards
                     reloadCurrentDeck();
-                } else {
+            } else {
                     alert('Failed to add any flashcards. Please check your input format and try again.');
                 }
             }
@@ -1135,7 +1135,14 @@ function setupLivePreview() {
     // Update the preview when the textarea content changes
     const questionTextarea = document.getElementById('question');
     if (questionTextarea) {
-        questionTextarea.addEventListener('input', debounce(updatePreview, 300));
+        questionTextarea.addEventListener('input', debounce(() => {
+            // Update both previews
+            updatePreview();
+            // Only update expanded preview if it's visible
+            if (!document.querySelector('.expanded-preview').classList.contains('hidden')) {
+                updateExpandedPreview();
+            }
+        }, 300));
         
         // Also update preview when card type changes
         const cardTypeInputs = document.querySelectorAll('input[name="card-type"]');
@@ -1143,6 +1150,10 @@ function setupLivePreview() {
             input.addEventListener('change', function() {
                 updateCardTypeUI(this.value);
                 updatePreview();
+                // Only update expanded preview if it's visible
+                if (!document.querySelector('.expanded-preview').classList.contains('hidden')) {
+                    updateExpandedPreview();
+                }
             });
         });
         
@@ -1150,6 +1161,9 @@ function setupLivePreview() {
         document.getElementById('open-admin-btn')?.addEventListener('click', function() {
             setTimeout(updatePreview, 100); // Short delay to ensure modal is visible
         });
+        
+        // Add event listener to expand preview button
+        document.getElementById('expand-preview-btn')?.addEventListener('click', toggleExpandedPreview);
     }
 }
 
@@ -1742,18 +1756,47 @@ function createOverviewRow(name, stats, isSubdeck) {
 // NEW VERSION - ASYNC VERSION
 async function showOverview() {
     const overviewSection = document.getElementById('overview-section');
-    // ... keep existing null checks ...
+    if (!overviewSection) return;
 
     // Clear table
-    const oldTableBody = overviewSection.querySelector('tbody');
-    if (oldTableBody) oldTableBody.remove();
+    const oldTableBody = document.getElementById('overview-table-body');
+    if (oldTableBody) {
+        oldTableBody.innerHTML = '';
+    }
 
     // Generate new content
     const newTableBody = await generateOverviewTable();
-    const table = overviewSection.querySelector('table');
-    if (table) table.appendChild(newTableBody);
+    
+    // Replace the table body content with the new rows
+    if (oldTableBody) {
+        Array.from(newTableBody.children).forEach(row => {
+            oldTableBody.appendChild(row);
+        });
+    }
 
-    // Rest of existing code remains the same...
+    // Show overview section and hide other sections
+    const mainContent = document.getElementById('main-content');
+    const statsContainer = document.querySelector('.stats-container');
+    const flashcardSystem = document.getElementById('flashcard-system');
+    const calendar = document.getElementById('study-calendar');
+
+    // Show main content and components
+    mainContent?.classList?.remove('hidden');
+    statsContainer?.classList?.remove('hidden');
+    
+    // Always make sure calendar is visible
+    if (calendar) {
+        calendar.classList.remove('hidden');
+        
+        // Generate calendar if it hasn't been initialized
+        if (!calendar.querySelector('.month-container')) {
+            generateCalendar();
+        }
+    }
+    
+    // Hide flashcard system
+    flashcardSystem?.classList?.add('hidden');
+    
     addToggleListeners();
     showStatus('Overview');
 }
@@ -2281,3 +2324,520 @@ async function saveClassicCard(lines) {
         };
     }
 }
+
+// Function to toggle expanded preview
+function toggleExpandedPreview() {
+    const expandButton = document.getElementById('expand-preview-btn');
+    const expandedPreview = document.querySelector('.expanded-preview');
+    const regularPreview = document.querySelector('.card-preview');
+    const previewOverlay = document.querySelector('.preview-overlay');
+    const closeXButton = document.getElementById('preview-close-x');
+    const returnButton = document.getElementById('preview-return-btn');
+    
+    // Check if preview is currently visible
+    const isExpanded = expandedPreview.style.display === 'block';
+    
+    if (isExpanded) {
+        // Hide expanded preview
+        expandedPreview.style.display = 'none';
+        regularPreview.style.display = 'block';
+        previewOverlay.style.display = 'none';
+        closeXButton.style.display = 'none';
+        returnButton.style.display = 'none';
+        expandButton.textContent = 'Show All Cards';
+    } else {
+        // Show expanded preview
+        expandedPreview.style.display = 'block';
+        regularPreview.style.display = 'none';
+        previewOverlay.style.display = 'block';
+        closeXButton.style.display = 'block';
+        returnButton.style.display = 'block';
+        expandButton.textContent = 'Hide All Cards';
+        
+        // Position the expanded preview in fullscreen
+        expandedPreview.style.position = 'fixed';
+        expandedPreview.style.top = '50%';
+        expandedPreview.style.left = '50%';
+        expandedPreview.style.transform = 'translate(-50%, -50%)';
+        expandedPreview.style.width = '90vw';
+        expandedPreview.style.height = '85vh';
+        expandedPreview.style.backgroundColor = 'white';
+        expandedPreview.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+        expandedPreview.style.zIndex = '1000';
+        expandedPreview.style.padding = '20px';
+        expandedPreview.style.overflowY = 'auto';
+        
+        // Style the overlay
+        previewOverlay.style.position = 'fixed';
+        previewOverlay.style.top = '0';
+        previewOverlay.style.left = '0';
+        previewOverlay.style.width = '100%';
+        previewOverlay.style.height = '100%';
+        previewOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        previewOverlay.style.zIndex = '999';
+        
+        // Update the preview content
+        updateExpandedPreview();
+    }
+}
+
+// Add event listeners for the fixed buttons when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up event listeners for the close buttons
+    document.getElementById('preview-close-x').addEventListener('click', toggleExpandedPreview);
+    document.getElementById('preview-return-btn').addEventListener('click', toggleExpandedPreview);
+    
+    // Set up event listener for overlay
+    document.querySelector('.preview-overlay').addEventListener('click', toggleExpandedPreview);
+});
+
+// Function to update the expanded preview with all cards
+function updateExpandedPreview() {
+    const type = document.querySelector('input[name="card-type"]:checked').value;
+    const content = document.getElementById('question').value;
+    const expandedPreviewContainer = document.querySelector('.expanded-preview');
+    
+    // Create main header for expanded preview
+    const mainHeader = document.createElement('div');
+    mainHeader.style.position = 'sticky';
+    mainHeader.style.top = '0';
+    mainHeader.style.backgroundColor = '#3498db';
+    mainHeader.style.color = 'white';
+    mainHeader.style.padding = '15px';
+    mainHeader.style.marginBottom = '20px';
+    mainHeader.style.borderRadius = '5px';
+    mainHeader.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+    mainHeader.style.zIndex = '10';
+    mainHeader.style.textAlign = 'center';
+    mainHeader.innerHTML = '<h1 style="font-size: 20px; margin: 0;">Card Preview</h1><p style="margin: 5px 0 0 0; font-size: 14px;">Use the X button or "Return to Admin Panel" button to go back</p>';
+    
+    // Create loading indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.textAlign = 'center';
+    loadingDiv.style.padding = '30px';
+    
+    const spinner = document.createElement('div');
+    spinner.style.border = '4px solid #f3f3f3';
+    spinner.style.borderTop = '4px solid #3498db';
+    spinner.style.borderRadius = '50%';
+    spinner.style.width = '30px';
+    spinner.style.height = '30px';
+    spinner.style.margin = '0 auto';
+    
+    const loadingText = document.createElement('p');
+    loadingText.style.marginTop = '10px';
+    loadingText.textContent = 'Loading card previews...';
+    
+    loadingDiv.appendChild(spinner);
+    loadingDiv.appendChild(loadingText);
+    
+    // Clear previous content and add header and loading indicator
+    expandedPreviewContainer.innerHTML = '';
+    expandedPreviewContainer.appendChild(mainHeader);
+    expandedPreviewContainer.appendChild(loadingDiv);
+    expandedPreviewContainer.style.backgroundColor = 'white';
+    
+    // Add animation style if it doesn't exist
+    if (!document.getElementById('spin-animation')) {
+        const style = document.createElement('style');
+        style.id = 'spin-animation';
+        style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+    }
+    
+    // Add spinner animation
+    spinner.style.animation = 'spin 1s linear infinite';
+    
+    // Use setTimeout to allow the loading indicator to render
+    setTimeout(() => {
+        // Clear loading indicator (but keep the header)
+        expandedPreviewContainer.innerHTML = '';
+        expandedPreviewContainer.appendChild(mainHeader);
+        
+        if (!content.trim()) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.textAlign = 'center';
+            emptyDiv.style.padding = '20px';
+            emptyDiv.style.color = '#777';
+            emptyDiv.textContent = 'Enter your cards to see previews';
+            expandedPreviewContainer.appendChild(emptyDiv);
+            return;
+        }
+        
+        // Add card type header
+        const headerDiv = document.createElement('div');
+        headerDiv.style.padding = '10px 0';
+        headerDiv.style.marginBottom = '15px';
+        headerDiv.style.borderBottom = '1px solid #ddd';
+        
+        if (type === 'multipleChoice') {
+            try {
+                // Parse all question blocks
+                const questionBlocks = parseMultipleChoiceQuestions(content, true);
+                
+                if (questionBlocks.length === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.style.textAlign = 'center';
+                    emptyDiv.style.padding = '20px';
+                    emptyDiv.style.color = '#777';
+                    emptyDiv.textContent = 'No valid multiple choice cards found';
+                    expandedPreviewContainer.appendChild(emptyDiv);
+                    return;
+                }
+                
+                // Add card count to header
+                headerDiv.innerHTML = `<h2 style="font-size:18px; margin:0;">Multiple Choice Cards (${questionBlocks.length})</h2>`;
+                expandedPreviewContainer.appendChild(headerDiv);
+                
+                // Create grid container
+                const gridContainer = document.createElement('div');
+                gridContainer.style.display = 'grid';
+                gridContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+                gridContainer.style.gap = '15px';
+                expandedPreviewContainer.appendChild(gridContainer);
+                
+                // Create preview cards for each block
+                questionBlocks.forEach((block, index) => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.style.backgroundColor = 'white';
+                    cardDiv.style.border = '1px solid #ddd';
+                    cardDiv.style.borderRadius = '5px';
+                    cardDiv.style.overflow = 'hidden';
+                    
+                    // Add card header with number
+                    const cardHeader = document.createElement('div');
+                    cardHeader.style.backgroundColor = '#f5f5f5';
+                    cardHeader.style.padding = '5px 10px';
+                    cardHeader.style.fontSize = '12px';
+                    cardHeader.style.borderBottom = '1px solid #ddd';
+                    cardHeader.textContent = `Card ${index + 1}`;
+                    cardDiv.appendChild(cardHeader);
+                    
+                    // Card content container
+                    const cardContent = document.createElement('div');
+                    cardContent.style.padding = '10px';
+                    
+                    // Add question
+                    const questionEl = document.createElement('h3');
+                    questionEl.style.fontSize = '14px';
+                    questionEl.style.margin = '0 0 10px 0';
+                    questionEl.textContent = block[0];
+                    cardContent.appendChild(questionEl);
+                    
+                    // Find options and correct answer
+                    let correctIndex = -1;
+                    let extraInfo = '';
+                    
+                    for (let i = 1; i < block.length; i++) {
+                        const line = block[i];
+                        
+                        if (line.startsWith('/')) {
+                            extraInfo = line.substring(1).trim();
+                        } else if (line.endsWith(']')) {
+                            correctIndex = i - 1;
+                        }
+                    }
+                    
+                    // Options container
+                    const optionsContainer = document.createElement('div');
+                    optionsContainer.style.display = 'flex';
+                    optionsContainer.style.flexDirection = 'column';
+                    optionsContainer.style.gap = '5px';
+                    
+                    // Display options
+                    const options = block.filter((line, idx) => 
+                        idx > 0 && !line.startsWith('/')
+                    );
+                    
+                    options.forEach((option, optIdx) => {
+                        const isCorrect = option.trim().endsWith(']');
+                        let cleanOption = option.replace(/\]$/, '').trim();
+                        
+                        // Create option element
+                        const optionEl = document.createElement('div');
+                        optionEl.style.padding = '5px 8px';
+                        optionEl.style.fontSize = '12px';
+                        optionEl.style.border = '1px solid #ddd';
+                        optionEl.style.borderRadius = '3px';
+                        
+                        // Style for correct answer
+                        if (isCorrect) {
+                            optionEl.style.backgroundColor = '#e3fcec';
+                            optionEl.style.borderColor = '#2ed573';
+                        }
+                        
+                        optionEl.textContent = cleanOption;
+                        optionsContainer.appendChild(optionEl);
+                    });
+                    
+                    cardContent.appendChild(optionsContainer);
+                    
+                    // Add extra info if available
+                    if (extraInfo) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.style.marginTop = '10px';
+                        infoDiv.style.padding = '5px';
+                        infoDiv.style.fontSize = '11px';
+                        infoDiv.style.backgroundColor = '#f8f8f8';
+                        infoDiv.style.borderRadius = '3px';
+                        infoDiv.innerHTML = `<strong>Extra:</strong> ${extraInfo}`;
+                        cardContent.appendChild(infoDiv);
+                    }
+                    
+                    cardDiv.appendChild(cardContent);
+                    gridContainer.appendChild(cardDiv);
+                });
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.textAlign = 'center';
+                errorDiv.style.padding = '20px';
+                errorDiv.style.color = '#777';
+                errorDiv.innerHTML = `
+                    <p>Error parsing multiple choice cards:</p>
+                    <p style="color: #e74c3c;">${error.message}</p>
+                `;
+                expandedPreviewContainer.appendChild(errorDiv);
+            }
+        } else {
+            // Classic cards
+            try {
+                // Parse all classic cards
+                const cardBlocks = parseClassicCards(content);
+                
+                if (cardBlocks.length === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.style.textAlign = 'center';
+                    emptyDiv.style.padding = '20px';
+                    emptyDiv.style.color = '#777';
+                    emptyDiv.textContent = 'No valid classic cards found';
+                    expandedPreviewContainer.appendChild(emptyDiv);
+                    return;
+                }
+                
+                // Add card count to header
+                headerDiv.innerHTML = `<h2 style="font-size:18px; margin:0;">Classic Cards (${cardBlocks.length})</h2>`;
+                expandedPreviewContainer.appendChild(headerDiv);
+                
+                // Create grid container
+                const gridContainer = document.createElement('div');
+                gridContainer.style.display = 'grid';
+                gridContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+                gridContainer.style.gap = '15px';
+                expandedPreviewContainer.appendChild(gridContainer);
+                
+                // Create preview for each card
+                cardBlocks.forEach((block, index) => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.style.backgroundColor = 'white';
+                    cardDiv.style.border = '1px solid #ddd';
+                    cardDiv.style.borderRadius = '5px';
+                    cardDiv.style.overflow = 'hidden';
+                    
+                    // Add card header with number
+                    const cardHeader = document.createElement('div');
+                    cardHeader.style.backgroundColor = '#f5f5f5';
+                    cardHeader.style.padding = '5px 10px';
+                    cardHeader.style.fontSize = '12px';
+                    cardHeader.style.borderBottom = '1px solid #ddd';
+                    cardHeader.textContent = `Card ${index + 1}`;
+                    cardDiv.appendChild(cardHeader);
+                    
+                    // Card content container
+                    const cardContent = document.createElement('div');
+                    cardContent.style.padding = '10px';
+                    
+                    let question = '';
+                    let subtitle = '';
+                    let answer = '';
+                    let extraInfo = '';
+                    
+                    // Parse card content
+                    if (block.length > 0) {
+                        question = block[0];
+                    }
+                    
+                    if (block.length > 1) {
+                        subtitle = block[1];
+                    }
+                    
+                    // Find the extraInfo line (starts with /)
+                    const extraInfoIndex = block.findIndex(line => line.startsWith('/'));
+                    
+                    if (extraInfoIndex !== -1 && extraInfoIndex >= 2) {
+                        // Everything from line 2 up to extraInfoIndex is the answer
+                        answer = block.slice(2, extraInfoIndex).join('<br>');
+                        // Remove the leading slash from extraInfo
+                        extraInfo = block[extraInfoIndex].substring(1);
+                        
+                        // If there are more lines after extraInfoIndex, add them to extraInfo
+                        if (extraInfoIndex < block.length - 1) {
+                            extraInfo += '<br>' + block.slice(extraInfoIndex + 1).join('<br>');
+                        }
+                    } else if (block.length > 2) {
+                        // No extraInfo found, everything from line 2 onward is the answer
+                        answer = block.slice(2).join('<br>');
+                    }
+                    
+                    // Add question
+                    const questionEl = document.createElement('h3');
+                    questionEl.style.fontSize = '14px';
+                    questionEl.style.margin = '0 0 5px 0';
+                    questionEl.textContent = question;
+                    cardContent.appendChild(questionEl);
+                    
+                    // Add subtitle if available
+                    if (subtitle) {
+                        const subtitleEl = document.createElement('p');
+                        subtitleEl.style.fontSize = '12px';
+                        subtitleEl.style.margin = '0 0 10px 0';
+                        subtitleEl.style.color = '#666';
+                        subtitleEl.textContent = subtitle;
+                        cardContent.appendChild(subtitleEl);
+                    }
+                    
+                    // Add separator
+                    const separator = document.createElement('hr');
+                    separator.style.margin = '8px 0';
+                    separator.style.border = 'none';
+                    separator.style.borderTop = '1px dashed #ddd';
+                    cardContent.appendChild(separator);
+                    
+                    // Add answer
+                    const answerEl = document.createElement('div');
+                    answerEl.style.fontSize = '12px';
+                    answerEl.innerHTML = answer;
+                    cardContent.appendChild(answerEl);
+                    
+                    // Add extra info if available
+                    if (extraInfo) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.style.marginTop = '10px';
+                        infoDiv.style.padding = '5px';
+                        infoDiv.style.fontSize = '11px';
+                        infoDiv.style.backgroundColor = '#f8f8f8';
+                        infoDiv.style.borderRadius = '3px';
+                        infoDiv.innerHTML = `<strong>Notes:</strong> ${extraInfo}`;
+                        cardContent.appendChild(infoDiv);
+                    }
+                    
+                    cardDiv.appendChild(cardContent);
+                    gridContainer.appendChild(cardDiv);
+                });
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.textAlign = 'center';
+                errorDiv.style.padding = '20px';
+                errorDiv.style.color = '#777';
+                errorDiv.innerHTML = `
+                    <p>Error parsing classic cards:</p>
+                    <p style="color: #e74c3c;">${error.message}</p>
+                `;
+                expandedPreviewContainer.appendChild(errorDiv);
+            }
+        }
+    }, 100);
+}
+
+// Add this near the openAdminPanel function or event listener
+document.getElementById('open-admin-btn').addEventListener('click', function() {
+    // Show the admin modal
+    document.getElementById('admin-modal').classList.remove('hidden');
+    
+    // Make sure preview areas are in correct initial state
+    const regularPreview = document.querySelector('.card-preview');
+    const expandedPreview = document.querySelector('.expanded-preview');
+    const closeXButton = document.getElementById('preview-close-x');
+    const returnButton = document.getElementById('preview-return-btn');
+    
+    // Ensure single preview is visible and expanded is hidden
+    regularPreview.style.display = 'block';
+    expandedPreview.style.display = 'none';
+    closeXButton.style.display = 'none';
+    returnButton.style.display = 'none';
+    
+    // Set correct button text
+    document.getElementById('expand-preview-btn').textContent = 'Show All Cards';
+    
+    // Initialize other admin panel elements
+    populateDeckDropdown();
+});
+
+// ... existing code ...
+// Comment out this function since we now have the table hardcoded in HTML
+/*
+function updateOverview() {
+    const overviewSection = document.getElementById('overview-section');
+    
+    // Clear the section
+    overviewSection.innerHTML = '';
+    
+    // Create table structure
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    
+    // Create header row
+    const headerRow = document.createElement('tr');
+    const deckHeader = document.createElement('th');
+    deckHeader.textContent = 'Mazo';
+    const newHeader = document.createElement('th');
+    newHeader.textContent = 'Nuevas';
+    const dueHeader = document.createElement('th');
+    dueHeader.textContent = 'Pendientes';
+    
+    // Append headers
+    headerRow.appendChild(deckHeader);
+    headerRow.appendChild(newHeader);
+    headerRow.appendChild(dueHeader);
+    thead.appendChild(headerRow);
+    
+    // Assemble table
+    table.appendChild(thead);
+    overviewSection.appendChild(table);
+    
+    // Call the existing function to populate the table body with data
+    generateOverviewTable().then(tableBody => {
+        table.appendChild(tableBody);
+        addToggleListeners();
+    }).catch(error => {
+        console.error('Error updating overview:', error);
+    });
+}
+*/
+// ... existing code ...
+
+// Function to show calendar
+function showCalendar() {
+    const mainContent = document.getElementById('main-content');
+    const overviewSection = document.getElementById('overview-section');
+    const statsContainer = document.querySelector('.stats-container');
+    const flashcardSystem = document.getElementById('flashcard-system');
+    const calendar = document.getElementById('study-calendar');
+
+    // Show main content
+    mainContent?.classList?.remove('hidden');
+    
+    // Hide other sections
+    overviewSection?.parentElement?.classList?.add('hidden');
+    statsContainer?.classList?.add('hidden');
+    flashcardSystem?.classList?.add('hidden');
+    
+    // Show calendar
+    if (calendar) {
+        calendar.classList.remove('hidden');
+        
+        // Generate calendar if it hasn't been initialized
+        if (!calendar.querySelector('.month-container')) {
+            generateCalendar();
+        }
+    }
+    
+    showStatus('Calendar');
+}
+
+// Add event listener for calendar button
+document.addEventListener('DOMContentLoaded', () => {
+    const calendarButton = document.getElementById('calendar-button');
+    if (calendarButton) {
+        calendarButton.addEventListener('click', showCalendar);
+    }
+});
