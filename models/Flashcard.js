@@ -4,8 +4,8 @@ const flashcardSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Card type is required'],
-    enum: ['Clasic', 'multipleChoice'],
-    default: 'Clasic'
+    enum: ['classic', 'multipleChoice'],
+    default: 'classic'
   },
   question: {
     type: String,

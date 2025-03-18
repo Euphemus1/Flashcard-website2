@@ -460,6 +460,12 @@ function loadNextCard() {
         // Handle classic card
         const cardFront = document.getElementById('card-front');
         const cardSubtitle = document.getElementById('card-subtitle');
+        const choiceOptions = document.getElementById('choice-options');
+        
+        // Clear any existing choice options from previous cards
+        if (choiceOptions) {
+            choiceOptions.innerHTML = '';
+        }
         
         // Remove choice-card class from the card-pair element
         if (cardPair) {
@@ -685,57 +691,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Failed to add any flashcards. Please check your input format and try again.');
                 }
             } else { // Classic format
-                const lines = rawContent.split('\n').filter(line => line.trim() !== '');
+                // Parse multiple classic cards
+                const cardBlocks = parseClassicCards(rawContent);
                 
-                if (lines.length < 3) {
-                    throw new Error('Classic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
-                }
+                console.log(`Found ${cardBlocks.length} classic cards to process`);
                 
-                // Initialize with explicit extraInfo property
-                const newCard = {
-                    question: lines[0],
-                    subtitle: lines[1],
-                    answer: '',
-                    extraInfo: '',
-                    deck: document.getElementById('deck-select').value,
-                    subdeck: document.getElementById('subdeck').value,
-                    tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-                    type: type
-                };
+                // Create promises for all card creations
+                const savePromises = cardBlocks.map(async (block) => {
+                    return await saveClassicCard(block);
+                });
                 
-                const answerContent = lines.slice(2).join('\n');
-                const splitIndex = answerContent.indexOf('/');
+                // Wait for all cards to be saved
+                const results = await Promise.all(savePromises);
+                console.log(`Successfully saved ${results.filter(r => r.success).length} of ${results.length} classic cards`);
                 
-                if (splitIndex !== -1) {
-                    newCard.answer = answerContent.substring(0, splitIndex).trim();
-                    newCard.extraInfo = answerContent.substring(splitIndex + 1).trim();
+                // Show success message
+                if (results.some(r => r.success)) {
+                    alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
+                    document.getElementById('admin-modal').classList.add('hidden');
+                    
+                    // Reload current deck to show the new cards
+                    reloadCurrentDeck();
                 } else {
-                    newCard.answer = answerContent;
-                }
-                
-                // Log the card before submission for debugging
-                console.log('Classic card to be submitted:', JSON.stringify(newCard));
-    
-                // Submit the classic card
-            const response = await fetch('/api/flashcards', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newCard)
-            });
-    
-            const data = await response.json();
-                console.log('Server response:', data);
-            
-            if(response.ok) {
-                alert('Flashcard added successfully!');
-                document.getElementById('admin-modal').classList.add('hidden');
-                
-                // Reload current deck to show the new card
-                reloadCurrentDeck();
-            } else {
-                alert(`Error: ${data.error || 'Unknown error'}`);
+                    alert('Failed to add any flashcards. Please check your input format and try again.');
                 }
             }
         } catch(error) {
@@ -2185,5 +2163,121 @@ function reloadCurrentDeck() {
                 }
             });
         }
+    }
+}
+
+// Function to parse multiple classic cards from text input
+function parseClassicCards(rawContent) {
+    const allLines = rawContent.split('\n').map(line => line.trim());
+    const cards = [];
+    
+    let currentCard = [];
+    let extraInfoMode = false;
+    
+    console.log('Parsing multiple classic cards from input...');
+    
+    // Process each line
+    for (let i = 0; i < allLines.length; i++) {
+        const line = allLines[i];
+        
+        // Empty line indicates a separator between cards
+        if (line === '') {
+            if (currentCard.length > 0) {
+                // Save current card if it has content
+                cards.push([...currentCard]);
+                currentCard = [];
+                extraInfoMode = false;
+            }
+            continue;
+        }
+        
+        // Add the current line to the card
+        currentCard.push(line);
+        
+        // Check if this line starts the extra info section
+        if (line.startsWith('/')) {
+            extraInfoMode = true;
+        }
+        
+        // If we've collected 3+ lines and the next line is empty or doesn't exist, save this card
+        const nextLine = i < allLines.length - 1 ? allLines[i + 1] : '';
+        if (currentCard.length >= 3 && (nextLine === '' || i === allLines.length - 1)) {
+            cards.push([...currentCard]);
+            currentCard = [];
+            extraInfoMode = false;
+        }
+    }
+    
+    // If there's a partial card at the end, add it
+    if (currentCard.length > 0) {
+        cards.push([...currentCard]);
+    }
+    
+    console.log(`Parsed ${cards.length} classic cards`);
+    return cards;
+}
+
+// Function to process and save a single classic card
+async function saveClassicCard(lines) {
+    try {
+        if (lines.length < 3) {
+            throw new Error('Classic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
+        }
+        
+        // Initialize with explicit extraInfo property
+        const newCard = {
+            question: lines[0],
+            subtitle: lines[1],
+            answer: '',
+            extraInfo: '',
+            deck: document.getElementById('deck-select').value,
+            subdeck: document.getElementById('subdeck').value,
+            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
+            type: 'classic'
+        };
+        
+        // Find the first line that starts with / (if any)
+        const extraInfoIndex = lines.findIndex(line => line.startsWith('/'));
+        
+        if (extraInfoIndex !== -1 && extraInfoIndex >= 3) {
+            // Everything from line 2 up to extraInfoIndex is the answer
+            newCard.answer = lines.slice(2, extraInfoIndex).join('\n').trim();
+            // Everything after extraInfoIndex is extra info (remove the leading /)
+            newCard.extraInfo = lines[extraInfoIndex].substring(1).trim();
+            
+            // If there are more lines after the extraInfoIndex, add them to extraInfo
+            if (extraInfoIndex < lines.length - 1) {
+                newCard.extraInfo += '\n' + lines.slice(extraInfoIndex + 1).join('\n').trim();
+            }
+        } else {
+            // No extra info line found, everything from line 2 onward is the answer
+            newCard.answer = lines.slice(2).join('\n').trim();
+        }
+        
+        // Log the card before submission for debugging
+        console.log('Classic card to be submitted:', JSON.stringify(newCard));
+
+        // Submit the classic card
+        const response = await fetch('/api/flashcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newCard)
+        });
+
+        const data = await response.json();
+        
+        return { 
+            success: response.ok,
+            data,
+            card: newCard.question
+        };
+    } catch(error) {
+        console.error('Error saving classic card:', error);
+        return {
+            success: false,
+            error: error.message
+        };
     }
 }

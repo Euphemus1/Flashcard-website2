@@ -340,7 +340,7 @@ app.post('/api/flashcards', async (req, res) => {
     }
 
     // Validate card type
-    if (!['Clasic', 'multipleChoice'].includes(req.body.type)) {
+    if (!['classic', 'multipleChoice'].includes(req.body.type)) {
       return res.status(400).json({ error: 'Invalid card type' });
     }
 
