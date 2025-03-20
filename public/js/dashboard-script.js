@@ -145,20 +145,6 @@ function setupDeckButtonNavigation() {
 function navigateToDeckPage(deckName) {
     console.log('Navigating to deck page for:', deckName);
     
-    // Special case handling for existing static pages
-    if (deckName === 'Patología') {
-        // Keep the existing links for patologia pages if they exist
-        const pathSegments = window.location.pathname.split('/');
-        const currentPage = pathSegments[pathSegments.length - 1];
-        
-        if (currentPage === 'patologia-era1.html' || 
-            currentPage === 'patologia-era2.html' || 
-            currentPage === 'patologia-era3.html') {
-            console.log('Already on a patologia page, not navigating');
-            return; // Keep on the current patologia page
-        }
-    }
-    
     // Navigate to the dynamic deck page
     const url = `/deck/${encodeURIComponent(deckName)}`;
     console.log('Redirecting to:', url);
@@ -577,6 +563,7 @@ document.querySelectorAll('.deck-btn').forEach(button => {
     button.addEventListener('click', function() {
         const subdeckList = this.nextElementSibling;
         subdeckList.style.display = subdeckList.style.display === 'block' ? 'none' : 'block';
+        
     });
 });
 
@@ -651,74 +638,254 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize UI for the currently selected card type
         const selectedCardType = document.querySelector('input[name="card-type"]:checked')?.value || 'Clasic';
         updateCardTypeUI(selectedCardType);
+
+        // Populate deck select
+        populateDeckSelect();
     });
     
     closeAdminBtn?.addEventListener('click', () => {
         adminModal.classList.add('hidden');
     });
 
-    // Form submission handler (MOVED HERE)
+    // Populate the deck select dropdown
+    function populateDeckSelect() {
+        const deckSelect = document.getElementById('deck-select');
+        if (!deckSelect) return;
+
+        // Clear existing options
+        deckSelect.innerHTML = '';
+
+        // Get the available decks
+        const deckData = window.globalDecks || {
+            'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+            'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
+            'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
+            'Farmacología': ['ERA1', 'ERA2'],
+            'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
+            'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo Digestivo', 'Neurología', 'Anexos'],
+            'Revalida': ['Bling', 'Blang', 'Blong'],
+            'MIR': ['Bling', 'Blang', 'Blong']
+        };
+
+        // Add options for each deck
+        Object.keys(deckData).forEach(deckName => {
+            const option = document.createElement('option');
+            option.value = deckName;
+            option.textContent = deckName;
+            deckSelect.appendChild(option);
+        });
+
+        // Set up event listener for deck changes
+        deckSelect.addEventListener('change', updateSubdeckInput);
+
+        // Initialize subdeck input with the current selection
+        updateSubdeckInput();
+    }
+
+    // Update the subdeck input based on the selected deck
+    function updateSubdeckInput() {
+        const deckSelect = document.getElementById('deck-select');
+        const subdeckInput = document.getElementById('subdeck');
+        const subsubdeckInput = document.getElementById('subsubdeck');
+        const subdeckLabel = subdeckInput?.previousElementSibling;
+        const subsubdeckContainer = subsubdeckInput?.parentElement;
+
+        if (!deckSelect || !subdeckInput || !subsubdeckInput) return;
+
+        const selectedDeck = deckSelect.value;
+        const deckData = window.globalDecks || {};
+        const subdecks = deckData[selectedDeck] || [];
+
+        // Convert the input to a datalist with suggestions
+        let datalistId = 'subdeck-list';
+        let datalist = document.getElementById(datalistId);
+
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = datalistId;
+            document.body.appendChild(datalist);
+            subdeckInput.setAttribute('list', datalistId);
+        }
+
+        // Clear existing options
+        datalist.innerHTML = '';
+
+        // Add options for each subdeck
+        subdecks.forEach(subdeckName => {
+            const option = document.createElement('option');
+            option.value = subdeckName;
+            datalist.appendChild(option);
+        });
+
+        // Update the label to indicate it's a selection
+        if (subdeckLabel) {
+            if (subdecks.length > 0) {
+                subdeckLabel.textContent = 'Subdeck (select from list or type new):';
+            } else {
+                subdeckLabel.textContent = 'Subdeck:';
+            }
+        }
+
+        // Set up event listener for subdeck changes
+        subdeckInput.addEventListener('change', updateSubsubdeckInput);
+        subdeckInput.addEventListener('input', updateSubsubdeckInput);
+
+        // Initialize subsubdeck input
+        updateSubsubdeckInput();
+    }
+
+    // Update the subsubdeck input based on the selected deck and subdeck
+    function updateSubsubdeckInput() {
+        const deckSelect = document.getElementById('deck-select');
+        const subdeckInput = document.getElementById('subdeck');
+        const subsubdeckInput = document.getElementById('subsubdeck');
+        const subsubdeckLabel = subsubdeckInput?.previousElementSibling;
+        const subsubdeckContainer = subsubdeckInput?.parentElement;
+
+        if (!deckSelect || !subdeckInput || !subsubdeckInput || !subsubdeckLabel) return;
+
+        const selectedDeck = deckSelect.value;
+        const selectedSubdeck = subdeckInput.value;
+        
+        // Check if this subdeck has subsubdecks
+        const hasSubsubdecks = window.globalSubsubdecks && 
+                            window.globalSubsubdecks[selectedDeck] && 
+                            window.globalSubsubdecks[selectedDeck][selectedSubdeck];
+
+        // Get subsubdecks if they exist
+        const subsubdecks = hasSubsubdecks ? window.globalSubsubdecks[selectedDeck][selectedSubdeck] : [];
+
+        // Use a datalist for subsubdeck suggestions
+        let datalistId = 'subsubdeck-list';
+        let datalist = document.getElementById(datalistId);
+
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = datalistId;
+            document.body.appendChild(datalist);
+            subsubdeckInput.setAttribute('list', datalistId);
+        }
+
+        // Clear existing options
+        datalist.innerHTML = '';
+
+        // Add options for each subsubdeck if they exist
+        if (hasSubsubdecks) {
+            subsubdecks.forEach(subsubdeckName => {
+                const option = document.createElement('option');
+                option.value = subsubdeckName;
+                datalist.appendChild(option);
+            });
+
+            // Update the label and show field
+            subsubdeckLabel.textContent = 'Subsubdeck (select from list or type new):';
+            subsubdeckLabel.style.color = '#007bff'; // Highlight to show it's important
+            subsubdeckInput.style.borderColor = '#007bff';
+            subsubdeckContainer.style.display = 'block';
+        } else {
+            // Reset styling and show as optional
+            subsubdeckLabel.textContent = 'Subsubdeck (optional):';
+            subsubdeckLabel.style.color = '';
+            subsubdeckInput.style.borderColor = '';
+            subsubdeckContainer.style.display = 'block';
+        }
+    }
+
+    // Form submission handler
     document.getElementById('add-flashcard-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const type = document.querySelector('input[name="card-type"]:checked').value;
-        const rawContent = document.getElementById('question').value;
-    
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Adding...';
+        
+        // Get form values
+        const cardType = document.querySelector('input[name="card-type"]:checked')?.value || 'classic';
+        const questionInput = document.getElementById('question')?.value;
+        const deck = document.getElementById('deck-select')?.value;
+        const subdeck = document.getElementById('subdeck')?.value;
+        const subsubdeck = document.getElementById('subsubdeck')?.value;
+        const tags = document.getElementById('tags')?.value;
+        
+        // Validate required fields
+        if (!questionInput || !deck || !subdeck) {
+            alert('Please fill out all required fields');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Add Flashcard';
+            return;
+        }
+        
+        // Parse the question input based on card type
         try {
-            if (type === 'multipleChoice') {
-                // Handle multiple choice cards, potentially multiple questions
-                const questionBlocks = parseMultipleChoiceQuestions(rawContent);
+            let formData = {};
+            
+            if (cardType === 'classic') {
+                const { question, subtitle, answer, extraInfo } = parseClassicCard(questionInput);
+                formData = {
+                    type: 'classic',
+                    question,
+                    subtitle: subtitle || '',
+                    answer,
+                    extraInfo: extraInfo || '',
+                    deck,
+                    subdeck,
+                    tags: tags ? tags.split(',').map(tag => tag.trim()) : []
+                };
                 
-                console.log(`Found ${questionBlocks.length} multiple choice questions to process`);
-                
-                // Create promises for all card creations
-                const savePromises = questionBlocks.map(async (block) => {
-                    return await saveMultipleChoiceCard(block);
-                });
-                
-                // Wait for all cards to be saved
-                const results = await Promise.all(savePromises);
-                console.log(`Successfully saved ${results.filter(r => r.success).length} of ${results.length} cards`);
-                
-                // Show success message
-                if (results.some(r => r.success)) {
-                    alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
-                    document.getElementById('admin-modal').classList.add('hidden');
-                    
-                    // Reload current deck to show the new card
-                    reloadCurrentDeck();
-                } else {
-                    alert('Failed to add any flashcards. Please check your input format and try again.');
+                // Add subsubdeck if it exists
+                if (subsubdeck) {
+                    formData.subsubdeck = subsubdeck;
                 }
-            } else { // Classic format
-                // Parse multiple classic cards
-                const cardBlocks = parseClassicCards(rawContent);
+            } else if (cardType === 'multipleChoice') {
+                const { question, options, correctIndex, extraInfo } = parseMultipleChoiceCard(questionInput);
+                formData = {
+                    type: 'multipleChoice',
+                    question,
+                    options,
+                    correctIndex,
+                    extraInfo: extraInfo || '',
+                    deck,
+                    subdeck,
+                    tags: tags ? tags.split(',').map(tag => tag.trim()) : []
+                };
                 
-                console.log(`Found ${cardBlocks.length} classic cards to process`);
-                
-                // Create promises for all card creations
-                const savePromises = cardBlocks.map(async (block) => {
-                    return await saveClassicCard(block);
-                });
-                
-                // Wait for all cards to be saved
-                const results = await Promise.all(savePromises);
-                console.log(`Successfully saved ${results.filter(r => r.success).length} of ${results.length} classic cards`);
-                
-                // Show success message
-                if (results.some(r => r.success)) {
-                    alert(`Successfully added ${results.filter(r => r.success).length} flashcards!`);
-                document.getElementById('admin-modal').classList.add('hidden');
-                
-                    // Reload current deck to show the new cards
-                    reloadCurrentDeck();
-            } else {
-                    alert('Failed to add any flashcards. Please check your input format and try again.');
+                // Add subsubdeck if it exists
+                if (subsubdeck) {
+                    formData.subsubdeck = subsubdeck;
                 }
             }
-        } catch(error) {
-            alert(error.message);
-            console.error('Error adding flashcard:', error);
+            
+            console.log('Form data to be submitted:', formData);
+            
+            // Send the data to the server
+            const response = await fetch('/api/flashcards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                console.log('Flashcard added successfully:', result);
+                // Clear form fields
+                document.getElementById('question').value = '';
+                document.getElementById('tags').value = '';
+                
+                // Show success message
+                alert('Flashcard added successfully!');
+            } else {
+                console.error('Error adding flashcard:', result);
+                alert(`Error: ${result.error || 'Failed to add flashcard'}`);
+            }
+        } catch (error) {
+            console.error('Error processing form:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Add Flashcard';
         }
     });
 
@@ -1201,38 +1368,7 @@ function updateCardTypeUI(cardType) {
     updatePreview();
 }
 
-function initializeERA1Cards() {
-    if (window.location.pathname.includes('patologia-era1')) {
-      console.log('Initializing ERA1 flashcards... 1233445');
-      
-      // 1. Get both deck and subdeck
-      getDeckData('Patología', 'ERA1').then(data => {
-        // 2. Directly use server-filtered data
-        flashcards = data;
-        console.log('Loaded ERA1 cards:', flashcards);
-        
-        if(flashcards.length > 0) {
-          currentCardIndex = 0; // Reset index
-          loadNextCard();
-        } else {
-          showStatus('No hay tarjetas en este mazo');
-        }
-      }).catch(error => {
-        console.error('Error loading ERA1 cards:', error);
-        showStatus('Error al cargar las tarjetas');
-      });
-    }
-  }
-  
-  // Add to existing DOMContentLoaded listener
-  document.addEventListener('DOMContentLoaded', () => {
-    displayUsername();
-    initializeERA1Cards(); 
-    // Keep other existing initializations
-    document.getElementById('contact-button')?.addEventListener('click', showContact);
-  });
-
-  // Expand active subdeck's parent
+// Expand active subdeck's parent
 const activeSubdeck = document.querySelector('.subdeck-btn.active');
 if (activeSubdeck) {
   const parentDeck = activeSubdeck.closest('li').previousElementSibling;
@@ -1332,27 +1468,6 @@ document.querySelectorAll('input[name="card-type"]').forEach(radio => {
         updateCardTypeUI(this.value);
     });
 });
-
-function initializeERA2Cards() {
-    if (window.location.pathname.includes('patologia-era2')) {
-        console.log('Initializing ERA2 flashcards...');
-        
-        getDeckData('Patología', 'ERA2').then(data => {
-            flashcards = data;
-            console.log('Loaded ERA2 cards:', data);
-            
-            if(flashcards.length > 0) {
-                currentCardIndex = 0;
-                loadNextCard();
-            } else {
-                showStatus('No hay tarjetas en este mazo');
-            }
-        }).catch(error => {
-            console.error('Error loading ERA2 cards:', error);
-            showStatus('Error al cargar las tarjetas');
-        });
-    }
-}
 
 // Enhanced logging function
 function logToConsole(message, data) {
@@ -1611,8 +1726,8 @@ document.getElementById('contact-button')?.addEventListener('click', showContact
 // Deck and subdeck structure
 const decks = {
     'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+    'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
     'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
-    'Patología': ['ERA1', 'ERA2', 'ERA3'],
     'Farmacología': ['ERA1', 'ERA2'],
     'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
     'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos'],
@@ -2841,3 +2956,568 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarButton.addEventListener('click', showCalendar);
     }
 });
+
+// ... existing code ...
+
+// Profile dropdown functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const profileToggle = document.getElementById('profile-toggle');
+    const profileDropdown = document.querySelector('.profile-dropdown-content');
+    const profileBtn = document.getElementById('profile-btn');
+    const logoutBtn = document.getElementById('logout');
+    
+    if (profileToggle && profileDropdown) {
+        // Toggle dropdown when clicking the profile icon
+        profileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+            
+            // Force redraw to ensure visibility
+            profileDropdown.style.display = 'none';
+            setTimeout(() => {
+                profileDropdown.style.display = profileDropdown.classList.contains('show') ? 'block' : 'none';
+            }, 0);
+        });
+        
+        // Close dropdown when clicking elsewhere
+        document.addEventListener('click', function(e) {
+            if (!profileToggle.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+        
+        // Handle profile button click (currently does nothing)
+        if (profileBtn) {
+            profileBtn.addEventListener('click', function() {
+                // This is left non-functional as per requirements
+                profileDropdown.classList.remove('show');
+            });
+        }
+        
+        // Ensure the logout button is visible and styled properly
+        if (logoutBtn) {
+            logoutBtn.style.display = 'block';
+            logoutBtn.style.visibility = 'visible';
+            logoutBtn.style.opacity = '1';
+        }
+    }
+});
+
+// Function to parse a classic card from text input
+function parseClassicCard(text) {
+    // Split text by lines and filter out empty lines
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    if (lines.length < 2) {
+        throw new Error('Classic card must have at least a question and answer');
+    }
+    
+    const question = lines[0];
+    let subtitle = '';
+    let answer = '';
+    let extraInfo = '';
+    
+    if (lines.length === 2) {
+        // Simple question/answer format
+        answer = lines[1];
+    } else if (lines.length === 3) {
+        // Question/subtitle/answer format
+        subtitle = lines[1];
+        answer = lines[2];
+    } else {
+        // Question with subtitle and multi-line answer
+        subtitle = lines[1];
+        
+        // Look for notes (lines starting with /note or /nota)
+        const noteLines = [];
+        const answerLines = [];
+        
+        for (let i = 2; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.startsWith('/note ') || line.startsWith('/nota ')) {
+                noteLines.push(line.replace(/^\/(note|nota)\s+/, ''));
+            } else {
+                answerLines.push(line);
+            }
+        }
+        
+        answer = answerLines.join('\n');
+        extraInfo = noteLines.join('\n');
+    }
+    
+    return { question, subtitle, answer, extraInfo };
+}
+
+// Function to parse a multiple choice card from text input
+function parseMultipleChoiceCard(text) {
+    // Split text by lines and filter out empty lines
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    if (lines.length < 3) {
+        throw new Error('Multiple choice card must have at least a question and 2 options');
+    }
+    
+    const question = lines[0];
+    const options = [];
+    let correctIndex = -1;
+    const commentLines = [];
+    
+    // Process options and find the correct one
+    for (let i = 1; i < lines.length; i++) {
+        let line = lines[i];
+        
+        // Check if this line is a comment
+        if (line.startsWith('/')) {
+            commentLines.push(line.substring(1).trim());
+            continue;
+        }
+        
+        // Check if this option is marked as correct
+        if (line.endsWith(']')) {
+            correctIndex = options.length;
+            line = line.substring(0, line.length - 1);
+        }
+        
+        options.push(line);
+    }
+    
+    if (correctIndex === -1) {
+        throw new Error('No correct option marked with ] for multiple choice card');
+    }
+    
+    if (options.length < 2) {
+        throw new Error('Multiple choice card must have at least 2 options');
+    }
+    
+    const extraInfo = commentLines.join('\n');
+    
+    return { question, options, correctIndex, extraInfo };
+}
+
+$('#addCardForm').submit(function(e) {
+    e.preventDefault();
+    
+    // Change button state to indicate processing
+    const submitButton = $('#addCardSubmit');
+    const originalText = submitButton.text();
+    submitButton.text('Processing...').prop('disabled', true);
+    
+    // Get form values
+    const question = $('#questionInput').val().trim();
+    const deck = $('#deckSelect').val().trim();
+    const subdeck = $('#subdeckInput').val().trim();
+    const subsubdeck = $('#subsubdeckInput').val().trim();
+    const tags = $('#tagsInput').val().trim().split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    const cardType = $('input[name="cardType"]:checked').val();
+    
+    // Validate required fields
+    if (!question || !deck || !subdeck) {
+        alert('Please fill in all required fields (Question, Deck, and Subdeck)');
+        submitButton.text(originalText).prop('disabled', false);
+        return;
+    }
+    
+    try {
+        // Parse the card content based on the card type
+        let cardData;
+        
+        if (cardType === 'classic') {
+            cardData = parseClassicCard(question);
+        } else if (cardType === 'multipleChoice') {
+            cardData = parseMultipleChoiceCard(question);
+        } else {
+            throw new Error('Invalid card type');
+        }
+        
+        // Create the form data object
+        const formData = {
+            type: cardType,
+            deck: deck,
+            subdeck: subdeck,
+            tags: tags,
+            ...cardData
+        };
+        
+        // Add subsubdeck if it exists
+        if (subsubdeck) {
+            formData.subsubdeck = subsubdeck;
+        }
+        
+        console.log('Submitting form data:', formData);
+        
+        // Submit the form data
+        fetch('/api/flashcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Server responded with ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Card added successfully:', data);
+            
+            // Reset the form
+            $('#addCardForm')[0].reset();
+            
+            // Show success message
+            alert('Card added successfully!');
+            
+            // Close the modal
+            $('#adminModal').modal('hide');
+        })
+        .catch(error => {
+            console.error('Error adding card:', error);
+            alert(`Error adding card: ${error.message}`);
+        })
+        .finally(() => {
+            // Reset button state
+            submitButton.text(originalText).prop('disabled', false);
+        });
+    } catch (error) {
+        console.error('Error parsing card:', error);
+        alert(`Error parsing card: ${error.message}`);
+        submitButton.text(originalText).prop('disabled', false);
+    }
+});
+
+// ... existing code ...
+
+// Toggle card format help when card type changes
+$('input[name="cardType"]').change(function() {
+    const cardType = $(this).val();
+    
+    if (cardType === 'classic') {
+        $('#classicFormatHelp').show();
+        $('#multipleChoiceFormatHelp').hide();
+    } else if (cardType === 'multipleChoice') {
+        $('#classicFormatHelp').hide();
+        $('#multipleChoiceFormatHelp').show();
+    }
+});
+
+// ... existing code ...
+
+// Function to set up live preview for the question input
+function setupLivePreview() {
+    const previewContainer = $('<div>', {
+        id: 'livePreviewContainer',
+        class: 'card mb-3'
+    }).insertAfter('#questionInput');
+
+    const previewHeader = $('<div>', {
+        class: 'card-header',
+        text: 'Live Preview'
+    }).appendTo(previewContainer);
+
+    const previewBody = $('<div>', {
+        class: 'card-body',
+        id: 'livePreviewBody'
+    }).appendTo(previewContainer);
+
+    function updatePreview() {
+        const text = $('#questionInput').val();
+        const cardType = $('input[name="cardType"]:checked').val();
+        const previewBody = $('#livePreviewBody');
+        
+        previewBody.empty();
+        
+        try {
+            if (cardType === 'classic') {
+                const parsed = parseClassicCard(text);
+                
+                // Add question
+                $('<h5>', {
+                    class: 'card-title',
+                    text: parsed.question
+                }).appendTo(previewBody);
+                
+                // Add subtitle if exists
+                if (parsed.subtitle) {
+                    $('<h6>', {
+                        class: 'card-subtitle mb-2 text-muted',
+                        text: parsed.subtitle
+                    }).appendTo(previewBody);
+                }
+                
+                // Add answer with collapsible panel
+                const answerPanel = $('<div>', {
+                    class: 'mt-3'
+                }).appendTo(previewBody);
+                
+                const answerToggle = $('<button>', {
+                    class: 'btn btn-outline-primary btn-sm',
+                    text: 'Show Answer'
+                }).appendTo(answerPanel);
+                
+                const answerContent = $('<div>', {
+                    class: 'mt-2 p-2 border rounded bg-light',
+                    style: 'display: none;'
+                }).appendTo(answerPanel);
+                
+                $('<p>', {
+                    text: parsed.answer,
+                    style: 'white-space: pre-line;'
+                }).appendTo(answerContent);
+                
+                // Show extra info if it exists
+                if (parsed.extraInfo) {
+                    $('<div>', {
+                        class: 'alert alert-info mt-3',
+                        html: '<strong>Notes:</strong> ' + parsed.extraInfo
+                    }).appendTo(answerContent);
+                }
+                
+                // Set up toggle functionality
+                answerToggle.click(function() {
+                    answerContent.toggle();
+                    answerToggle.text(answerContent.is(':visible') ? 'Hide Answer' : 'Show Answer');
+                });
+                
+            } else if (cardType === 'multipleChoice') {
+                const parsed = parseMultipleChoiceCard(text);
+                
+                // Add question
+                $('<h5>', {
+                    class: 'card-title',
+                    text: parsed.question
+                }).appendTo(previewBody);
+                
+                // Add options
+                const optionsContainer = $('<div>', {
+                    class: 'mt-3'
+                }).appendTo(previewBody);
+                
+                parsed.options.forEach((option, index) => {
+                    const isCorrect = index === parsed.correctIndex;
+                    
+                    const optionDiv = $('<div>', {
+                        class: 'form-check mb-2'
+                    }).appendTo(optionsContainer);
+                    
+                    const optionInput = $('<input>', {
+                        class: 'form-check-input option-radio',
+                        type: 'radio',
+                        name: 'previewOptions',
+                        id: `previewOption${index}`,
+                        value: index
+                    }).appendTo(optionDiv);
+                    
+                    $('<label>', {
+                        class: 'form-check-label',
+                        for: `previewOption${index}`,
+                        text: option
+                    }).appendTo(optionDiv);
+                    
+                    if (isCorrect) {
+                        optionInput.data('correct', true);
+                    }
+                });
+                
+                // Add button to check answer
+                const checkButton = $('<button>', {
+                    class: 'btn btn-outline-primary btn-sm mt-2',
+                    text: 'Check Answer'
+                }).appendTo(previewBody);
+                
+                // Add result display
+                const resultDisplay = $('<div>', {
+                    class: 'mt-2',
+                    style: 'display: none;'
+                }).appendTo(previewBody);
+                
+                // Show extra info if it exists
+                if (parsed.extraInfo) {
+                    $('<div>', {
+                        class: 'alert alert-info mt-3',
+                        html: '<strong>Notes:</strong> ' + parsed.extraInfo
+                    }).appendTo(resultDisplay);
+                }
+                
+                // Set up check functionality
+                checkButton.click(function() {
+                    const selectedOption = $('input[name="previewOptions"]:checked');
+                    
+                    if (selectedOption.length === 0) {
+                        alert('Please select an option first');
+                        return;
+                    }
+                    
+                    resultDisplay.show();
+                    
+                    if (selectedOption.data('correct')) {
+                        resultDisplay.html('<div class="alert alert-success">Correct!</div>');
+                    } else {
+                        const correctIndex = parsed.correctIndex;
+                        resultDisplay.html(`<div class="alert alert-danger">Incorrect! The correct answer is: ${parsed.options[correctIndex]}</div>`);
+                    }
+                    
+                    // Show extra info if it exists
+                    if (parsed.extraInfo) {
+                        $('<div>', {
+                            class: 'alert alert-info mt-3',
+                            html: '<strong>Notes:</strong> ' + parsed.extraInfo
+                        }).appendTo(resultDisplay);
+                    }
+                });
+            }
+        } catch (error) {
+            // If there's an error in parsing, show format help
+            previewBody.html(`<div class="alert alert-warning">
+                <p><strong>Format error:</strong> ${error.message}</p>
+                <p>Please check the Card Format Help section below for correct formatting.</p>
+            </div>`);
+        }
+    }
+    
+    // Update preview when input changes, with debounce
+    const debouncedUpdate = debounce(updatePreview, 500);
+    $('#questionInput').on('input', debouncedUpdate);
+    $('input[name="cardType"]').change(updatePreview);
+    
+    // Initial update
+    updatePreview();
+}
+
+// Debounce helper function
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(context, args);
+        }, wait);
+    };
+}
+
+// ... existing code ...
+
+// Initialize the admin panel when document is ready
+$(document).ready(function() {
+    console.log('Admin panel initializing');
+    
+    // Populate deck select dropdown
+    populateDeckSelect();
+    
+    // Set up event handlers for the admin form
+    setupAdminForm();
+    
+    // Set up live preview for card creation
+    setupLivePreview();
+    
+    // Add any other admin panel initialization here
+});
+
+// Function to set up admin form event handlers
+function setupAdminForm() {
+    // Admin panel modal open/close events
+    $('#openAdminModal').click(function() {
+        $('#adminModal').modal('show');
+    });
+    
+    $('#adminModal').on('hidden.bs.modal', function() {
+        $('#addCardForm')[0].reset();
+    });
+    
+    // Set up cascading dropdown for deck/subdeck/subsubdeck
+    $('#deckSelect').change(function() {
+        updateSubdeckInput($(this).val());
+    });
+    
+    $('#subdeckInput').on('input', function() {
+        updateSubsubdeckInput($('#deckSelect').val(), $(this).val());
+    });
+}
+
+// Function to populate the deck select dropdown
+function populateDeckSelect() {
+    const decks = [
+        'Microbiología',
+        'Patología',
+        'Semiología',
+        'Farmacología',
+        'Terapéutica 1',
+        'Medicina Interna 1',
+        'Revalida',
+        'MIR'
+    ];
+    
+    const $deckSelect = $('#deckSelect');
+    decks.forEach(deck => {
+        $deckSelect.append(`<option value="${deck}">${deck}</option>`);
+    });
+}
+
+// Function to update the subdeck input based on the selected deck
+function updateSubdeckInput(deckName) {
+    console.log('Updating subdeck options for deck:', deckName);
+    
+    // Clear current options
+    $('#subdeckOptions').empty();
+    $('#subdeckInput').val('');
+    
+    if (!deckName) return;
+    
+    // Predefined subdecks for each deck
+    const subdecks = {
+        'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+        'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
+        'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
+        'Farmacología': ['ERA1', 'ERA2'],
+        'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
+        'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo Digestivo', 'Neurología', 'Anexos'],
+        'Revalida': ['Bling', 'Blang', 'Blong'],
+        'MIR': ['Bling', 'Blang', 'Blong']
+    };
+    
+    // Add options to the datalist
+    if (subdecks[deckName]) {
+        const $datalist = $('#subdeckOptions');
+        subdecks[deckName].forEach(subdeck => {
+            $datalist.append(`<option value="${subdeck}">`);
+        });
+        
+        // Update label to guide user
+        const $label = $('label[for="subdeckInput"]');
+        $label.text('Subdeck: (select from list or type new)');
+    }
+}
+
+// Function to update the subsubdeck input based on the selected deck and subdeck
+function updateSubsubdeckInput(deckName, subdeckName) {
+    console.log('Updating subsubdeck options for:', deckName, subdeckName);
+    
+    // Clear current options
+    $('#subsubdeckOptions').empty();
+    $('#subsubdeckInput').val('');
+    
+    if (!deckName || !subdeckName) return;
+    
+    // Predefined subsubdecks for certain deck/subdeck combinations
+    const subsubdecks = {
+        'Patología': {
+            'Respiratorio': ['Neumonía', 'Asma y Epoc', 'Cáncer de Pulmón', 'Otros']
+        }
+    };
+    
+    // Add options to the datalist if they exist
+    if (subsubdecks[deckName] && subsubdecks[deckName][subdeckName]) {
+        const $datalist = $('#subsubdeckOptions');
+        subsubdecks[deckName][subdeckName].forEach(subsubdeck => {
+            $datalist.append(`<option value="${subsubdeck}">`);
+        });
+        
+        // Update label to guide user
+        const $label = $('label[for="subsubdeckInput"]');
+        $label.text('Subsubdeck: (select from list or type new)');
+    }
+}

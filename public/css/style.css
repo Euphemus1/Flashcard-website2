@@ -2,6 +2,52 @@
     --primary-color: #58d2ee;
     --secondary-color: #053F5C;
     --accent-color: #FF6B6B;
+    --bg-color: #f8f9fa;
+    --text-color: #333;
+    --card-bg: #fff;
+    --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    --nav-gradient: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    --secondary-text: #666;
+    --border-color: #e0e0e0;
+}
+
+/* Light mode colors (explicit) */
+[data-theme="light"] {
+    --primary-color: #58d2ee;
+    --secondary-color: #053F5C;
+    --accent-color: #FF6B6B;
+    --bg-color: #f8f9fa;
+    --text-color: #333;
+    --card-bg: #fff;
+    --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    --nav-gradient: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    --secondary-text: #666;
+    --border-color: #e0e0e0;
+    --basic-header-bg: #58d2ee; /* Original blue for basic header */
+    --premium-header-bg: #a13cff; /* Original purple for premium header */
+    --pricing-section-bg: #fff; /* Original background for pricing section */
+    --price-text: #053F5C; /* Original text for price */
+    --duration-btn-bg: #e0e0e0; /* Original background for duration buttons */
+    --duration-btn-active-bg: #58d2ee; /* Original active button */
+    --duration-btn-hover: #c0c0c0; /* Original hover color */
+}
+
+/* Dark mode colors */
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #f5f5f5;
+    --card-bg: #1e1e1e;
+    --card-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    --secondary-text: #aaaaaa;
+    --border-color: #333333;
+    --basic-header-bg: #2c99b2; /* Darker blue for basic header */
+    --premium-header-bg: #822dcc; /* Darker purple for premium header */
+    --pricing-section-bg: #121212; /* Dark background for pricing section */
+    --price-text: #e0e0e0; /* Lighter text for price */
+    --duration-btn-bg: #333; /* Darker background for duration buttons */
+    --duration-btn-active-bg: #2c99b2; /* Darker active button */
+    --duration-btn-hover: #444; /* Hover color for buttons */
+    /* Keep the same accent and primary/secondary colors */
 }
 
 * {
@@ -13,7 +59,9 @@
 
 body {
     padding-top: 70px;
-    background: #f8f9fa;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .corner-logo {
@@ -59,6 +107,62 @@ nav {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+}
+
+/* Theme toggle styles - Improved */
+.theme-toggle-wrapper {
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.theme-toggle i {
+    position: absolute;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+/* Default state - show sun (light mode active) */
+.theme-toggle .fa-sun {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.theme-toggle .fa-moon {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* When dark mode is active */
+[data-theme="dark"] .theme-toggle .fa-sun {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+[data-theme="dark"] .theme-toggle .fa-moon {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .nav-btn {
@@ -181,7 +285,7 @@ nav {
 
 .about-section {
     padding: 4rem 2rem;
-    background: #f8f9fa;
+    background: var(--bg-color);
     text-align: center;
 }
 
@@ -189,7 +293,7 @@ nav {
     max-width: 800px;
     margin: 0 auto;
     line-height: 1.6;
-    color: #555;
+    color: var(--text-color);
     font-size: 1.1rem;
 }
 
@@ -199,13 +303,13 @@ nav {
 
 .deck-section {
     padding: 4rem 2rem;
-    background: #F8F9FA;
+    background: var(--bg-color);
 }
 
 .section-title {
     text-align: center;
     font-size: 2.5rem;
-    color: #053F5C;
+    color: var(--secondary-color);
     margin-bottom: 3rem;
 }
 
@@ -218,13 +322,12 @@ nav {
 }
 
 .deck-card {
-    background: #fff;
+    background: var(--card-bg);
     padding: 2rem;
-    border-radius: 15px;
-    border: 2px solid #429edb;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
 .deck-card:hover {
@@ -233,14 +336,14 @@ nav {
 }
 
 .deck-card h2 {
-    color: #000000;
+    color: var(--text-color);
     margin-bottom: 1.5rem;
     font-size: 1.8rem;
 }
 
 .deck-btn {
-    background: #fff;
-    color: #429edb;
+    background: var(--card-bg);
+    color: var(--primary-color);
     border: none;
     padding: 0.8rem 2rem;
     border-radius: 25px;
@@ -250,14 +353,14 @@ nav {
 }
 
 .deck-btn:hover {
-    background: #9fe7fb;
+    background: rgba(88, 210, 238, 0.3);
 }
 
 /* ===================================== PRICE SECTION ================================================== */
 
 .pricing-section {
     padding: 4rem 2rem;
-    background: #fff;
+    background: var(--pricing-section-bg);
     scroll-margin-top: 70px;
 }
 
@@ -280,6 +383,14 @@ nav {
     display: flex;
     flex-direction: column;
     min-height: 500px;
+    height: 100%;
+}
+
+/* Make both plan containers equal size */
+.plan-container, .plan-container.premium {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .plan-card-header {
@@ -290,64 +401,49 @@ nav {
     border-radius: 15px 15px 0 0;
     border: 2px solid;
     border-bottom: none;
-    background: #58d2ee;
     color: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.plan-card-header.basic-header h3 {
-    color: white;
-    text-align: center;
-    margin: 0;
-    padding: 0.5rem 0;
-    width: 100%; /* Add this line */
+    box-shadow: var(--card-shadow);
 }
 
 .plan-card-header.basic-header {
-    border: 2px solid #58d2ee;
+    background: var(--basic-header-bg);
+    border-color: var(--basic-header-bg);
     border-bottom: none;
-    padding: 1.5rem;
     display: flex;
     justify-content: center;
-    margin: 0 -2px; /* Add this line */
-    width: calc(100% + 4px); /* Add this line */
-}
-
-
-.plan-container:not(.premium) .plan-card {
-    border: 2px solid #58d2ee;
-    border-top: none;
-    margin: 0 -2px -2px -2px;
-    width: calc(100% + 4px);
+    width: 100%;
 }
 
 .plan-card-header.premium-header {
+    background: var(--premium-header-bg);
+    border-color: var(--premium-header-bg);
     align-items: center;
-    background: #a13cff;
-    border-color: #a13cff;
     display: flex;
     justify-content: center;
+    width: 100%;
 }
 
-.plan-card-header.premium-header h3 {
+.plan-card-header h3 {
     color: white;
     text-align: center;
     margin: 0;
     padding: 0.5rem 0;
-    width: 100%; /* Add this line */
+    width: 100%;
 }
 
 .plan-card {
+    background: var(--card-bg);
+    text-align: center;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
     flex: 1;
-    background: white;
-    padding: 2rem;
-    border: 2px solid var(--secondary-color);
-    border-top: none;
-    border-radius: 0 0 15px 15px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 5px 15px 5px rgba(0,0,0,0.2); /* Same as deck-card */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Match transition */
+    padding: 1.5rem;
+    border: 2px solid;
+    border-top: none;
 }
 
 .plan-card:hover {
@@ -355,22 +451,12 @@ nav {
     box-shadow: 0 10px 20px rgba(0,0,0,0.25); /* Same as deck-card:hover */
 }
 
-.plan-container.premium .duration-btn.active {
-    background: #a13cff; /* Match premium header color */
-    color: white;
-  }
+.plan-container:not(.premium) .plan-card {
+    border-color: var(--basic-header-bg);
+}
 
 .plan-container.premium .plan-card {
-    border-color: #a13cff;
-}
-
-.plan-container.premium .plan-btn {
-    background: #a13cff;
-}
-
-/* Optional: Adjust hover state if needed */
-.plan-container.premium .plan-btn:hover {
-    background: color-mix(in srgb, var(--accent-color) 90%, black);
+    border-color: var(--premium-header-bg);
 }
 
 .duration-selector {
@@ -382,7 +468,7 @@ nav {
 }
 
 .duration-btn {
-    background: #e0e0e0;
+    background: var(--duration-btn-bg);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -392,13 +478,18 @@ nav {
 }
 
 .duration-btn:hover {
-    background: #c0c0c0;
+    background: var(--duration-btn-hover);
 }
 
 .duration-btn.active {
-    background: #58d2ee;
+    background: var(--duration-btn-active-bg);
     color: white;
     transform: scale(1.05);
+}
+
+.plan-container.premium .duration-btn.active {
+    background: var(--premium-header-bg);
+    color: white;
 }
 
 .price-container {
@@ -417,7 +508,7 @@ nav {
 }
 
 .global-currency-toggle .toggle-container {
-    background: #e0e0e0;
+    background: var(--duration-btn-bg);
     border-radius: 20px;
     padding: 2px;
     width: 90px;
@@ -475,13 +566,34 @@ nav {
     }
 }
 
+.plan-container.premium .plan-btn {
+    background: var(--premium-header-bg);
+}
+
+/* Optional: Adjust hover state if needed */
+.plan-container.premium .plan-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
 .price {
     margin: 0;
     font-size: 1.5rem;
-    color: var(--secondary-color);
+    color: var(--price-text);
     font-weight: bold;
     min-width: 90px;
     text-align: center;
+}
+
+.price-value {
+    font-size: 4.5rem;
+    font-weight: bold;
+    color: var(--basic-header-bg);
+    line-height: 1.2;
+}
+
+.plan-container.premium .price-value {
+    color: var(--premium-header-bg);
 }
 
 .plan-card ul {
@@ -514,7 +626,7 @@ nav {
 }
 
 .plan-btn {
-    background: #58d2ee;
+    background: var(--basic-header-bg);
     color: white;
     border: none;
     padding: 1rem 2.5rem;
@@ -524,10 +636,6 @@ nav {
     width: 100%;
     transition: transform 0.3s ease;
     margin-top: auto;
-}
-
-.plan-card.premium .plan-btn {
-    background: var(--accent-color);
 }
 
 .plan-btn:hover {
@@ -572,20 +680,6 @@ nav {
     color: #666;
 }
 
-.price-value {
-    font-size: 4.5rem;  /* 40px equivalent */
-    font-weight: bold;
-    color: #58d2ee;
-    line-height: 1.2;
-}
-
-.plan-container.premium .price-value {
-    font-size: 4.5rem;  /* 40px equivalent */
-    font-weight: bold;
-    color: #a13cff;
-    line-height: 1.2;
-}
-
 .decimal-part {
     font-size: 0.3em;
     vertical-align: baseline;
@@ -614,7 +708,7 @@ nav {
 
 .contact-section {
     padding: 4rem 2rem;
-    background: #f8f9fa;
+    background: var(--bg-color);
     scroll-margin-top: 70px;
 }
 
@@ -627,12 +721,12 @@ nav {
 }
 
 .contact-card {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
-    border-radius: 15px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .contact-card:hover {
@@ -668,7 +762,7 @@ nav {
 }
 
 .contact-card p {
-    color: #666;
+    color: var(--secondary-text);
     font-size: 1rem;
 }
 
@@ -686,15 +780,14 @@ nav {
 }
 
 .modal-content {
-    background: white;
+    background: var(--card-bg);
+    margin: 10% auto;
     padding: 2rem;
-    border-radius: 10px;
     width: 90%;
-    max-width: 400px;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
     position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .close-btn {
@@ -742,7 +835,7 @@ nav {
 /* Flashcard System Section */
 .flashcard-system-section {
     padding: 6rem 2rem 4rem;
-    background: #fff;
+    background: var(--bg-color);
     scroll-margin-top: 70px;
 }
 
@@ -764,26 +857,25 @@ nav {
 }
 
 .card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--card-bg);
+    border-radius: 10px;
     padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    min-height: 300px;
-    min-width: 420px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
     position: relative;
 }
 
 .question {
-    border-left: 4px solid #429edb;
+    border-left: 4px solid var(--primary-color);
 }
 
 .answer {
-    border-left: 4px solid #FF6B6B; /* Example style for answer cards */
+    border-left: 4px solid var(--accent-color);
 }
 
 .drug-tag {
-    background: #429edb;
+    background: var(--primary-color);
     color: white;
     padding: 0.4rem 1rem;
     border-radius: 20px;
@@ -794,32 +886,32 @@ nav {
 }
 
 h3 {
-    color: #2c3e50;
+    color: var(--text-color);
     margin-bottom: 1.5rem;
     font-size: 1.6rem;
 }
 
 p.mechanism {
-    color: #7f8c8d;
+    color: var(--secondary-text);
     font-size: 1.3rem;
     margin-bottom: 1.5rem; 
     font-weight: 600;
 }
 
 .mechanism, .answer-text {
-    color: #7f8c8d;
+    color: var(--secondary-text);
     font-size: 1.1rem;
     margin-top: 1.5rem; /* Add margin to create space above p */
 }
 
 p.question-look, p.answer-text {
-    color: #2810ff;
+    color: var(--primary-color);
     font-size: 1.1rem;
-    margin-top: 1.5rem; /* Add margin to create space above p */
+    margin-top: 1.5rem;
 }
 
 .revisar-btn {
-    background: #429edb;
+    background: var(--primary-color);
     color: white;
     border: none;
     padding: 0.7rem;
@@ -833,7 +925,7 @@ p.question-look, p.answer-text {
 }
 
 .revisar-btn:hover {
-    background: #1e90ff;
+    background: var(--secondary-color);
 }
 
 .srs-controls {
@@ -869,7 +961,7 @@ p.question-look, p.answer-text {
 
 .interval {
     font-size: 0.75rem;
-    color: #7f8c8d;
+    color: var(--secondary-text);
 }
 
 .denuevo { background: #ff4757; }
@@ -1013,13 +1105,19 @@ p.question-look, p.answer-text {
 }
 
 .choice {
-    background: #f8f9fa;
-    border: 2px solid #e0e0e0;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
     padding: 1rem;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
+    color: var(--text-color);
+}
+
+/* When dark mode is active, make choice text white */
+[data-theme="dark"] .choice {
+    color: var(--text-color);
 }
 
 .choice:hover {
@@ -1065,11 +1163,11 @@ p.question-look, p.answer-text {
 }
 
 .explanation-text {
-    background: #f0faff;
+    background: rgba(88, 210, 238, 0.1);
     padding: 1rem;
     border-radius: 8px;
-    border-left: 4px solid #2ed573;
-    color: #053F5C;
+    border-left: 4px solid var(--primary-color);
+    color: var(--text-color);
 }
 
 /* Choice Card SRS Positioning */
@@ -1104,10 +1202,10 @@ p.question-look, p.answer-text {
 /* Explanation Panel Styling */
 .explanation-panel {
     flex: 1;
-    background: #f8f9fa;
+    background: var(--bg-color);
     border-radius: 10px;
     padding: 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
     max-height: 400px;
     max-height: none; /* Remove any existing max-height */
 }

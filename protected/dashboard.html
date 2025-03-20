@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Flashcard Study App</title>
     <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/profile-dropdown.css">
     <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
 </head>
 <body>
@@ -19,206 +20,380 @@
             <button id="overview-button">General</button>
             <button id="test-dynamic-deck-btn" style="background: #fd5e53; color: white; padding: 5px 10px; border: none; border-radius: 4px; margin-right: 10px; cursor: pointer;">Test Dynamic Deck</button>
             <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
-            <button id="contact-button">Contacto</button>
-            <button class="nav-btn" id="logout">Cerrar sesión</button>
+            <button id="ranking-button">Ranking</button>
+            <div class="profile-dropdown">
+                <button class="profile-icon" id="profile-toggle">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="profile-dropdown-content" style="min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); background-color: white; border-radius: 6px;">
+                    <button class="dropdown-item" id="profile-btn" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Perfil</button>
+                    <button class="dropdown-item" id="logout" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Cerrar sesión</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Sidebar Section -->
-    <div id="sidebar">
-        <h2>Mis Mazos</h2>
-        <ul id="deck-list">
-            <li>
-                <button id="open-admin-btn" class="nav-btn">Admin Panel</button>
-            </li>
-            <li>
-                <button id="microbiologíay-btn" class="deck-btn">
-                    <span class="deck-name">Microbiología</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">Bacterias</button></li>
-                    <li><button class="subdeck-btn">Hongos</button></li>
-                    <li><button class="subdeck-btn">Parásitos</button></li>
-                    <li><button class="subdeck-btn">Virus</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="patología-btn" class="deck-btn">
-                    <span class="deck-name">Patología</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">ERA1</button></li>
-                    <li><button class="subdeck-btn">ERA2</button></li>
-                    <li><button class="subdeck-btn">ERA3</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="semiología-btn" class="deck-btn">
-                    <span class="deck-name">Semiología</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">Historía clínica</button></li>
-                    <li><button class="subdeck-btn">Piel y faneras</button></li>
-                    <li><button class="subdeck-btn">Cabeza y cuello</button></li>
-                    <li><button class="subdeck-btn">Respiratorio</button></li>
-                    <li><button class="subdeck-btn">Cardiovascular</button></li>
-                    <li><button class="subdeck-btn">Digestivo</button></li>
-                    <li><button class="subdeck-btn">Urinario</button></li>
-                    <li><button class="subdeck-btn">Neurología</button></li>
-                    <li><button class="subdeck-btn">Osteoarticular</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="farmacología-btn" class="deck-btn">
-                    <span class="deck-name">Farmacología</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">ERA1</button></li>
-                    <li><button class="subdeck-btn">ERA2</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="terapéutica1-btn" class="deck-btn">
-                    <span class="deck-name">Terapéutica 1</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">ERA1</button></li>
-                    <li><button class="subdeck-btn">ERA2</button></li>
-                    <li><button class="subdeck-btn">ERA3</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="medicinainterna1-btn" class="deck-btn">
-                    <span class="deck-name">Medicina Interna 1</span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">Neumonología</button></li>
-                    <li><button class="subdeck-btn">Cardiovascular</button></li>
-                    <li><button class="subdeck-btn">Tubo Digestivo</button></li>
-                    <li><button class="subdeck-btn">Neurología</button></li>
-                    <li><button class="subdeck-btn">Anexos</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="revalida-btn" class="deck-btn">
-                    <span class="deck-name">Revalida <span class="soon-label">(en breve!)</span></span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">Bling</button></li>
-                    <li><button class="subdeck-btn">Blang</button></li>
-                    <li><button class="subdeck-btn">Blong</button></li>
-                </ul>
-            </li>
-            <li>
-                <button id="mir-btn" class="deck-btn">
-                    <span class="deck-name">MIR <span class="soon-label">(en breve!)</span></span><span class="plus">+</span>
-                </button>
-                <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">Bling</button></li>
-                    <li><button class="subdeck-btn">Blang</button></li>
-                    <li><button class="subdeck-btn">Blong</button></li>
-                </ul>
-            </li>
+<!-- Sidebar Section -->
+<div id="sidebar">
+    <h2>Mis Mazos</h2>
+    <ul id="deck-list">
+      <li>
+        <button id="open-admin-btn" class="nav-btn">Admin Panel</button>
+      </li>
+      <li>
+        <button id="microbiologíay-btn" class="deck-btn">
+          <span class="deck-name">Microbiología</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Bacterias</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Hongos</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Parásitos</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Virus</button>
+            </div>
+          </li>
         </ul>
-        <div class="sidebar-footer">
-            <a href="https://wa.me/+55479igyggg36792" target="_blank" class="social-icon">
-                <i class="fab fa-whatsapp"></i>
-            </a>
-            <a href="https://inslknknknkmk/medmemory.ar" target="_blank" class="social-icon">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="mailto:medmevhvuygmory@outlook.com" class="social-icon">>
-                <i class="fas fa-envelope"></i>
-            </a>
-        </div>
+      </li>
+      <li>
+        <button id="patología-btn" class="deck-btn">
+          <span class="deck-name">Patología</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Metabolopatías</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Inflamación</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Neoplasias</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Cardiovascular</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Respiratorio</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Digestivo</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Aparato urinario</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Aparato reproductor</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Piel</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Huesos y articulaciones</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Sistema endocrino</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Otros</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="semiología-btn" class="deck-btn">
+          <span class="deck-name">Semiología</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Historía clínica</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Piel y faneras</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Cabeza y cuello</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Respiratorio</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Cardiovascular</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Digestivo</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Urinario</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Neurología</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Osteoarticular</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="farmacología-btn" class="deck-btn">
+          <span class="deck-name">Farmacología</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">ERA1</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">ERA2</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="terapéutica1-btn" class="deck-btn">
+          <span class="deck-name">Terapéutica 1</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">ERA1</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">ERA2</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">ERA3</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="medicinainterna1-btn" class="deck-btn">
+          <span class="deck-name">Medicina Interna 1</span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Neumonología</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Cardiovascular</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Tubo Digestivo</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Neurología</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Anexos</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="revalida-btn" class="deck-btn">
+          <span class="deck-name">Revalida <span class="soon-label">(en breve!)</span></span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Bling</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Blang</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Blong</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button id="mir-btn" class="deck-btn">
+          <span class="deck-name">MIR <span class="soon-label">(en breve!)</span></span><span class="plus">+</span>
+        </button>
+        <ul class="subdeck-list">
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Bling</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Blang</button>
+            </div>
+          </li>
+          <li>
+            <div class="subdeck-btn-wrapper">
+              <button class="subdeck-btn">Blong</button>
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <a href="https://wa.me/+55479igyggg36792" target="_blank" class="social-icon">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+      <a href="https://inslknknknkmk/medmemory.ar" target="_blank" class="social-icon">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="mailto:medmevhvuygmory@outlook.com" class="social-icon">
+        <i class="fas fa-envelope"></i>
+      </a>
     </div>
+  </div>
 
-    <!-- Main Content Section -->
-    <div id="main-content">
-        <div class="stats-container">
-            <div id="stats-panel">
-                <h2>Your Stats</h2>
-                <div class="stat-item">
-                    <i class="fas fa-eye"></i>
-                    <div class="stat-content">
-                        <div class="stat-value">42</div>
-                        <div class="stat-label">Cards Viewed Today</div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-fire"></i>
-                    <div class="stat-content">
-                        <div class="stat-value">7</div>
-                        <div class="stat-label">Current Streak</div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-trophy"></i>
-                    <div class="stat-content">
-                        <div class="stat-value">14</div>
-                        <div class="stat-label">Longest Streak</div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-award"></i>
-                    <div class="stat-content">
-                        <div class="stat-value">108</div>
-                        <div class="stat-label">Record Cards in a Day</div>
-                    </div>
+<!-- Main Content Section -->
+<div id="main-content">
+    <!-- Three Column Container -->
+    <div class="stats-container">
+        <!-- Left Column - Stats Panel -->
+        <div id="stats-panel">
+            <h2>Your Stats</h2>
+            <div class="stat-item">
+                <i class="fas fa-eye"></i>
+                <div class="stat-content">
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Cards Viewed Today</div>
                 </div>
             </div>
-            
-            <div class="main-content-column">
-                <!-- Updates Dropdown Container -->
-                <div class="updates-dropdown">
-                    <button class="dropdown-toggle">
-                        Noticias y Actualizaciones ▼
-                    </button>
-                    <div class="dropdown-content">
-                        <!-- Update Items -->
-                        <div class="update-item">
-                            <h4>Última Actualización - 15/07/2024</h4>
-                            <p>• Nuevo contenido de Microbiología agregado</p>
-                            <p>• Mejoras en el sistema de repetición espaciada</p>
-                        </div>
-                        
-                        <div class="update-item">
-                            <h4>Próximas Novedades</h4>
-                            <p>• Contenido MIR en desarrollo (¡muy pronto!)</p>
-                            <p>• Nuevo diseño de tarjetas interactivas</p>
-                        </div>
-                    </div>
+            <div class="stat-item">
+                <i class="fas fa-fire"></i>
+                <div class="stat-content">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Current Streak</div>
                 </div>
-                
-                <!-- Overview Section with explicit table structure -->
-                <div id="overview-section">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mazo</th>
-                                <th>Nuevas</th>
-                                <th>Pendientes</th>
-                            </tr>
-                        </thead>
-                        <tbody id="overview-table-body">
-                            <!-- Rows will be dynamically populated here -->
-                        </tbody>
-                    </table>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-trophy"></i>
+                <div class="stat-content">
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">Longest Streak</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-award"></i>
+                <div class="stat-content">
+                    <div class="stat-value">108</div>
+                    <div class="stat-label">Record Cards in a Day</div>
                 </div>
             </div>
         </div>
 
-        <div id="admin-modal" class="admin-modal hidden">
-            <div class="admin-modal-content">
-                <span class="admin-close-btn">&times;</span>
-                <h2>Admin Panel</h2>
-                <div class="admin-form-container">
-                    <form id="add-flashcard-form">
-                        <div class="form-columns">
-                            <div class="form-column form-column-left">
-                                <div class="form-group">
-                                    <label for="question">Content Format:</label>
-                                    <textarea id="question" required placeholder="For Classic Cards:
+        <!-- Middle Column - Overview Table -->
+        <div class="main-content-column">
+            <div id="overview-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mazo</th>
+                            <th>Nuevas</th>
+                            <th>Pendientes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overview-table-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column - Notes Section -->
+        <div class="notes-column">
+            <div class="notes-section">
+                <h3>Study Notes <i class="fas fa-pencil-alt"></i></h3>
+                <textarea class="notes-textarea" placeholder="Write your notes here...
+                
+• Use bullet points
+• Add diagrams
+• Track important concepts"></textarea>
+            </div>
+        </div>
+    </div> 
+
+    <div id="admin-modal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+            <span class="admin-close-btn">&times;</span>
+            <h2>Admin Panel</h2>
+            <div class="admin-form-container">
+                <form id="add-flashcard-form">
+                    <div class="form-columns">
+                        <div class="form-column form-column-left">
+                            <div class="form-group">
+                                <label for="questionInput">Content Format:</label>
+                                <textarea id="questionInput" required placeholder="For Classic Cards:
 Linha 1: Pergunta
 Linha 2: Subtítulo
 Linhas 3+: Conteúdo da resposta
@@ -236,105 +411,135 @@ Berlim
 Amsterdam
 Paris]
 /Paris também é conhecida como Cidade Luz"></textarea>
-                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-column form-column-middle">
+                            <div class="form-group">
+                                <label for="deckSelect">Deck:</label>
+                                <select id="deckSelect" class="form-control" required>
+                                    <option value="" disabled selected>Select a deck</option>
+                                </select>
                             </div>
                             
-                            <div class="form-column form-column-middle">
-                                <div class="form-group">
-                                    <label>Card Type:</label>
-                                    <div class="radio-group">
-                                        <label>
-                                            <input type="radio" name="card-type" value="classic" checked>
-                                            Classic
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="card-type" value="multipleChoice">
-                                            Multiple Choice
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="deck-select">Deck:</label>
-                                    <select id="deck-select" required>
-                                        <!-- Deck options will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="subdeck">Subdeck:</label>
-                                    <input type="text" id="subdeck" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="tags">Tags (comma separated):</label>
-                                    <input type="text" id="tags">
-                                </div>
+                            <div class="form-group">
+                                <label for="subdeckInput">Subdeck:</label>
+                                <input type="text" class="form-control" id="subdeckInput" list="subdeckOptions" placeholder="Enter subdeck or select from list" required>
+                                <datalist id="subdeckOptions"></datalist>
                             </div>
                             
-                            <div class="form-column form-column-preview">
-                                <div class="preview-section">
-                                    <h3>Live Preview</h3>
-                                    <div class="preview-buttons">
-                                        <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
-                                        <button type="button" id="expand-preview-btn" class="btn btn-preview">Show All Cards</button>
+                            <div class="form-group">
+                                <label for="subsubdeckInput">Subsubdeck (optional):</label>
+                                <input type="text" class="form-control" id="subsubdeckInput" list="subsubdeckOptions" placeholder="Enter subsubdeck or select from list">
+                                <datalist id="subsubdeckOptions"></datalist>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tagsInput">Tags (comma-separated):</label>
+                                <input type="text" class="form-control" id="tagsInput" placeholder="Enter tags, separated by commas">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Card Type:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="cardType" id="classicCardType" value="classic" checked>
+                                    <label class="form-check-label" for="classicCardType">
+                                        Classic (Question/Answer)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="cardType" id="multipleChoiceCardType" value="multipleChoice">
+                                    <label class="form-check-label" for="multipleChoiceCardType">
+                                        Multiple Choice
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3">
+                                <div class="card-header">Card Format Help</div>
+                                <div class="card-body">
+                                    <div id="classicFormatHelp">
+                                        <h6>Classic Card Format:</h6>
+                                        <pre>Question
+Subtitle (optional)
+Answer
+/note Additional information (optional)</pre>
                                     </div>
-                                    <div class="card-preview">
-                                        <!-- Card preview will be dynamically generated here -->
-                                    </div>
-                                    <div class="expanded-preview">
-                                        <!-- Multiple card previews will be shown here -->
+                                    <div id="multipleChoiceFormatHelp" style="display: none;">
+                                        <h6>Multiple Choice Format:</h6>
+                                        <pre>Question
+Option 1
+Option 2
+Option 3]  &larr; (Add ] to mark correct answer)
+Option 4
+/Additional information (optional)</pre>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Add Flashcard</button>
+                        
+                        <div class="form-column form-column-preview">
+                            <div class="preview-section">
+                                <h3>Live Preview</h3>
+                                <div class="preview-buttons">
+                                    <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
+                                    <button type="button" id="expand-preview-btn" class="btn btn-preview">Show All Cards</button>
+                                </div>
+                                <div class="card-preview">
+                                    <!-- Card preview will be dynamically generated here -->
+                                </div>
+                                <div class="expanded-preview">
+                                    <!-- Multiple card previews will be shown here -->
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="addCardSubmit">Add Card</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <!-- Preview overlay for fullscreen mode -->
-        <div class="preview-overlay"></div>
-        
-        <!-- Fixed position close buttons for expanded preview -->
-        <button id="preview-close-x" style="display: none; position: fixed; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #ff3b30; color: white; border: 3px solid white; border-radius: 50%; font-size: 40px; line-height: 50px; text-align: center; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">&times;</button>
-        
-        <button id="preview-return-btn" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Return to Admin Panel</button>
+    <!-- Preview overlay for fullscreen mode -->
+    <div class="preview-overlay"></div>
+    
+    <!-- Fixed position close buttons for expanded preview -->
+    <button id="preview-close-x" style="display: none; position: fixed; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #ff3b30; color: white; border: 3px solid white; border-radius: 50%; font-size: 40px; line-height: 50px; text-align: center; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">&times;</button>
+    
+    <button id="preview-return-btn" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Return to Admin Panel</button>
 
-        <!-- Calendar Section -->
-        <div id="study-calendar">
-            <h3>Calendario de Estudio</h3>
-            <div class="calendar-header">
-                <span class="month-year">Enero 2025</span>
-            </div>
-            <div class="calendar-grid">
-                <div class="day-header">L</div>
-                <div class="day-header">M</div>
-                <div class="day-header">M</div>
-                <div class="day-header">J</div>
-                <div class="day-header">V</div>
-                <div class="day-header">S</div>
-                <div class="day-header">D</div>
-                
-                <!-- Blank days for February 2025 (starts on Saturday) -->
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day empty"></div>
-                <div class="calendar-day highlighted">1<span class="due-count">14</span></div>
-                <!-- Add more days as needed -->
-            </div>
+    <!-- Calendar Section -->
+    <div id="study-calendar">
+        <h3>Calendario de Estudio</h3>
+        <div class="calendar-header">
+            <span class="month-year">Enero 2025</span>
         </div>
+        <div class="calendar-grid">
+            <div class="day-header">L</div>
+            <div class="day-header">M</div>
+            <div class="day-header">M</div>
+            <div class="day-header">J</div>
+            <div class="day-header">V</div>
+            <div class="day-header">S</div>
+            <div class="day-header">D</div>
+            
+            <!-- Blank days for February 2025 (starts on Saturday) -->
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty"></div>
+            <div class="calendar-day highlighted">1<span class="due-count">14</span></div>
+            <!-- Add more days as needed -->
+        </div>
+    </div>
 
-        <!-- Flashcard Section -->
-        <div id="flashcard-system" class="hidden">
-
+    <!-- Flashcard Section -->
+    <div id="flashcard-system" class="hidden">
         <!-- Card Status -->
         <div id="card-status">
             <span id="status"></span>
@@ -342,5 +547,6 @@ Paris]
     </div>
 
     <script src="/js/dashboard-script.js"></script>
+    <script src="/js/profile-dropdown.js"></script>
 </body>
 </html>

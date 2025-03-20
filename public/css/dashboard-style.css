@@ -136,6 +136,30 @@ body {
     overflow-y: auto;
     transition: transform 0.3s ease;
     z-index: 999; /* Ensure sidebar is below the top nav bar */
+    /* Custom scrollbar styling */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Firefox */
+    scrollbar-gutter: stable;
+}
+
+/* Webkit scrollbar styling (Chrome, Safari, Edge) */
+#sidebar::-webkit-scrollbar {
+    width: 8px; /* Thin scrollbar */
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: transparent; /* Transparent track */
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent thumb */
+    border-radius: 10px; /* Rounded corners */
+    border: 2px solid transparent; /* Create padding effect */
+    background-clip: padding-box; /* Ensures the border is transparent */
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5); /* Slightly more visible on hover */
 }
 
 #sidebar.collapsed {
@@ -153,10 +177,16 @@ body {
     list-style-type: none;
     padding: 0;
     width: 100%;
+    box-sizing: border-box;
 }
 
-#deck-list li {
-    margin-top: 10px;
+#deck-list > li {
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+#deck-list .subdeck-list li {
+    margin: 0;
 }
 
 /* Deck button styling improvements for better click areas */
@@ -171,6 +201,7 @@ body {
     border-radius: 6px;
     transition: background-color 0.3s ease;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .deck-btn:hover {
@@ -183,7 +214,7 @@ body {
     align-items: center;
     justify-content: center;
     width: 35px;
-    height: 35px;
+    height: 38px;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
@@ -191,6 +222,7 @@ body {
     /* Distinctive styling to show it's clickable */
     background-color: rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
+    box-sizing: border-box;
 }
 
 .plus:hover {
@@ -202,55 +234,66 @@ body {
     cursor: pointer;
     color: white !important;
     flex-grow: 1;
-    text-align: left;
-    padding: 12px;
+    text-align: center;
+    padding: 10px;
     font-size: 16px;
     transition: background-color 0.3s ease;
     display: block;
     width: calc(100% - 35px);
+    box-sizing: border-box;
 }
 
 .deck-name:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.subdeck-btn {
-    /* display: block;
-    position: relative;
-    width: 70%;
-    height: 1.5rem;
-    padding: 0 9px; */
-    background-color: #7886d5; 
-    padding: 6px;
-    font-size: 14px;
+/* Updated, Compact Full-Width Subdeck Dropdown with Dividers */
+.subdeck-list {
+    list-style: none;
+    margin-top: -5px;
+    padding: 0;
     width: 100%;
+    display: none; /* Toggle this via JavaScript when the dropdown is active */
+    background-color: #769ac5; /* Unified background */
+    border: 1px solid #3c538a; /* Unified border */
+    border-top: none; /* Connects with the parent deck button */
+    border-radius: 0px 0px 6px 6px; /* Rounded bottom corners if desired */
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box; /* Prevent padding from affecting width */
+}
+  
+.subdeck-list > li {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+  
+/* Add a horizontal line between items, except the last one */
+.subdeck-list > li:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+  
+.subdeck-btn {
+    display: block;
+    width: 100%;
+    padding: 3px 10px; /* Reduced vertical padding for a more compact look */
+    font-size: 12px;   /* Reduced font size */
     text-align: left;
     border: none;
+    background: none; /* Use the container's background */
     color: white;
-    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin: 0;
+    line-height: 1.2;
+    box-sizing: border-box;
 }
-
-.subdeck-padding {
-    padding-left: 20px;
-}
-
-.subdeck-btn:hover {
-    background-color: #3c538a !important; /* Darker shade for hover */
-}
-
-/* Dropdown styles */
-.subdeck-list {
-    list-style-type: none;
-    padding-left: 10px;
-    margin-top: 2px;
-    display: none;
-    margin-bottom: 30px;
-}
-
-.subdeck-list > li {
-    margin: 1px 0;
+  
+.subdeck-btn:hover,
+.subdeck-btn:focus,
+.subdeck-btn:active {
+    background-color: rgba(0, 0, 0, 0.15); /* Subtle hover effect */
 }
 
 /* Sidebar Footer */
@@ -293,7 +336,11 @@ body {
     margin-left: 250px; /* To account for the sidebar */
     transition: margin-left 0.3s ease;
     min-height: calc(100vh - 60px); /* Ensure minimum height */
-
+    background-image: url('/img/vector.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 #main-content.hidden {
@@ -309,14 +356,21 @@ body {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto 2rem;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
     gap: 2rem;
+    margin-left: 8rem;
+    align-items: stretch;
 }
 
 .main-content-column {
     flex: 1;
-    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center; 
+    margin-left: 5rem;
 }
 
 #stats-panel {
@@ -392,6 +446,7 @@ body {
     max-height: none;
     flex-shrink: 0;
     margin-bottom: 2rem;
+    overflow-x: auto;
 }
 
 #overview-section table {
@@ -432,6 +487,59 @@ body {
 #overview-section .subdeck-row td {
     padding-left: 40px;
 } 
+
+/* ============================================ NOTES SECTION ============================================ */
+/* New notes column styling */
+.notes-column {
+    flex: 0 0 300px;
+    margin-left: 10rem;
+    width: 100%;
+}
+
+.notes-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 550px;
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-section h3 {
+    color: #34495e;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notes-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    resize: none;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 350px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #429edd;
+    box-shadow: 0 0 0 2px rgba(66, 158, 221, 0.2);
+    background: white;
+}
+/* ================================================================================= */
+
+
+
 
 /* Flashcard System Section */
 #flashcard-system {
@@ -754,6 +862,69 @@ p.question-look, .answer-text {
 #logout:hover {
     background-color: rgba(255, 255, 255, 0.1);
 } 
+
+/* Profile dropdown styles */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-icon {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.profile-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.profile-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    z-index: 1001;
+    margin-top: 5px;
+}
+
+.profile-dropdown-content.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    text-align: left;
+    border: none;
+    background: none;
+    color: #34495e;
+    font-size: 1rem;
+    font-weight: normal;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
 
 /* Add to existing FAQ styles */
 #contact-button {
@@ -1469,7 +1640,8 @@ p.question-look, .answer-text {
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);*/
+    box-shadow: 0 5px 7px 3px rgba(0,0,0,0.1); 
     border: 1px solid #e0e0e0;
     min-height: 225px;
     align-items: center;
@@ -1810,4 +1982,20 @@ button.choice.wrong::after,
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Styling for ranking button */
+#ranking-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+#ranking-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }

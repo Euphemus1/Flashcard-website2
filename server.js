@@ -297,8 +297,8 @@ app.get('/api/decks/:deckName/subdecks', async (req, res) => {
       // Hardcoded deck structure (similar to what's in dashboard-script.js)
       const defaultDecks = {
         'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+        'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
         'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
-        'Patología': ['ERA1', 'ERA2', 'ERA3'],
         'Farmacología': ['ERA1', 'ERA2'],
         'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
         'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo Digestivo', 'Neurología', 'Anexos'],
@@ -415,6 +415,11 @@ app.post('/api/flashcards', async (req, res) => {
           : []
     };
 
+    // Add subsubdeck if it exists
+    if (req.body.subsubdeck && req.body.subsubdeck.trim()) {
+      flashcardData.subsubdeck = req.body.subsubdeck.trim();
+    }
+
     // Log the final flashcard data before saving
     console.log('Flashcard data to be saved:', JSON.stringify(flashcardData));
 
@@ -437,6 +442,11 @@ app.get('/api/flashcards', async (req, res) => {
       deck: req.query.deck,
       subdeck: req.query.subdeck
     };
+
+    // Add support for subsubdeck if provided
+    if (req.query.subsubdeck) {
+      query.subsubdeck = req.query.subsubdeck.trim();
+    }
 
     // Clean query parameters
     Object.keys(query).forEach(key => {
@@ -472,19 +482,22 @@ app.get('/api/flashcards', async (req, res) => {
 // Add this with your other API endpoints (around line 296 in your file)
 app.get('/api/flashcards/count', async (req, res) => {
   try {
-    const { deck, subdeck } = req.query;
+    const { deck, subdeck, subsubdeck, type } = req.query;
     
-    const newCards = await Flashcard.countDocuments({
-      deck,
-      subdeck,
-      lastReview: { $exists: false }
-    });
+    // Build query based on provided parameters
+    const query = {};
+    if (deck) query.deck = deck;
+    if (subdeck) query.subdeck = subdeck;
+    if (subsubdeck) query.subsubdeck = subsubdeck;
+    if (type) query.type = type;
+    
+    // Count new cards
+    const newCardsQuery = { ...query, lastReview: { $exists: false } };
+    const newCards = await Flashcard.countDocuments(newCardsQuery);
 
-    const dueCards = await Flashcard.countDocuments({
-      deck,
-      subdeck,
-      lastReview: { $lte: Date.now() }
-    });
+    // Count due cards
+    const dueCardsQuery = { ...query, lastReview: { $lte: Date.now() } };
+    const dueCards = await Flashcard.countDocuments(dueCardsQuery);
 
     res.json({ newCards, dueCards });
   } catch (error) {
@@ -499,6 +512,25 @@ app.get('/api/health-check', (req, res) => {
     message: 'Backend connected to MongoDB!',
     timestamp: new Date().toISOString()
   });
+});
+
+// Add a route for the study page with deck, subdeck, and subsubdeck parameters
+app.get('/study', (req, res) => {
+  console.log(`Serving study page with params:`, req.query);
+  const fullPath = path.join(__dirname, 'protected', 'study-page.html');
+  console.log(`Attempting to serve file at: ${fullPath}`);
+  
+  try {
+    if (fs.existsSync(fullPath)) {
+      res.sendFile(fullPath);
+    } else {
+      console.error(`File not found: ${fullPath}`);
+      res.status(404).send(`Study page template file not found. Please check server logs.`);
+    }
+  } catch (error) {
+    console.error(`Error serving study page: ${error.message}`);
+    res.status(500).send(`Server error: ${error.message}`);
+  }
 });
 
 // Error handling

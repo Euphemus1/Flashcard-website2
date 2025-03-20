@@ -17,6 +17,12 @@
         <div class="logo">Med Memory</div>
         <div class="nav-buttons">
             <span class="user-status"></span>
+            <div class="theme-toggle-wrapper">
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark mode">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
 <button class="nav-btn" id="inicioBtn">Inicio</button>
 <button class="nav-btn" id="contenidoBtn">Contenido</button>
 <button class="nav-btn" id="planesBtn">Planes</button>
@@ -414,5 +420,35 @@
         </div>
     </section>
 	<script src="js/app.js"></script>
+    <script>
+        // Theme Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Check for saved theme preference or default to light mode
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            
+            // Always set an explicit theme attribute
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Toggle theme when button is clicked
+            themeToggle.addEventListener('click', function() {
+                let currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                let newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // Remove old theme and add new theme with a small delay
+                document.documentElement.removeAttribute('data-theme');
+                
+                // Force a browser repaint
+                void document.documentElement.offsetWidth;
+                
+                // Apply new theme
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                console.log('Theme switched to:', newTheme);
+            });
+        });
+    </script>
 </body>
 </html>

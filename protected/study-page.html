@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study - Med Memory</title>
+    <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/profile-dropdown.css">
+    <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
+    <style>
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .breadcrumb-item {
+            font-size: 16px;
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 10px;
+            color: #6c757d;
+        }
+        
+        .active-breadcrumb {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            margin: 1rem auto;
+            max-width: 600px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-radius: 4px;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 600px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 4px;
+        }
+        
+        .flashcard-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        #debug-info {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div id="top-nav">
+        <button id="sidebar-toggle" class="nav-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">Med Memory</div>
+        <div class="nav-buttons">
+            <span id="username-display"></span>
+            <button id="overview-button">General</button>
+            <button id="debug-button" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-weight: bold;">Debug</button>
+            <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
+            <button id="ranking-button">Ranking</button>
+            <div class="profile-dropdown">
+                <button class="profile-icon" id="profile-toggle">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="profile-dropdown-content" style="min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); background-color: white; border-radius: 6px;">
+                    <button class="dropdown-item" id="profile-btn" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Perfil</button>
+                    <button class="dropdown-item" id="logout" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Cerrar sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div id="sidebar">
+        <h2>Mis Mazos</h2>
+        <ul id="deck-list">
+            <!-- Will be dynamically populated -->
+        </ul>
+        <div class="sidebar-footer">
+            <a href="https://wa.me/+55479tg5tg24336792" target="_blank" class="social-icon">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="https://instgghtrgtragram.com/medmemory.ar" target="_blank" class="social-icon">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="mailto:medmem89uyuyyuory@outlook.com" class="social-icon">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div id="main-content">
+        <div id="debug-info"></div>
+        
+        <div class="breadcrumb">
+            <a href="/dashboard.html" class="breadcrumb-item">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <span id="deck-crumb" class="breadcrumb-item"></span>
+            <span id="subdeck-separator" class="breadcrumb-separator" style="display: none;">›</span>
+            <span id="subdeck-crumb" class="breadcrumb-item"></span>
+            <span id="subsubdeck-separator" class="breadcrumb-separator" style="display: none;">›</span>
+            <span id="subsubdeck-crumb" class="breadcrumb-item active-breadcrumb"></span>
+        </div>
+        
+        <div class="flashcard-container">
+            <!-- Card Status -->
+            <div id="card-status">
+                <span id="status"></span>
+            </div>
+            
+            <!-- Flashcard System will be dynamically populated -->
+            <div id="flashcard-system">
+                <div class="question hidden">
+                    <!-- Question content will be inserted here -->
+                </div>
+                
+                <div class="answer hidden">
+                    <!-- Answer content will be inserted here -->
+                </div>
+                
+                <div id="review-actions">
+                    <button id="skip-button" class="action-btn">Saltar</button>
+                    <button id="revisar-button" class="action-btn primary">Revisar</button>
+                </div>
+                
+                <div class="srs-controls hidden">
+                    <button class="denuevo">De nuevo</button>
+                    <button class="díficil">Difícil</button>
+                    <button class="bueno">Bueno</button>
+                    <button class="fácil">Fácil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORTANT: Load scripts in the correct order -->
+    <script src="/js/console-capture.js"></script> 
+    <script src="/js/dashboard-script.js"></script>
+    <script src="/js/debug-button.js"></script>
+    <script src="/js/dynamic-deck.js"></script>
+    <script src="/js/profile-dropdown.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const deck = urlParams.get('deck');
+            const subdeck = urlParams.get('subdeck');
+            const subsubdeck = urlParams.get('subsubdeck');
+            
+            console.log(`Study page loaded with deck: ${deck}, subdeck: ${subdeck}, subsubdeck: ${subsubdeck}`);
+            
+            // Update breadcrumb navigation
+            const deckCrumb = document.getElementById('deck-crumb');
+            const subdeckCrumb = document.getElementById('subdeck-crumb');
+            const subsubdeckCrumb = document.getElementById('subsubdeck-crumb');
+            const subdeckSeparator = document.getElementById('subdeck-separator');
+            const subsubdeckSeparator = document.getElementById('subsubdeck-separator');
+            
+            // Set deck name
+            if (deck) {
+                deckCrumb.textContent = deck;
+                document.title = `${deck} - Med Memory`;
+                
+                // Make deck crumb a link if we have a subdeck
+                if (subdeck) {
+                    deckCrumb.innerHTML = `<a href="/deck/${encodeURIComponent(deck)}" class="breadcrumb-item">${deck}</a>`;
+                    subdeckCrumb.textContent = subdeck;
+                    subdeckSeparator.style.display = 'inline';
+                    
+                    // Handle subsubdeck if present
+                    if (subsubdeck) {
+                        subdeckCrumb.innerHTML = `<a href="/study?deck=${encodeURIComponent(deck)}&subdeck=${encodeURIComponent(subdeck)}" class="breadcrumb-item">${subdeck}</a>`;
+                        subsubdeckCrumb.textContent = subsubdeck;
+                        subsubdeckSeparator.style.display = 'inline';
+                        document.title = `${subsubdeck} - ${subdeck} - Med Memory`;
+                    } else {
+                        subdeckCrumb.classList.add('active-breadcrumb');
+                        subsubdeckCrumb.style.display = 'none';
+                        document.title = `${subdeck} - ${deck} - Med Memory`;
+                    }
+                } else {
+                    // Only deck, no subdeck
+                    deckCrumb.classList.add('active-breadcrumb');
+                    subdeckCrumb.style.display = 'none';
+                    subsubdeckCrumb.style.display = 'none';
+                }
+            }
+            
+            // Initialize flashcards
+            if (deck) {
+                // Set up API request
+                const params = new URLSearchParams();
+                params.set('deck', deck);
+                if (subdeck) params.set('subdeck', subdeck);
+                if (subsubdeck) params.set('subsubdeck', subsubdeck);
+                
+                console.log(`Loading cards with: ${params.toString()}`);
+                
+                // Preferred method using the shared initializeCardsFromUrl function
+                if (typeof initializeCardsFromUrl === 'function') {
+                    initializeCardsFromUrl(params.toString());
+                } else {
+                    console.error('initializeCardsFromUrl function not found. Please check dashboard-script.js');
+                    
+                    // Fallback to direct API call
+                    fetch(`/api/flashcards?${params.toString()}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(`Loaded ${data.length} cards`);
+                            if (data.length > 0) {
+                                window.flashcards = data;
+                                window.currentCardIndex = -1;
+                                loadNextCard();
+                                showMainContent();
+                            } else {
+                                showNoCardsMessage();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading cards:', error);
+                            showErrorMessage();
+                        });
+                }
+            }
+            
+            // Function to show error message
+            function showErrorMessage() {
+                const flashcardSystem = document.getElementById('flashcard-system');
+                flashcardSystem.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error cargando tarjetas</h3>
+                        <p>Lo sentimos, ha ocurrido un error al cargar las tarjetas. Por favor, inténtalo de nuevo más tarde.</p>
+                    </div>
+                `;
+            }
+            
+            // Function to show no cards message
+            function showNoCardsMessage() {
+                const flashcardSystem = document.getElementById('flashcard-system');
+                flashcardSystem.innerHTML = `
+                    <div class="error-message" style="background-color: #e2e3e5; color: #383d41;">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>No hay tarjetas disponibles</h3>
+                        <p>No se encontraron tarjetas para esta selección. Por favor, selecciona otro mazo o crea nuevas tarjetas para este mazo.</p>
+                    </div>
+                `;
+            }
+            
+            // Handle sidebar toggle
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    const topNav = document.getElementById('top-nav');
+                    const mainContent = document.getElementById('main-content');
+                    
+                    sidebar.classList.toggle('collapsed');
+                    topNav.classList.toggle('collapsed');
+                    mainContent.classList.toggle('full-width');
+                });
+            }
+            
+            // Add direct click handler to the logout button
+            const logoutBtn = document.getElementById('logout');
+            if (logoutBtn) {
+                logoutBtn.onclick = function() {
+                    console.log('Logout clicked');
+                    window.location.href = '/logout';
+                };
+            }
+        });
+    </script>
+</body>
+</html> 

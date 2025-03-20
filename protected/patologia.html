@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Patología ERA3</title>
     <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/profile-dropdown.css">
     <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
 </head>
 <body>
@@ -18,8 +19,16 @@
             <span id="username-display"></span>
             <button id="overview-button">General</button>
             <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
-            <button id="contact-button">Contacto</button>
-            <button class="nav-btn" id="logout">Cerrar sesión</button>
+            <button id="ranking-button">Ranking</button>
+            <div class="profile-dropdown">
+                <button class="profile-icon" id="profile-toggle">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="profile-dropdown-content" style="min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); background-color: white; border-radius: 6px;">
+                    <button class="dropdown-item" id="profile-btn" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Perfil</button>
+                    <button class="dropdown-item" id="logout" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Cerrar sesión</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -43,9 +52,18 @@
                     Patología <span class="plus">+</span>
                 </button>
                 <ul class="subdeck-list">
-                    <li><button class="subdeck-btn">ERA1</button></li>
-                    <li><button class="subdeck-btn">ERA2</button></li>
-                    <li><button class="subdeck-btn active">ERA3</button></li>
+                    <li><button class="subdeck-btn">Metabolopatías</button></li>
+                    <li><button class="subdeck-btn">Inflamación</button></li>
+                    <li><button class="subdeck-btn">Neoplasias</button></li>
+                    <li><button class="subdeck-btn">Cardiovascular</button></li>
+                    <li><button class="subdeck-btn">Respiratorio</button></li>
+                    <li><button class="subdeck-btn">Digestivo</button></li>
+                    <li><button class="subdeck-btn">Aparato urinario</button></li>
+                    <li><button class="subdeck-btn">Aparato reproductor</button></li>
+                    <li><button class="subdeck-btn">Piel</button></li>
+                    <li><button class="subdeck-btn">Huesos y articulaciones</button></li>
+                    <li><button class="subdeck-btn">Sistema endocrino</button></li>
+                    <li><button class="subdeck-btn">Otros</button></li>
                 </ul>
             </li>
             <li>
@@ -165,5 +183,33 @@
     </div>
 
     <script src="/js/dashboard-script.js"></script>
+    <script src="/js/profile-dropdown.js"></script>
+    <script>
+        // Extra initialization to ensure dropdown works on this page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add direct click handler to the logout button
+            const logoutBtn = document.getElementById('logout');
+            if (logoutBtn) {
+                logoutBtn.onclick = function() {
+                    // Keep default logout functionality
+                    console.log('Logout clicked');
+                };
+                
+                // Make logout text visible
+                logoutBtn.innerHTML = '<span style="color: #34495e; font-weight: bold;">Cerrar sesión</span>';
+            }
+            
+            // Add direct click handler to profile toggle
+            const profileToggle = document.getElementById('profile-toggle');
+            const dropdownContent = document.querySelector('.profile-dropdown-content');
+            if (profileToggle && dropdownContent) {
+                profileToggle.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+                };
+            }
+        });
+    </script>
 </body>
 </html>

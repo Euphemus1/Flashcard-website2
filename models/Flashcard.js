@@ -54,6 +54,11 @@ const flashcardSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  subsubdeck: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   references: {
     type: [String],
     default: []
@@ -74,7 +79,7 @@ const flashcardSchema = new mongoose.Schema({
 });
 
 // Add index for common query patterns
-flashcardSchema.index({ deck: 1, subdeck: 1, type: 1 });
+flashcardSchema.index({ deck: 1, subdeck: 1, subsubdeck: 1, type: 1 });
 
 const Flashcard = mongoose.model('Flashcards', flashcardSchema);
 export default Flashcard;
