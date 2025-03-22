@@ -9,6 +9,22 @@
     <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
 </head>
 <body>
+    <script>
+        // Global function to close the admin panel
+        function closeAdminPanel() {
+            console.log('closeAdminPanel called');
+            const adminModal = document.getElementById('admin-modal');
+            if (adminModal) {
+                adminModal.classList.add('hidden');
+                console.log('Admin panel hidden via global function');
+            } else {
+                console.error('Admin modal element not found!');
+            }
+        }
+        
+        // Make sure the function is available in the global scope
+        window.closeAdminPanel = closeAdminPanel;
+    </script>
     <!-- Top Navigation Bar -->
     <div id="top-nav">
         <button id="sidebar-toggle" class="nav-btn">
@@ -385,32 +401,28 @@
 
     <div id="admin-modal" class="admin-modal hidden">
         <div class="admin-modal-content">
-            <span class="admin-close-btn">&times;</span>
+            <button class="admin-close-btn" style="position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #333; padding: 5px 10px; border-radius: 4px; transition: all 0.2s ease; background: none; border: 1px solid #ddd;" onclick="closeAdminPanel();">&times;</button>
             <h2>Admin Panel</h2>
             <div class="admin-form-container">
                 <form id="add-flashcard-form">
                     <div class="form-columns">
                         <div class="form-column form-column-left">
                             <div class="form-group">
-                                <label for="questionInput">Content Format:</label>
+                                <label for="questionInput">Content:</label>
                                 <textarea id="questionInput" required placeholder="For Classic Cards:
-Linha 1: Pergunta
-Linha 2: Subtítulo
-Linhas 3+: Conteúdo da resposta
-Use '/note Sua nota aqui' para notas adicionais
+Question on first line
+Subtitle on second line (optional)
+Answer on third line and beyond
+Use /note for additional information
 
-Para Múltipla Escolha:
-Linha 1: Pergunta
-Linhas 2-7: Opções (marque a resposta correta com ] no final)
-Comentario: Comecar frase com /
-
-Example: What is the capital of France?
-Qual é a capital da França?
-Londres
-Berlim
-Amsterdam
-Paris]
-/Paris também é conhecida como Cidade Luz"></textarea>
+For Multiple Choice:
+Question on first line
+Option 1
+Option 2
+Option 3
+Option 4
+Correct: Option 3 (use exact text of the option)
+Explanation: Additional details (optional)"></textarea>
                             </div>
                         </div>
                         
@@ -423,15 +435,17 @@ Paris]
                             </div>
                             
                             <div class="form-group">
-                                <label for="subdeckInput">Subdeck:</label>
-                                <input type="text" class="form-control" id="subdeckInput" list="subdeckOptions" placeholder="Enter subdeck or select from list" required>
-                                <datalist id="subdeckOptions"></datalist>
+                                <label for="subdeckSelect">Subdeck:</label>
+                                <select id="subdeckSelect" class="form-control" required>
+                                    <option value="" disabled selected>Select deck first</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
-                                <label for="subsubdeckInput">Subsubdeck (optional):</label>
-                                <input type="text" class="form-control" id="subsubdeckInput" list="subsubdeckOptions" placeholder="Enter subsubdeck or select from list">
-                                <datalist id="subsubdeckOptions"></datalist>
+                                <label for="subsubdeckSelect">Subsubdeck (optional):</label>
+                                <select id="subsubdeckSelect" class="form-control">
+                                    <option value="" disabled selected>Select subdeck first</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -441,39 +455,17 @@ Paris]
 
                             <div class="form-group">
                                 <label>Card Type:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="cardType" id="classicCardType" value="classic" checked>
-                                    <label class="form-check-label" for="classicCardType">
+                                <div class="form-check" style="display: flex; align-items: center; margin-bottom: 8px; padding: 8px; border-radius: 4px; background-color: #f8f9fa;">
+                                    <input class="form-check-input" type="radio" name="cardType" id="classicCardType" value="classic" checked style="margin-right: 10px; width: 18px; height: 18px;">
+                                    <label class="form-check-label" for="classicCardType" style="margin: 0; font-weight: 500; cursor: pointer;">
                                         Classic (Question/Answer)
                                     </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="cardType" id="multipleChoiceCardType" value="multipleChoice">
-                                    <label class="form-check-label" for="multipleChoiceCardType">
+                                <div class="form-check" style="display: flex; align-items: center; margin-bottom: 8px; padding: 8px; border-radius: 4px; background-color: #f8f9fa;">
+                                    <input class="form-check-input" type="radio" name="cardType" id="multipleChoiceCardType" value="multipleChoice" style="margin-right: 10px; width: 18px; height: 18px;">
+                                    <label class="form-check-label" for="multipleChoiceCardType" style="margin: 0; font-weight: 500; cursor: pointer;">
                                         Multiple Choice
                                     </label>
-                                </div>
-                            </div>
-
-                            <div class="card mb-3">
-                                <div class="card-header">Card Format Help</div>
-                                <div class="card-body">
-                                    <div id="classicFormatHelp">
-                                        <h6>Classic Card Format:</h6>
-                                        <pre>Question
-Subtitle (optional)
-Answer
-/note Additional information (optional)</pre>
-                                    </div>
-                                    <div id="multipleChoiceFormatHelp" style="display: none;">
-                                        <h6>Multiple Choice Format:</h6>
-                                        <pre>Question
-Option 1
-Option 2
-Option 3]  &larr; (Add ] to mark correct answer)
-Option 4
-/Additional information (optional)</pre>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -482,7 +474,6 @@ Option 4
                             <div class="preview-section">
                                 <h3>Live Preview</h3>
                                 <div class="preview-buttons">
-                                    <button type="button" id="preview-btn" class="btn btn-preview">Generate Preview</button>
                                     <button type="button" id="expand-preview-btn" class="btn btn-preview">Show All Cards</button>
                                 </div>
                                 <div class="card-preview">
@@ -511,30 +502,12 @@ Option 4
     
     <button id="preview-return-btn" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Return to Admin Panel</button>
 
+    <h3>Calendario de Estudio</h3>
+
     <!-- Calendar Section -->
     <div id="study-calendar">
-        <h3>Calendario de Estudio</h3>
         <div class="calendar-header">
-            <span class="month-year">Enero 2025</span>
-        </div>
-        <div class="calendar-grid">
-            <div class="day-header">L</div>
-            <div class="day-header">M</div>
-            <div class="day-header">M</div>
-            <div class="day-header">J</div>
-            <div class="day-header">V</div>
-            <div class="day-header">S</div>
-            <div class="day-header">D</div>
-            
-            <!-- Blank days for February 2025 (starts on Saturday) -->
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day empty"></div>
-            <div class="calendar-day highlighted">1<span class="due-count">14</span></div>
-            <!-- Add more days as needed -->
+            <span class="month-year"></span>
         </div>
     </div>
 
@@ -548,5 +521,37 @@ Option 4
 
     <script src="/js/dashboard-script.js"></script>
     <script src="/js/profile-dropdown.js"></script>
+    
+    <script>
+        // Close admin panel when clicking outside the modal content
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminModal = document.getElementById('admin-modal');
+            const adminModalContent = document.querySelector('.admin-modal-content');
+            
+            if (adminModal && adminModalContent) {
+                adminModal.addEventListener('click', function(event) {
+                    // If the click is directly on the modal background (not on any of its children)
+                    if (event.target === adminModal) {
+                        closeAdminPanel();
+                    }
+                });
+                
+                // Ensure the X button works by adding a direct event listener
+                const closeBtn = document.querySelector('.admin-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        closeAdminPanel();
+                    });
+                }
+                
+                // Add Escape key support
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape' && !adminModal.classList.contains('hidden')) {
+                        closeAdminPanel();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
             subsubdeckLabel.style.color = '#007bff'; // Highlight to show it's important
             subsubdeckInput.style.borderColor = '#007bff';
             subsubdeckContainer.style.display = 'block';
-        } else {
+                } else {
             // Reset styling and show as optional
             subsubdeckLabel.textContent = 'Subsubdeck (optional):';
             subsubdeckLabel.style.color = '';
@@ -800,16 +800,16 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = 'Adding...';
         
         // Get form values
-        const cardType = document.querySelector('input[name="card-type"]:checked')?.value || 'classic';
-        const questionInput = document.getElementById('question')?.value;
-        const deck = document.getElementById('deck-select')?.value;
-        const subdeck = document.getElementById('subdeck')?.value;
-        const subsubdeck = document.getElementById('subsubdeck')?.value;
-        const tags = document.getElementById('tags')?.value;
+        const cardType = document.querySelector('input[name="cardType"]:checked')?.value || 'classic';
+        const questionInput = document.getElementById('questionInput')?.value;
+        const deck = document.getElementById('deckSelect')?.value;
+        const subdeck = document.getElementById('subdeckSelect')?.value;
+        const subsubdeck = document.getElementById('subsubdeckSelect')?.value;
+        const tags = document.getElementById('tagsInput')?.value;
         
         // Validate required fields
         if (!questionInput || !deck || !subdeck) {
-            alert('Please fill out all required fields');
+            alert('Please fill out all required fields (question, deck, and subdeck)');
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Add Flashcard';
             return;
@@ -837,13 +837,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     formData.subsubdeck = subsubdeck;
                 }
             } else if (cardType === 'multipleChoice') {
-                const { question, options, correctIndex, extraInfo } = parseMultipleChoiceCard(questionInput);
+                const { question, options, correctIndex, explanation } = parseMultipleChoiceQuestions(questionInput);
+                
+                // Validate that we have options and a correct answer
+                if (!options || options.length === 0) {
+                    throw new Error('Multiple choice cards must have options. Please add at least 2 options.');
+                }
+                
+                if (correctIndex === -1) {
+                    throw new Error('Please specify a correct answer using "Correct: [option text]"');
+                }
+                
                 formData = {
                     type: 'multipleChoice',
                     question,
                     options,
                     correctIndex,
-                    extraInfo: extraInfo || '',
+                    extraInfo: explanation || '', // Use explanation as extraInfo for database compatibility
                     deck,
                     subdeck,
                     tags: tags ? tags.split(',').map(tag => tag.trim()) : []
@@ -871,8 +881,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 console.log('Flashcard added successfully:', result);
                 // Clear form fields
-                document.getElementById('question').value = '';
-                document.getElementById('tags').value = '';
+                document.getElementById('questionInput').value = '';
+                document.getElementById('tagsInput').value = '';
                 
                 // Show success message
                 alert('Flashcard added successfully!');
@@ -898,8 +908,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up the enhanced live preview functionality
     setupLivePreview();
     
-    // Preview button still useful for manual refresh
-    document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
+    // Preview button has been removed from HTML, so no event listener needed
+    // document.getElementById('preview-btn')?.addEventListener('click', updatePreview);
     
     // Toggle answer preview
     document.querySelector('.toggle-preview')?.addEventListener('click', function() {
@@ -1042,8 +1052,6 @@ function generateCalendar() {
     const calendarContainer = document.getElementById('study-calendar');
     if (!calendarContainer) return; // Exit if element doesn't exist
 
-    calendarContainer.innerHTML = '<h3>Calendario de Estudio 2025</h3>';
-
     // Create all 12 months
     for (let month = 0; month < 12; month++) {
         const monthDiv = document.createElement('div');
@@ -1057,10 +1065,7 @@ function generateCalendar() {
         const grid = document.createElement('div');
         grid.className = 'calendar-grid';
         
-        // Add day labels
-        ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(d => {
-            grid.appendChild(createDayElement(d, true));
-        });
+   
 
         // Calculate days
         const start = new Date(2025, month, 1);
@@ -1115,9 +1120,36 @@ document.getElementById('contact-button')?.addEventListener('click', showContact
 
 // Enhanced card preview functionality - Make it actually look like the real cards
 function updatePreview() {
-    const type = document.querySelector('input[name="card-type"]:checked').value;
-    const content = document.getElementById('question').value;
+    console.log('Updating preview');
+    
+    // Get card type from radio buttons
+    const cardTypeInput = document.querySelector('input[name="cardType"]:checked');
+    if (!cardTypeInput) {
+        console.error('No card type selected!');
+        return;
+    }
+    
+    const type = cardTypeInput.value;
+    console.log('Card type:', type);
+    
+    // Get question text from textarea
+    const questionInput = document.getElementById('questionInput');
+    if (!questionInput) {
+        console.error('Question input element not found!');
+        return;
+    }
+    
+    const content = questionInput.value;
+    
+    // Get preview container
     const previewContainer = document.querySelector('.card-preview');
+    if (!previewContainer) {
+        console.error('Preview container not found!');
+        return;
+    }
+    
+    console.log('Generating preview for content of length:', content.length);
+    
     const lines = content.split('\n').filter(line => line.trim() !== '');
 
     // Clear previous content
@@ -1132,73 +1164,65 @@ function updatePreview() {
     if (type === 'multipleChoice') {
         try {
             // Create a realistic multiple choice card preview
-            const questionBlocks = parseMultipleChoiceQuestions(content, true);
+            const parsedQuestion = parseMultipleChoiceQuestions(content);
             
-            if (questionBlocks.length > 0) {
-                const firstBlock = questionBlocks[0];
-                
+            if (parsedQuestion.question) {
                 // Create the card structure similar to the actual card
                 previewContainer.innerHTML = `
                     <div class="card question" style="min-height: unset; min-width: unset; width: 100%;">
                         <div class="card-content">
-                            <h3 id="card-front">${firstBlock[0]}</h3>
+                            <h3 id="card-front">${parsedQuestion.question}</h3>
                             <div id="choice-options" class="choice-options"></div>
                         </div>
                     </div>
                 `;
                 
-                // Find the correct option and any extra info
-                let correctIndex = -1;
-                let extraInfo = '';
-                
-                for (let i = 1; i < firstBlock.length; i++) {
-                    const line = firstBlock[i];
-                    
-                    if (line.startsWith('/')) {
-                        // This is an extra info line
-                        extraInfo = line.substring(1).trim();
-                    } else if (line.endsWith(']')) {
-                        // This is the correct answer
-                        correctIndex = i - 1; // Adjust for 0-based index
-                    }
-                }
-                
                 // Get choice options container
                 const choiceOptions = previewContainer.querySelector('#choice-options');
                 
-                // Display options (skip the question and any extra info line)
-                const options = firstBlock.filter((line, index) => 
-                    index > 0 && !line.startsWith('/')
-                );
-                
                 // Add choice buttons exactly as they would appear in the app
-            options.forEach((option, index) => {
-                const isCorrect = option.trim().endsWith(']');
-                    let cleanOption = option.replace(/\]$/, '').trim();
-                    
+                parsedQuestion.options.forEach((option, index) => {
                     // Create button with the same styling as in the actual card
                     const choiceButton = document.createElement('button');
                     choiceButton.className = 'choice';
-                    choiceButton.textContent = cleanOption;
+                    choiceButton.textContent = option;
+                    choiceButton.style.position = 'relative';
+                    choiceButton.style.paddingRight = '30px';
                     
-                    // Make correct answer visually different
-                    if (isCorrect) {
+                    // Mark the correct answer - always show a checkmark indicator
+                    if (index === parsedQuestion.correctIndex) {
                         choiceButton.dataset.correct = 'true';
+                        
+                        // Make the correct answer visually identifiable
+                        const correctIndicator = document.createElement('span');
+                        correctIndicator.style.color = '#4caf50';
+                        correctIndicator.style.fontSize = '16px';
+                        correctIndicator.style.fontWeight = 'bold';
+                        correctIndicator.style.position = 'absolute';
+                        correctIndicator.style.right = '10px';
+                        correctIndicator.style.top = '50%';
+                        correctIndicator.style.transform = 'translateY(-50%)';
+                        correctIndicator.innerHTML = '✓';
+                        choiceButton.appendChild(correctIndicator);
+                        
+                        // Add a subtle background to indicate this is correct
+                        choiceButton.style.backgroundColor = '#e8f5e9';
+                        choiceButton.style.borderLeft = '3px solid #4caf50';
                     }
                     
                     choiceOptions.appendChild(choiceButton);
                 });
                 
-                // Show the extra info section if available
-                if (extraInfo) {
+                // Show the explanation if available
+                if (parsedQuestion.explanation) {
                     previewContainer.innerHTML += `
-                        <div class="explanation-container" style="max-height: unset; margin-top: 1rem;">
+                        <div class="explanation-container" style="margin-top: 1rem;">
                             <div class="explanation-text">
-                                <strong>Extra Information:</strong>
-                                ${extraInfo.replace(/\n/g, '<br>')}
+                                <strong>Explanation:</strong>
+                                ${parsedQuestion.explanation.replace(/\n/g, '<br>')}
                             </div>
-                    </div>
-                `;
+                        </div>
+                    `;
                 }
                 
                 // Add event listeners to buttons to simulate selection
@@ -1207,40 +1231,50 @@ function updatePreview() {
                         // Reset all buttons
                         previewContainer.querySelectorAll('.choice').forEach(btn => {
                             btn.classList.remove('correct', 'wrong');
+                            
+                            // Preserve the checkmark and styling on correct answer
+                            if (!btn.dataset.correct) {
+                                btn.style.backgroundColor = '';
+                                btn.style.color = '';
+                                btn.style.borderLeft = '';
+                            } else {
+                                btn.style.backgroundColor = '#e8f5e9';
+                                btn.style.borderLeft = '3px solid #4caf50';
+                            }
                         });
                         
                         // Show the button as correct or wrong
                         if (this.dataset.correct === 'true') {
                             this.classList.add('correct');
-                            
-                            // Show any explanation
-                            const explanationContainer = previewContainer.querySelector('.explanation-container');
-                            if (explanationContainer) {
-                                explanationContainer.style.display = 'block';
-        }
-    } else {
+                            this.style.backgroundColor = '#4caf50';
+                            this.style.color = 'white';
+                            this.style.borderLeft = '3px solid #2e7d32';
+                        } else {
                             this.classList.add('wrong');
+                            this.style.backgroundColor = '#f44336';
+                            this.style.color = 'white';
+                            this.style.borderLeft = '3px solid #d32f2f';
+                            
+                            // Highlight the correct answer even more
+                            const correctButton = previewContainer.querySelector('[data-correct="true"]');
+                            if (correctButton) {
+                                correctButton.classList.add('correct');
+                                correctButton.style.backgroundColor = '#4caf50';
+                                correctButton.style.color = 'white';
+                                correctButton.style.borderLeft = '3px solid #2e7d32';
+                                correctButton.style.fontWeight = 'bold';
+                            }
                         }
                     });
                 });
             } else {
-                // No valid question blocks found
-                previewContainer.innerHTML = '<div class="empty-preview">Enter a question and at least one option. Mark the correct option with ] at the end.</div>';
+                // No valid question found
+                previewContainer.innerHTML = '<div class="empty-preview">Enter a question and options. Add ] at the end of the correct option.</div>';
             }
         } catch (error) {
-            // Show a helpful message about the format
-            previewContainer.innerHTML = `
-                <div class="empty-preview">
-                    <p>Format your multiple choice card like this:</p>
-                    <pre style="text-align: left; margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-What is the capital of France?
-London
-Berlin
-Paris]
-/Paris is also known as the City of Light</pre>
-                    <p style="margin-top: 10px; color: #e74c3c;">${error.message}</p>
-                </div>
-            `;
+            console.error('Error generating multiple choice preview:', error);
+            // Show a helpful message
+            previewContainer.innerHTML = '<div class="empty-preview">Error parsing multiple choice card. Mark the correct answer with ] at the end.</div>';
         }
     }
     else {
@@ -1295,80 +1329,189 @@ Paris]
             });
         }
     }
+    
+    console.log('Preview updated successfully');
 }
 
 // Function to set up live preview
 function setupLivePreview() {
-    // Update the preview when the textarea content changes
-    const questionTextarea = document.getElementById('question');
-    if (questionTextarea) {
-        questionTextarea.addEventListener('input', debounce(() => {
-            // Update both previews
+    console.log('Setting up live preview');
+    
+    // Get question textarea and card type inputs
+    const questionTextarea = document.getElementById('questionInput');
+    const cardTypeInputs = document.querySelectorAll('input[name="cardType"]');
+    const expandButton = document.getElementById('expand-preview-btn');
+    const closeXButton = document.getElementById('preview-close-x');
+    const returnButton = document.getElementById('preview-return-btn');
+    const previewOverlay = document.querySelector('.preview-overlay');
+    
+    if (!questionTextarea) {
+        console.error('Question textarea not found!');
+        return;
+    }
+    
+    console.log('Question textarea found:', questionTextarea);
+    
+    // Update preview when textarea input changes - use debounce
+    questionTextarea.addEventListener('input', debounce(function() {
+        console.log('Textarea input detected, updating preview');
+        updatePreview();
+    }, 300));
+    
+    // Update preview when card type changes
+    cardTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            console.log('Card type changed to:', this.value);
+            updateCardTypeUI(this.value);
             updatePreview();
-            // Only update expanded preview if it's visible
-            if (!document.querySelector('.expanded-preview').classList.contains('hidden')) {
-                updateExpandedPreview();
-            }
-        }, 300));
-        
-        // Also update preview when card type changes
-        const cardTypeInputs = document.querySelectorAll('input[name="card-type"]');
-        cardTypeInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                updateCardTypeUI(this.value);
-                updatePreview();
-                // Only update expanded preview if it's visible
-                if (!document.querySelector('.expanded-preview').classList.contains('hidden')) {
-                    updateExpandedPreview();
-                }
-            });
         });
-        
-        // Initial preview on modal open
-        document.getElementById('open-admin-btn')?.addEventListener('click', function() {
-            setTimeout(updatePreview, 100); // Short delay to ensure modal is visible
-        });
-        
-        // Add event listener to expand preview button
-        document.getElementById('expand-preview-btn')?.addEventListener('click', toggleExpandedPreview);
-    }
-}
-
-// Debounce function to limit the rate at which a function can fire
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Unified function to update UI based on card type
-function updateCardTypeUI(cardType) {
-    const questionLabel = document.querySelector('label[for="question"]');
-    const textarea = document.getElementById('question');
+    });
     
-    if (cardType === 'multipleChoice') {
-        questionLabel.textContent = 'Multiple Choice Question Format:';
-        // Ensure consistent size for multiple choice
-        textarea.style.height = '350px';
-        textarea.style.minHeight = '350px';
+    // Set up expand button
+    if (expandButton) {
+        console.log('Setting up expand button');
+        expandButton.addEventListener('click', toggleExpandedPreview);
     } else {
-        questionLabel.textContent = 'Content (First line = Question, Second line = Subtitle, Rest = Answer):';
-        // Ensure consistent size for classic
-        textarea.style.height = '350px';
-        textarea.style.minHeight = '350px';
+        console.error('Expand button not found!');
     }
     
-    // Update the preview to match the new card type
+    // Set up close X button
+    if (closeXButton) {
+        console.log('Setting up close X button');
+        closeXButton.addEventListener('click', toggleExpandedPreview);
+    }
+    
+    // Set up return button
+    if (returnButton) {
+        console.log('Setting up return button');
+        returnButton.addEventListener('click', toggleExpandedPreview);
+    }
+    
+    // Set up overlay click to close
+    if (previewOverlay) {
+        console.log('Setting up overlay click');
+        previewOverlay.addEventListener('click', function(e) {
+            if (e.target === previewOverlay) {
+                toggleExpandedPreview();
+            }
+        });
+    }
+    
+    // Initial preview update
+    setTimeout(() => {
+        console.log('Initial preview update');
+        updatePreview();
+        updateExpandedPreview();
+    }, 300);
+    
+    console.log('Live preview setup complete');
+}
+
+// Function to toggle expanded preview
+function toggleExpandedPreview() {
+    console.log('Toggling expanded preview');
+    
+    const expandButton = document.getElementById('expand-preview-btn');
+    const expandedPreview = document.querySelector('.expanded-preview');
+    const regularPreview = document.querySelector('.card-preview');
+    const previewOverlay = document.querySelector('.preview-overlay');
+    const closeXButton = document.getElementById('preview-close-x');
+    const returnButton = document.getElementById('preview-return-btn');
+    
+    if (!expandButton || !expandedPreview || !regularPreview) {
+        console.error('Missing required elements for toggle expanded preview!');
+        return;
+    }
+    
+    // Check if preview is currently visible
+    const isExpanded = expandedPreview.style.display === 'block';
+    
+    if (isExpanded) {
+        // Hide expanded preview
+        expandedPreview.style.display = 'none';
+        regularPreview.style.display = 'block';
+        if (previewOverlay) previewOverlay.style.display = 'none';
+        if (closeXButton) closeXButton.style.display = 'none';
+        if (returnButton) returnButton.style.display = 'none';
+        expandButton.textContent = 'Show All Cards';
+        console.log('Expanded preview hidden');
+    } else {
+        // Show expanded preview
+        expandedPreview.style.display = 'block';
+        regularPreview.style.display = 'none';
+        if (previewOverlay) previewOverlay.style.display = 'block';
+        if (closeXButton) closeXButton.style.display = 'block';
+        if (returnButton) returnButton.style.display = 'block';
+        expandButton.textContent = 'Hide All Cards';
+        
+        // Position the expanded preview in fullscreen
+        expandedPreview.style.position = 'fixed';
+        expandedPreview.style.top = '50%';
+        expandedPreview.style.left = '50%';
+        expandedPreview.style.transform = 'translate(-50%, -50%)';
+        expandedPreview.style.width = '90vw';
+        expandedPreview.style.height = '85vh';
+        expandedPreview.style.backgroundColor = 'white';
+        expandedPreview.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+        expandedPreview.style.zIndex = '1000';
+        expandedPreview.style.padding = '20px';
+        expandedPreview.style.overflowY = 'auto';
+        
+        // Style the overlay
+        if (previewOverlay) {
+            previewOverlay.style.position = 'fixed';
+            previewOverlay.style.top = '0';
+            previewOverlay.style.left = '0';
+            previewOverlay.style.width = '100%';
+            previewOverlay.style.height = '100%';
+            previewOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            previewOverlay.style.zIndex = '999';
+        }
+        
+        // Update the expanded preview content
+        updateExpandedPreview();
+        console.log('Expanded preview shown');
+    }
+}
+
+/**
+ * Update the UI based on the selected card type
+ * @param {string} cardType - The selected card type ('classic' or 'multipleChoice')
+ */
+function updateCardTypeUI(cardType) {
+    console.log('Updating UI for card type:', cardType);
+    
+    // Get relevant elements
+    const questionInput = document.getElementById('questionInput');
+    
+    if (!questionInput) {
+        console.error('Question input element not found');
+        return;
+    }
+    
+    // Update placeholder text based on card type
+    if (cardType === 'classic') {
+        questionInput.placeholder = `For Classic Cards:
+Question on first line
+Subtitle on second line (optional)
+Answer on third line and beyond
+Use /note for additional information`;
+    } else if (cardType === 'multipleChoice') {
+        questionInput.placeholder = `For Multiple Choice:
+Question on first line
+Option 1
+Option 2
+Option 3
+Option 4
+Correct: Option 3 (use exact text of the option)
+Explanation: Additional details (optional)`;
+    }
+    
+    // Update the preview based on the new card type
     updatePreview();
 }
 
-// Expand active subdeck's parent
+  // Expand active subdeck's parent
 const activeSubdeck = document.querySelector('.subdeck-btn.active');
 if (activeSubdeck) {
   const parentDeck = activeSubdeck.closest('li').previousElementSibling;
@@ -1441,1076 +1584,580 @@ document.getElementById('card-type')?.addEventListener('change', function() {
 
 // Add this function to dashboard-script.js
 function populateDeckDropdown() {
-    const deckSelect = document.getElementById('deck-select');
-    if (!deckSelect) return;
-
-    // Clear existing options
-    deckSelect.innerHTML = '';
-
-    // Add decks from your decks structure
-    Object.keys(decks).forEach(deckName => {
-        const option = document.createElement('option');
-        option.value = deckName;
-        option.textContent = deckName;
-        deckSelect.appendChild(option);
-    });
-}
-
-// Call this in your DOMContentLoaded listener
-document.addEventListener('DOMContentLoaded', () => {
-    populateDeckDropdown();
-    // ... rest of your existing initialization code ...
-});
-
-// Change from dropdown to radio buttons
-document.querySelectorAll('input[name="card-type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        updateCardTypeUI(this.value);
-    });
-});
-
-// Enhanced logging function
-function logToConsole(message, data) {
-    console.log(`[${new Date().toISOString()}] ${message}`, data);
-}
-
-// Add this helper function to apply the right click handler to the skip button
-function updateSkipButtonHandler() {
-    const skipButton = document.getElementById('skip-button');
-    if (skipButton) {
-        // Remove any existing event listeners
-        const newButton = skipButton.cloneNode(true);
-        skipButton.parentNode.replaceChild(newButton, skipButton);
+    console.log('Populating deck dropdown');
+    const deckSelect = document.getElementById('deckSelect');
+    if (!deckSelect) {
+        console.error('Deck select element not found!');
+        return;
+    }
+    
+    deckSelect.innerHTML = '<option value="" disabled selected>Select a deck</option>';
+    
+    // Add hardcoded decks as backup
+    const mainDecks = [
+        'Microbiología',
+        'Patología',
+        'Semiología',
+        'Farmacología',
+        'Terapéutica',
+        'Medicina',
+        'Revalida',
+        'MIR'
+    ];
+    
+    // Get all deck buttons from the sidebar
+    const deckButtons = document.querySelectorAll('.deck-btn');
+    console.log(`Found ${deckButtons.length} deck buttons`);
+    
+    // Track added decks to avoid duplicates
+    const addedDecks = new Set();
+    
+    // First try to add decks from the DOM
+    deckButtons.forEach(button => {
+        const deckNameEl = button.querySelector('.deck-name');
+        if (!deckNameEl) {
+            console.warn('Deck name element not found in button:', button);
+            return;
+        }
         
-        if (newButton.textContent === 'Seguir') {
-            // If it's in "Seguir" mode, it should act like the "Good" SRS button
-            newButton.addEventListener('click', () => rateCard(1440)); // Same as "Good" button
-        } else {
-            // Otherwise it's the regular skip button
-            newButton.addEventListener('click', skipCard);
+        const deckName = deckNameEl.textContent.trim();
+        // Skip decks marked as "coming soon"
+        if (!deckName.includes('en breve')) {
+            const option = document.createElement('option');
+            option.value = deckName.split(' ')[0]; // Use first word as value (without any badges)
+            option.textContent = deckName.split(' ')[0]; // Use first word as display text
+            deckSelect.appendChild(option);
+            console.log('Added deck option:', option.value);
+        }
+    });
+    
+    // Clear the subdeck and subsubdeck dropdowns
+    const subdeckSelect = document.getElementById('subdeckSelect');
+    const subsubdeckSelect = document.getElementById('subsubdeckSelect');
+    
+    if (subdeckSelect) {
+        subdeckSelect.innerHTML = '<option value="" disabled selected>Select deck first</option>';
+    }
+    
+    if (subsubdeckSelect) {
+        subsubdeckSelect.innerHTML = '<option value="" disabled selected>Select subdeck first</option>';
+    }
+}
+
+/**
+ * Populates the subdeck dropdown based on the selected deck
+ * @param {string} deckName - The name of the selected deck
+ */
+function populateSubdeckDropdown(deckName) {
+    console.log(`Populating subdecks for deck: ${deckName}`);
+    
+    const subdeckSelect = document.getElementById('subdeckSelect');
+    if (!subdeckSelect) {
+        console.error('Subdeck select element not found!');
+        return;
+    }
+    
+    // Reset the subdeck select
+    subdeckSelect.innerHTML = '<option value="" disabled selected>Select a subdeck</option>';
+    subdeckSelect.disabled = true;
+    
+    if (!deckName) {
+        console.log('No deck selected, subdeck dropdown remains disabled');
+        return;
+    }
+    
+    // Hardcoded subdeck lists as fallback (add more as needed)
+    const hardcodedSubdecks = {
+        'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
+        'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 
+                      'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 
+                      'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros', 'ERA1', 'ERA2', 'ERA3'],
+        'Semiología': ['Historia clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 
+                       'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
+        'Farmacología': ['ERA1', 'ERA2'],
+        'Terapéutica': ['ERA1', 'ERA2', 'ERA3'],
+        'Medicina': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos']
+    };
+    
+    // Try to find the deck in the sidebar
+    let deckElement = null;
+    let subdecks = [];
+    
+    // First try exact match on the name
+    const deckButtons = document.querySelectorAll('.deck-btn');
+    
+    for (const button of deckButtons) {
+        const deckNameEl = button.querySelector('.deck-name');
+        if (!deckNameEl) continue;
+        
+        const fullDeckName = deckNameEl.textContent.trim();
+        const buttonDeckName = fullDeckName.split(' ')[0]; // First word of deck name
+        
+        console.log(`Comparing deck: "${buttonDeckName}" with selected: "${deckName}"`);
+        
+        if (buttonDeckName === deckName) {
+            deckElement = button;
+            console.log('Found exact match for deck:', deckName);
+            break;
         }
     }
-}
-
-// Add function to handle choice selection
-function handleChoiceSelection(selectedIndex) {
-    const currentCard = flashcards[currentCardIndex];
-    const choiceButtons = document.querySelectorAll('.choice');
-    const srsControls = document.querySelector('.srs-controls');
-    const skipButton = document.getElementById('skip-button');
-    const reviewActions = document.getElementById('review-actions');
     
-    // DEBUG START
-    console.log('=================================');
-    console.log('DEBUG [handleChoiceSelection]: Selection analysis');
-    console.log('Card ID:', currentCard._id);
-    console.log('Card question:', currentCard.question);
-    console.log('Raw correctIndex from card:', currentCard.correctIndex, typeof currentCard.correctIndex);
-    console.log('Selected index (raw):', selectedIndex, typeof selectedIndex);
-    // DEBUG END
-    
-    // Always convert to numbers to ensure proper comparison
-    const correctIndex = Number(currentCard.correctIndex);
-    const selectedIdxNumber = Number(selectedIndex);
-    
-    // DEBUG START
-    console.log('Converted correctIndex:', correctIndex, typeof correctIndex);
-    console.log('Converted selectedIndex:', selectedIdxNumber, typeof selectedIdxNumber);
-    console.log('Are they equal?', selectedIdxNumber === correctIndex);
-    console.log('=================================');
-    // DEBUG END
-    
-    // Try multiple approaches to determine if the answer is correct
-    // 1. Direct number comparison 
-    let isCorrect = selectedIdxNumber === correctIndex;
-    
-    // 2. Try string comparison if number comparison fails
-    if (!isCorrect) {
-        isCorrect = String(selectedIdxNumber) === String(correctIndex);
-    }
-    
-    // Find the selected button using the original index
-    const selectedButton = Array.from(choiceButtons).find(
-        button => Number(button.dataset.originalIndex) === selectedIdxNumber
-    );
-    
-    // Find the correct button using the original index
-    const correctButton = Array.from(choiceButtons).find(
-        button => Number(button.dataset.originalIndex) === correctIndex
-    );
-    
-    // 3. Try comparison using the button's isCorrect attribute
-    if (!isCorrect && selectedButton) {
-        isCorrect = selectedButton.dataset.isCorrect === "true";
-    }
-    
-    console.log('Final isCorrect determination:', isCorrect);
-    
-    if (isCorrect) {
-        // Handle correct answer selection
-        console.log('Correct answer selected!');
-        
-        // Check all possible variations of the extraInfo property
-        const possibleExtraInfoProps = ['extraInfo', 'extrainfo', 'ExtraInfo', 'EXTRAINFO'];
-        let extraInfoContent = null;
-        
-        for (const prop of possibleExtraInfoProps) {
-            if (currentCard[prop] && currentCard[prop].trim() !== '') {
-                extraInfoContent = currentCard[prop];
-                console.log(`Found extraInfo in property "${prop}":`, extraInfoContent);
+    // If exact match not found, try partial match
+    if (!deckElement) {
+        for (const button of deckButtons) {
+            const deckNameEl = button.querySelector('.deck-name');
+            if (!deckNameEl) continue;
+            
+            const fullDeckName = deckNameEl.textContent.trim();
+            const buttonDeckName = fullDeckName.split(' ')[0]; // First word of deck name
+            
+            if (buttonDeckName.includes(deckName) || deckName.includes(buttonDeckName)) {
+                deckElement = button;
+                console.log('Found partial match for deck:', deckName, 'with', buttonDeckName);
                 break;
             }
         }
+    }
+    
+    // Extract subdecks from the DOM if deck element found
+    if (deckElement) {
+        // Try to find subdeck list in the DOM
+        const subdecksList = deckElement.nextElementSibling;
         
-        console.log('Extra info content found:', extraInfoContent);
-        console.log('Full card data:', JSON.stringify(currentCard));
-        
-        // Apply green color directly to the correct button (which is also the selected button)
-        if (selectedButton) {
-            selectedButton.style.backgroundColor = '#2ed573';
-            selectedButton.style.borderColor = '#2ed573';
-            selectedButton.style.color = 'white';
-            selectedButton.style.fontWeight = 'bold';
+        if (subdecksList && subdecksList.classList.contains('subdeck-list')) {
+            console.log('Found subdeck list for', deckName);
             
-            // Add checkmark directly
-            const checkmark = document.createElement('span');
-            checkmark.textContent = '✓';
-            checkmark.style.position = 'absolute';
-            checkmark.style.right = '20px';
-            checkmark.style.color = 'white';
-            checkmark.style.fontWeight = 'bold';
-            selectedButton.appendChild(checkmark);
+            // Get all subdeck buttons
+            const subdeckButtons = subdecksList.querySelectorAll('.subdeck-btn');
             
-            // Also add correct class for CSS styling
-            selectedButton.classList.add('correct');
-        }
-        
-        // Hide all incorrect options
-        choiceButtons.forEach(button => {
-            if (button !== selectedButton) {
-                button.style.display = 'none';
-            }
-            button.disabled = true;
-        });
-        
-        // Display extra information if available
-        if (extraInfoContent) {
-            console.log('Displaying extra info:', extraInfoContent);
-            const choiceOptions = document.getElementById('choice-options');
-            const explanationDiv = document.createElement('div');
-            explanationDiv.className = 'explanation-container visible';
-            explanationDiv.style.marginTop = '20px';
-            explanationDiv.style.padding = '15px';
-            explanationDiv.style.backgroundColor = '#f8f9fa';
-            explanationDiv.style.border = '1px solid #dee2e6';
-            explanationDiv.style.borderRadius = '5px';
-            
-            explanationDiv.innerHTML = `
-                <div class="notes">
-                    <strong>Notas:</strong>
-                    ${extraInfoContent.replace(/\n/g, '<br>')}
-                </div>
-            `;
-            
-            // Add the explanation after the selected button
-            if (choiceOptions) {
-                console.log('Appending extra info to choice options');
-                choiceOptions.appendChild(explanationDiv);
-            } else {
-                console.error('Could not find choice-options element');
-            }
+            // Extract subdeck names
+            subdeckButtons.forEach(button => {
+                const subdeckNameEl = button.querySelector('.subdeck-name');
+                if (subdeckNameEl) {
+                    const subdeckName = subdeckNameEl.textContent.trim();
+                    subdecks.push(subdeckName);
+                    console.log('Added subdeck from DOM:', subdeckName);
+                }
+            });
         } else {
-            console.log('No extra info content to display');
-        }
-        
-        // Transform the skip button into a "continue" button
-        if (skipButton) {
-            skipButton.textContent = 'Seguir';
-            skipButton.classList.add('seguir-button');
-            
-            // Update the button's click handler
-            updateSkipButtonHandler();
-        }
-        
-        // Show SRS controls after finding the correct answer (let's hide them for now since we're using the Seguir button)
-        if (srsControls) {
-            srsControls.classList.add('hidden');
+            console.warn('Could not find subdeck list element for', deckName);
         }
     } else {
-        // Handle incorrect answer selection
-        console.log('Selected wrong answer at index:', selectedIndex);
-        
-        // Make sure we found the selected button
-        if (selectedButton) {
-            // Apply red color directly to ONLY the wrong button that was clicked
-            selectedButton.style.backgroundColor = '#ff4757';
-            selectedButton.style.borderColor = '#ff4757';
-            selectedButton.style.color = 'white';
-            selectedButton.style.fontWeight = 'bold';
-            
-            // Add X mark directly
-            const xmark = document.createElement('span');
-            xmark.textContent = '✗';
-            xmark.style.position = 'absolute';
-            xmark.style.right = '20px';
-            xmark.style.color = 'white';
-            xmark.style.fontWeight = 'bold';
-            selectedButton.appendChild(xmark);
-            
-            // Also add wrong class for CSS styling
-            selectedButton.classList.add('wrong');
-            
-            // Disable ONLY the wrong button that was clicked
-            selectedButton.disabled = true;
-        } else {
-            console.error('Could not find the selected button with index:', selectedIndex);
-        }
-        
-        // Do NOT show SRS controls yet - user should keep trying
+        console.log('Could not find deck element for', deckName, 'in the DOM');
     }
-}
-
-// Add to existing DOMContentLoaded listener
-document.addEventListener('DOMContentLoaded', () => {
-    displayUsername();
-    initializeERA1Cards();
-    initializeERA2Cards();
-    document.getElementById('contact-button')?.addEventListener('click', showContact);
-});
-
-// Add Contact Modal Functionality
-function showContact() {
-    const contactContent = `
-    <div class="faq-overlay">
-        <div class="faq-modal">
-            <div class="faq-header">
-                <h2>Información de Contacto</h2>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="faq-content">
-                <div class="faq-item">
-                    <div class="answer show">
-                        <p><strong>Soporte Técnico:</strong></p>
-                        <ul>
-                            <li>📧 Email: soporte@medupgrade.com</li>
-                            <li>📞 Teléfono: +34 123 456 789</li>
-                        </ul>
-                        <p class="contact-schedule"><strong>Horario de Atención:</strong></p>
-                        <ul>
-                            <li>Lunes-Viernes: 9:00 - 18:00</li>
-                            <li>Sábados: 10:00 - 14:00</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    const contactOverlay = document.createElement('div');
-    contactOverlay.className = 'faq-overlay';
-    contactOverlay.innerHTML = contactContent;
-    document.body.appendChild(contactOverlay);
-
-    contactOverlay.querySelector('.close-btn').addEventListener('click', () => {
-        contactOverlay.remove();
-    });
-
-    contactOverlay.addEventListener('click', (e) => {
-        if(e.target === contactOverlay) contactOverlay.remove();
-    });
-}
-
-// Add event listener for contact button
-document.getElementById('contact-button')?.addEventListener('click', showContact);
-
-// Deck and subdeck structure
-const decks = {
-    'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
-    'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
-    'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
-    'Farmacología': ['ERA1', 'ERA2'],
-    'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
-    'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo digestivo', 'Neurología', 'Anexos'],
-    'Revalida': ['Bling', 'Blang', 'Blong'],
-    'MIR': ['Bling', 'Blang', 'Blong'],
-};
-
-// OPTIMIZED VERSION - FETCH ALL CARDS ONCE
-let allCardsCache = null; // Add this at the top of your file
-
-// MODIFIED VERSION - SIMPLE COUNTING
-async function calculateCards(deckName, subdeckName = null) {
-    try {
-        const params = new URLSearchParams({ 
-            deck: deckName,
-            ...(subdeckName && { subdeck: subdeckName })
+    
+    // If we couldn't extract subdecks from DOM, use hardcoded list as fallback
+    if (subdecks.length === 0 && hardcodedSubdecks[deckName]) {
+        console.log('Using hardcoded subdeck list for', deckName);
+        subdecks = hardcodedSubdecks[deckName];
+    }
+    
+    // If we have subdecks (either from DOM or hardcoded), populate the dropdown
+    if (subdecks.length > 0) {
+        subdecks.forEach(subdeckName => {
+            const option = document.createElement('option');
+            option.value = subdeckName;
+            option.textContent = subdeckName;
+            subdeckSelect.appendChild(option);
         });
-
-        const response = await fetch(`/api/flashcards?${params.toString()}`);
-        if (!response.ok) return { totalCards: 0 };
         
-        const cards = await response.json();
-        return { totalCards: cards.length };
-
-    } catch (error) {
-        console.error('Error counting cards:', error);
-        return { totalCards: 0 };
-    }
-}
-
-// MODIFIED GENERATE TABLE FUNCTION
-async function generateOverviewTable() {
-    const tableBody = document.createElement('tbody');
-    
-    try {
-        // Fetch all card counts at once instead of individual calls for each deck/subdeck
-        const allCounts = await fetchAllCardCounts();
-        
-        for (const [deckName, subdecks] of Object.entries(decks)) {
-            // Main deck row - use the cached results from our batch call
-            const deckStats = allCounts[deckName] || { totalCards: 0 };
-            const deckRow = createOverviewRow(deckName, deckStats, false);
-            tableBody.appendChild(deckRow);
-    
-            // Subdeck rows - again, use cached results
-            for (const subdeck of subdecks) {
-                const subdeckKey = `${deckName}-${subdeck}`;
-                const subdeckStats = allCounts[subdeckKey] || { totalCards: 0 };
-                const subdeckRow = createOverviewRow(subdeck, subdeckStats, true);
-                tableBody.appendChild(subdeckRow);
-            }
-        }
-    } catch (error) {
-        console.error('Error generating overview table:', error);
-        // Create a fallback row with error message
-        const errorRow = document.createElement('tr');
-        errorRow.innerHTML = `
-            <td colspan="2">Error loading card counts. Please try again later.</td>
-        `;
-        tableBody.appendChild(errorRow);
-    }
-    
-    return tableBody;
-}
-
-// New function to fetch all card counts in one batch to avoid rate limiting
-async function fetchAllCardCounts() {
-    let counts = {};
-    
-    try {
-        // Create an array of all deck/subdeck combinations we need
-        let countRequests = [];
-        
-        for (const [deckName, subdecks] of Object.entries(decks)) {
-            // Add main deck (total across all subdecks)
-            countRequests.push({
-                key: deckName,
-                params: new URLSearchParams({ deck: deckName }).toString()
-            });
-            
-            // Add each subdeck
-            for (const subdeck of subdecks) {
-                countRequests.push({
-                    key: `${deckName}-${subdeck}`,
-                    params: new URLSearchParams({ 
-                        deck: deckName,
-                        subdeck: subdeck 
-                    }).toString()
-                });
-            }
-        }
-        
-        // Use Promise.all to make requests in parallel (but not too many)
-        // Only process 5 requests at a time to avoid overwhelming the server
-        const batchSize = 5;
-        for (let i = 0; i < countRequests.length; i += batchSize) {
-            const batch = countRequests.slice(i, i + batchSize);
-            const batchResults = await Promise.all(
-                batch.map(async (req) => {
-                    try {
-                        const response = await fetch(`/api/flashcards?${req.params}`);
-                        if (!response.ok) return { key: req.key, totalCards: 0 };
-                        
-                        const cards = await response.json();
-                        return { key: req.key, totalCards: cards.length };
-                    } catch (error) {
-                        console.error(`Error fetching ${req.key}:`, error);
-                        return { key: req.key, totalCards: 0 };
-                    }
-                })
-            );
-            
-            // Add a short delay between batches
-            if (i + batchSize < countRequests.length) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-            
-            // Add batch results to our counts object
-            batchResults.forEach(result => {
-                counts[result.key] = { totalCards: result.totalCards };
-            });
-        }
-    } catch (error) {
-        console.error('Error in batch fetching card counts:', error);
-    }
-    
-    return counts;
-}
-
-// MODIFIED ROW CREATION
-function createOverviewRow(name, stats, isSubdeck) {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${isSubdeck ? `<span class="subdeck-padding">${name}</span>` : `<span class="toggle-deck">+</span> ${name}`}</td>
-        <td class="total-cards ${stats.totalCards > 0 ? 'new-positive' : ''}">${stats.totalCards}</td>
-    `;
-    if (isSubdeck) row.classList.add('subdeck-row', 'hidden');
-    return row;
-}
-
-// NEW VERSION - ASYNC VERSION
-async function showOverview() {
-    const overviewSection = document.getElementById('overview-section');
-    if (!overviewSection) return;
-
-    // Clear table
-    const oldTableBody = document.getElementById('overview-table-body');
-    if (oldTableBody) {
-        oldTableBody.innerHTML = '';
-    }
-
-    // Generate new content
-    const newTableBody = await generateOverviewTable();
-    
-    // Replace the table body content with the new rows
-    if (oldTableBody) {
-        Array.from(newTableBody.children).forEach(row => {
-            oldTableBody.appendChild(row);
-        });
-    }
-
-    // Show overview section and hide other sections
-    const mainContent = document.getElementById('main-content');
-    const statsContainer = document.querySelector('.stats-container');
-    const flashcardSystem = document.getElementById('flashcard-system');
-    const calendar = document.getElementById('study-calendar');
-
-    // Show main content and components
-    mainContent?.classList?.remove('hidden');
-    statsContainer?.classList?.remove('hidden');
-    
-    // Always make sure calendar is visible
-    if (calendar) {
-        calendar.classList.remove('hidden');
-        
-        // Generate calendar if it hasn't been initialized
-        if (!calendar.querySelector('.month-container')) {
-            generateCalendar();
-        }
-    }
-    
-    // Hide flashcard system
-    flashcardSystem?.classList?.add('hidden');
-    
-    addToggleListeners();
-    showStatus('Overview');
-}
-
-// Call the test function - you can open browser console to see results
-// Uncomment this line to run the test
-testExtraInfoExtraction();
-
-// Add this at the end of your file
-// Test function to validate extraInfo extraction
-function testExtraInfoExtraction() {
-    console.log("=== TESTING EXTRA INFO EXTRACTION ===");
-    
-    // Test case 1: Option with / and ]
-    const testOption1 = "Strait of Malacca/It's located between Malaysia and Indonesia]";
-    let cleanOption1 = testOption1.replace(/\]$/, '').trim();
-    const slashIndex1 = cleanOption1.indexOf('/');
-    
-    if (slashIndex1 !== -1) {
-        const cleanOptionText1 = cleanOption1.substring(0, slashIndex1).trim();
-        const extraInfoText1 = cleanOption1.substring(slashIndex1 + 1).trim();
-        console.log("Test 1 - Option with / and ]:");
-        console.log("Original:", testOption1);
-        console.log("Clean option:", cleanOptionText1);
-        console.log("Extra info:", extraInfoText1);
-    }
-    
-    // Test case 2: Option without /
-    const testOption2 = "Strait of Gibraltar]";
-    let cleanOption2 = testOption2.replace(/\]$/, '').trim();
-    const slashIndex2 = cleanOption2.indexOf('/');
-    
-    console.log("\nTest 2 - Option without /:");
-    console.log("Original:", testOption2);
-    if (slashIndex2 !== -1) {
-        const cleanOptionText2 = cleanOption2.substring(0, slashIndex2).trim();
-        const extraInfoText2 = cleanOption2.substring(slashIndex2 + 1).trim();
-        console.log("Clean option:", cleanOptionText2);
-        console.log("Extra info:", extraInfoText2);
+        subdeckSelect.disabled = false;
+        console.log(`Added ${subdecks.length} subdecks to dropdown`);
     } else {
-        console.log("No slash found - Clean option:", cleanOption2);
-        console.log("Extra info: none");
+        console.warn('No subdecks found for deck:', deckName);
+        
+        // Add a default option to show we tried but found nothing
+        const option = document.createElement('option');
+        option.value = "default";
+        option.textContent = "Default Subdeck";
+        subdeckSelect.appendChild(option);
+        subdeckSelect.disabled = false;
     }
     
-    // Test case 3: Simulated form submission for multiple choice
-    console.log("\nTest 3 - Simulated multiple choice card creation:");
-    const mockOptions = [
-        "Strait of Gibraltar",
-        "Bering Strait",
-        "Strait of Hormuz",
-        "Strait of Malacca/It's located between Malaysia and Indonesia]"
-    ];
+    // Clear the subsubdeck select
+    const subsubdeckSelect = document.getElementById('subsubdeckSelect');
+    if (subsubdeckSelect) {
+        subsubdeckSelect.innerHTML = '<option value="" disabled selected>Select subdeck first</option>';
+        subsubdeckSelect.disabled = true;
+    }
+}
+
+/**
+ * Populates the subsubdeck dropdown based on the selected deck and subdeck
+ * @param {string} deckName - The name of the selected deck
+ * @param {string} subdeckName - The name of the selected subdeck
+ */
+function populateSubsubdeckDropdown(deckName, subdeckName) {
+    console.log(`Populating subsubdecks for deck: ${deckName}, subdeck: ${subdeckName}`);
     
-    const mockCard = {
-        options: [],
-        correctIndex: -1,
-        extraInfo: ''
+    const subsubdeckSelect = document.getElementById('subsubdeckSelect');
+    if (!subsubdeckSelect) {
+        console.error('Subsubdeck select element not found!');
+        return;
+    }
+    
+    // Reset the subsubdeck select
+    subsubdeckSelect.innerHTML = '<option value="" disabled selected>Select a subsubdeck (optional)</option>';
+    subsubdeckSelect.disabled = true;
+    
+    if (!deckName || !subdeckName) {
+        console.log('Deck or subdeck not selected, subsubdeck dropdown remains disabled');
+        return;
+    }
+    
+    // Define which subdecks have subsubdecks (can be expanded as needed)
+    const subdecksWithSubsubdecks = {
+        'Microbiología': {
+            'Bacterias': ['Gram positivas', 'Gram negativas', 'Anaerobias', 'Otras'],
+            'Virus': ['ADN', 'ARN', 'Retrovirus'],
+            'Parásitos': ['Protozoos', 'Helmintos', 'Artrópodos']
+        },
+        'Patología': {
+            'Cardiovascular': ['Cardiopatía isquémica', 'Arritmias', 'Insuficiencia cardíaca', 'Valvulopatías'],
+            'Respiratorio': ['Asma', 'EPOC', 'Neumonía', 'Cáncer de pulmón'],
+            'Digestivo': ['Hígado', 'Páncreas', 'Intestino', 'Esófago']
+        }
     };
     
-    console.log("Mock options:", mockOptions);
-    
-    for (const [index, option] of mockOptions.entries()) {
-        const isCorrect = option.trim().endsWith(']');
-        let cleanOption = option.replace(/\]$/, '').trim();
+    // Check if this subdeck has subsubdecks defined
+    if (subdecksWithSubsubdecks[deckName] && subdecksWithSubsubdecks[deckName][subdeckName]) {
+        const subsubdecks = subdecksWithSubsubdecks[deckName][subdeckName];
         
-        if (isCorrect) {
-            mockCard.correctIndex = index;
-            
-            const slashIndex = cleanOption.indexOf('/');
-            if (slashIndex !== -1) {
-                const cleanOptionText = cleanOption.substring(0, slashIndex).trim();
-                const extraInfoText = cleanOption.substring(slashIndex + 1).trim();
-                
-                mockCard.extraInfo = extraInfoText;
-                mockCard.options.push(cleanOptionText);
-                
-                console.log("Found correct option at index:", index);
-                console.log("Clean option text:", cleanOptionText);
-                console.log("Extra info text:", mockCard.extraInfo);
-            } else {
-                mockCard.options.push(cleanOption);
-            }
-        } else {
-            const slashIndex = cleanOption.indexOf('/');
-            if (slashIndex !== -1) {
-                cleanOption = cleanOption.substring(0, slashIndex).trim();
-            }
-            mockCard.options.push(cleanOption);
-        }
-    }
-    
-    console.log("Final mock card:", mockCard);
-    console.log("=== TEST COMPLETE ===");
-}
-
-// Call the test function - you can see results in browser console
-testExtraInfoExtraction();
-
-// Function to parse multiple choice questions from text input
-function parseMultipleChoiceQuestions(rawContent, isPreview = false) {
-    const allLines = rawContent.split('\n').map(line => line.trim()).filter(line => line !== '');
-    const questions = [];
-    
-    let currentBlock = [];
-    let foundCorrectAnswer = false;
-    let foundExtraInfo = false;
-    let inQuestion = true; // Tracks whether we're processing the question or options
-    
-    console.log('Parsing multiple questions from input with new format...');
-    console.log('Raw lines:', allLines);
-    
-    // If there are no lines, return empty array
-    if (allLines.length === 0) {
-        return [];
-    }
-    
-    // First line is always a question
-    currentBlock.push(allLines[0]);
-    inQuestion = false; // Now we're expecting options
-    
-    // Process each line starting from the second line
-    for (let i = 1; i < allLines.length; i++) {
-        const line = allLines[i];
-        const nextLine = i < allLines.length - 1 ? allLines[i + 1] : null;
-        
-        // Check if this line is for extra info (starts with /)
-        if (!inQuestion && line.startsWith('/')) {
-            // This is an extra info line, add it to the current block
-            currentBlock.push(line);
-            foundExtraInfo = true;
-            console.log('Found extra info:', line);
-            
-            // If this is the last line, we're done with this question
-            if (i === allLines.length - 1) {
-                questions.push([...currentBlock]);
-                console.log('Adding final question block with extra info');
-            }
-            
-            continue;
-        }
-        
-        // FIX: Improved detection of new questions vs complex options
-        // Check if this is definitely a correct answer (ends with ])
-        const isCorrectAnswer = line.trim().endsWith(']');
-        
-        // Check if this is the start of a new question
-        const isPotentialNewQuestion = 
-            currentBlock.length >= 2 && 
-            !line.startsWith('/') &&
-            !isCorrectAnswer &&  // If it's marked as correct, it's definitely an option, not a question
-            nextLine !== null && 
-            !nextLine.startsWith('/') &&
-            !nextLine.trim().endsWith(']');
-        
-        // Look for patterns that indicate we're transitioning to a new question:
-        if (!inQuestion && isPotentialNewQuestion) {
-            // These are stronger indicators that we have a new question:
-            const strongQuestionIndicators = [
-                line.endsWith('?'),                                   // Ends with question mark
-                /^(What|Which|When|Where|Why|How|Is|Are|Can|Do)/i.test(line), // Starts with question word
-                currentBlock.length >= 6                              // We already have a full set of options
-            ];
-            
-            // Only consider it a new question if it has strong question indicators
-            if (strongQuestionIndicators.some(indicator => indicator === true)) {
-                // Save the current block and start a new one
-                questions.push([...currentBlock]);
-                currentBlock = [line];
-                foundCorrectAnswer = false;
-                foundExtraInfo = false;
-                inQuestion = false; // Now expecting options again
-                console.log('Starting new question block with:', line);
-                continue;
-            }
-        }
-        
-        // Add the current line to the block
-        currentBlock.push(line);
-        
-        // Check if this line is a correct answer (ends with ])
-        if (isCorrectAnswer) {
-            foundCorrectAnswer = true;
-            console.log('Found correct answer:', line);
-        }
-        
-        // If this is the last line, add the final block
-        if (i === allLines.length - 1) {
-            questions.push([...currentBlock]);
-            console.log('Adding final question block');
-        }
-    }
-    
-    console.log('Parsed question blocks:', questions);
-    
-    // For preview mode, or if we're just testing the format, be more lenient
-    if (!isPreview) {
-        // Add ] to the first option of any question blocks without a marked correct answer
-        for (let i = 0; i < questions.length; i++) {
-            const block = questions[i];
-            // Verify at least one option has the ] marker
-            const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
-            
-            if (!hasCorrectOption && block.length >= 2) {
-                // If no correct option is marked and we're in production mode,
-                // mark the first option as correct
-                console.log(`No correct answer marked in block ${i+1}, automatically marking first option as correct`);
-                if (block.length >= 2) {
-                    // Replace the first option with a version that has ] at the end
-                    block[1] = block[1].trim() + ']';
-                }
-            }
-        }
-        
-        // Final validation
-        questions.forEach((block, index) => {
-            if (block.length < 2) {
-                throw new Error(`Question block ${index + 1} is invalid. Each question needs at least a question and one option.`);
-            }
-            
-            // Verify at least one option has the ] marker
-            const hasCorrectOption = block.some(line => line.trim().endsWith(']'));
-            if (!hasCorrectOption) {
-                throw new Error(`Question block ${index + 1} has no correct answer marked with ]. Please add ] at the end of the correct option.`);
-            }
-        });
-    }
-    
-    console.log(`Successfully parsed ${questions.length} questions`);
-    return questions;
-}
-
-// Function to save a multiple choice card
-async function saveMultipleChoiceCard(lines) {
-    try {
-        // Validate format
-        if (lines.length < 2) {
-            throw new Error('Multiple choice requires at least 1 question and 1 option');
-        }
-        if (lines.length > 8) { // Increased to 8 to allow for extra info line
-            throw new Error('Maximum 6 options allowed (plus question and extra info)');
-        }
-        
-        // Initialize card object
-        const newCard = {
-            question: lines[0],
-            answer: '',
-            deck: document.getElementById('deck-select').value,
-            subdeck: document.getElementById('subdeck').value,
-            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-            type: 'multipleChoice',
-            options: [],
-            correctIndex: -1,
-            extraInfo: ''
-        };
-        
-        console.log(`Processing card: ${newCard.question}`);
-        console.log('All lines:', lines);
-        
-        // Extract all options and identify extra info line
-        const options = [];
-        let extraInfoLine = null;
-        
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i];
-            if (line.startsWith('/')) {
-                extraInfoLine = line;
-            } else {
-                options.push({
-                    text: line,
-                    originalIndex: i - 1,  // -1 because we skip the question line
-                    isCorrect: line.trim().endsWith(']')
-                });
-            }
-        }
-        
-        console.log('Extracted options:', options);
-        
-        // Find the correct option
-        const correctOptionIndex = options.findIndex(opt => opt.isCorrect);
-        
-        if (correctOptionIndex === -1) {
-            throw new Error('No correct answer specified - add ] at end of the correct option');
-        }
-        
-        if (options.filter(opt => opt.isCorrect).length > 1) {
-            throw new Error('Only one correct answer allowed (mark with ])');
-        }
-        
-        // Set the correct index in the card object
-        newCard.correctIndex = correctOptionIndex;
-        
-        // VALIDATION: Ensure correctIndex is valid
-        if (newCard.correctIndex < 0) {
-            console.warn('Invalid correctIndex detected, forcing to 0');
-            newCard.correctIndex = 0;
-        }
-        
-        // Clean up options (remove ] marker) and add to card
-        for (const option of options) {
-            const cleanedText = option.text.replace(/\]$/, '').trim();
-            newCard.options.push(cleanedText);
-        }
-        
-        // ADDITIONAL VALIDATION: Ensure correctIndex is within range of options
-        if (newCard.correctIndex >= newCard.options.length) {
-            console.warn(`correctIndex (${newCard.correctIndex}) out of range, setting to 0`);
-            newCard.correctIndex = 0;
-        }
-        
-        // Set the answer to the correct option's text (without ])
-        newCard.answer = newCard.options[newCard.correctIndex];
-        
-        // Extract extra info if present
-        if (extraInfoLine) {
-            // Remove the starting / character
-            newCard.extraInfo = extraInfoLine.substring(1).trim();
-            console.log('Extracted extra info:', newCard.extraInfo);
-        }
-        
-        console.log('Multiple choice card to be submitted:', JSON.stringify(newCard));
-        
-        // Submit the card
-        const response = await fetch('/api/flashcards', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newCard)
+        // Populate the subsubdeck dropdown
+        subsubdecks.forEach(subsubdeckName => {
+            const option = document.createElement('option');
+            option.value = subsubdeckName;
+            option.textContent = subsubdeckName;
+            subsubdeckSelect.appendChild(option);
         });
         
-        const data = await response.json();
-        
-        return { 
-            success: response.ok,
-            data,
-            card: newCard.question
-        };
-    } catch (error) {
-        console.error('Error saving multiple choice card:', error);
-        return {
-            success: false,
-            error: error.message
-        };
-    }
-}
-
-// Function to reload the current deck
-function reloadCurrentDeck() {
-    // Get the current URL path to determine which deck we're on
-    const path = window.location.pathname;
-    
-    console.log('Reloading deck based on path:', path);
-    
-    if (path.includes('patologia-era2')) {
-        console.log('Reloading ERA2 cards...');
-        getDeckData('Patología', 'ERA2').then(data => {
-            flashcards = data;
-            console.log(`Reloaded ${data.length} ERA2 cards:`, data);
-            if (flashcards.length > 0) {
-                currentCardIndex = 0;
-                loadNextCard();
-                showStatus(`${data.length} cards loaded`);
-            } else {
-                showStatus('No hay tarjetas en este mazo');
-            }
-        });
-    } else if (path.includes('patologia-era1')) {
-        console.log('Reloading ERA1 cards...');
-        getDeckData('Patología', 'ERA1').then(data => {
-            flashcards = data;
-            console.log(`Reloaded ${data.length} ERA1 cards`);
-            if (flashcards.length > 0) {
-                currentCardIndex = 0;
-                loadNextCard();
-                showStatus(`${data.length} cards loaded`);
-            } else {
-                showStatus('No hay tarjetas en este mazo');
-            }
-        });
-    } else if (path.includes('patologia-era3')) {
-        console.log('Reloading ERA3 cards...');
-        getDeckData('Patología', 'ERA3').then(data => {
-            flashcards = data;
-            console.log(`Reloaded ${data.length} ERA3 cards`);
-            if (flashcards.length > 0) {
-                currentCardIndex = 0;
-                loadNextCard();
-                showStatus(`${data.length} cards loaded`);
-            } else {
-                showStatus('No hay tarjetas en este mazo');
-            }
-        });
-    } else if (path.includes('deck/')) {
-        // Handle dynamic deck pages
-        const deckName = path.split('/').pop();
-        if (deckName) {
-            console.log('Reloading deck:', deckName);
-            getDeckData(deckName).then(data => {
-                flashcards = data;
-                console.log(`Reloaded ${data.length} cards for ${deckName}`);
-                if (flashcards.length > 0) {
-                    currentCardIndex = 0;
-                    loadNextCard();
-                    showStatus(`${data.length} cards loaded`);
-                } else {
-                    showStatus('No hay tarjetas en este mazo');
-                }
-            });
-        }
-    }
-}
-
-// Function to parse multiple classic cards from text input
-function parseClassicCards(rawContent) {
-    const allLines = rawContent.split('\n').map(line => line.trim());
-    const cards = [];
-    
-    let currentCard = [];
-    let extraInfoMode = false;
-    
-    console.log('Parsing multiple classic cards from input...');
-    
-    // Process each line
-    for (let i = 0; i < allLines.length; i++) {
-        const line = allLines[i];
-        
-        // Empty line indicates a separator between cards
-        if (line === '') {
-            if (currentCard.length > 0) {
-                // Save current card if it has content
-                cards.push([...currentCard]);
-                currentCard = [];
-                extraInfoMode = false;
-            }
-            continue;
-        }
-        
-        // Add the current line to the card
-        currentCard.push(line);
-        
-        // Check if this line starts the extra info section
-        if (line.startsWith('/')) {
-            extraInfoMode = true;
-        }
-        
-        // If we've collected 3+ lines and the next line is empty or doesn't exist, save this card
-        const nextLine = i < allLines.length - 1 ? allLines[i + 1] : '';
-        if (currentCard.length >= 3 && (nextLine === '' || i === allLines.length - 1)) {
-            cards.push([...currentCard]);
-            currentCard = [];
-            extraInfoMode = false;
-        }
-    }
-    
-    // If there's a partial card at the end, add it
-    if (currentCard.length > 0) {
-        cards.push([...currentCard]);
-    }
-    
-    console.log(`Parsed ${cards.length} classic cards`);
-    return cards;
-}
-
-// Function to process and save a single classic card
-async function saveClassicCard(lines) {
-    try {
-        if (lines.length < 3) {
-            throw new Error('Classic cards require at least 3 lines:\n1. Question\n2. Subtitle\n3. Answer');
-        }
-        
-        // Initialize with explicit extraInfo property
-        const newCard = {
-            question: lines[0],
-            subtitle: lines[1],
-            answer: '',
-            extraInfo: '',
-            deck: document.getElementById('deck-select').value,
-            subdeck: document.getElementById('subdeck').value,
-            tags: document.getElementById('tags').value.split(',').map(s => s.trim()),
-            type: 'classic'
-        };
-        
-        // Find the first line that starts with / (if any)
-        const extraInfoIndex = lines.findIndex(line => line.startsWith('/'));
-        
-        if (extraInfoIndex !== -1 && extraInfoIndex >= 3) {
-            // Everything from line 2 up to extraInfoIndex is the answer
-            newCard.answer = lines.slice(2, extraInfoIndex).join('\n').trim();
-            // Everything after extraInfoIndex is extra info (remove the leading /)
-            newCard.extraInfo = lines[extraInfoIndex].substring(1).trim();
-            
-            // If there are more lines after the extraInfoIndex, add them to extraInfo
-            if (extraInfoIndex < lines.length - 1) {
-                newCard.extraInfo += '\n' + lines.slice(extraInfoIndex + 1).join('\n').trim();
-            }
-        } else {
-            // No extra info line found, everything from line 2 onward is the answer
-            newCard.answer = lines.slice(2).join('\n').trim();
-        }
-        
-        // Log the card before submission for debugging
-        console.log('Classic card to be submitted:', JSON.stringify(newCard));
-
-        // Submit the classic card
-        const response = await fetch('/api/flashcards', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newCard)
-        });
-
-        const data = await response.json();
-        
-        return { 
-            success: response.ok,
-            data,
-            card: newCard.question
-        };
-    } catch(error) {
-        console.error('Error saving classic card:', error);
-        return {
-            success: false,
-            error: error.message
-        };
-    }
-}
-
-// Function to toggle expanded preview
-function toggleExpandedPreview() {
-    const expandButton = document.getElementById('expand-preview-btn');
-    const expandedPreview = document.querySelector('.expanded-preview');
-    const regularPreview = document.querySelector('.card-preview');
-    const previewOverlay = document.querySelector('.preview-overlay');
-    const closeXButton = document.getElementById('preview-close-x');
-    const returnButton = document.getElementById('preview-return-btn');
-    
-    // Check if preview is currently visible
-    const isExpanded = expandedPreview.style.display === 'block';
-    
-    if (isExpanded) {
-        // Hide expanded preview
-        expandedPreview.style.display = 'none';
-        regularPreview.style.display = 'block';
-        previewOverlay.style.display = 'none';
-        closeXButton.style.display = 'none';
-        returnButton.style.display = 'none';
-        expandButton.textContent = 'Show All Cards';
+        subsubdeckSelect.disabled = false;
+        console.log(`Added ${subsubdecks.length} subsubdecks to dropdown`);
     } else {
-        // Show expanded preview
-        expandedPreview.style.display = 'block';
-        regularPreview.style.display = 'none';
-        previewOverlay.style.display = 'block';
-        closeXButton.style.display = 'block';
-        returnButton.style.display = 'block';
-        expandButton.textContent = 'Hide All Cards';
-        
-        // Position the expanded preview in fullscreen
-        expandedPreview.style.position = 'fixed';
-        expandedPreview.style.top = '50%';
-        expandedPreview.style.left = '50%';
-        expandedPreview.style.transform = 'translate(-50%, -50%)';
-        expandedPreview.style.width = '90vw';
-        expandedPreview.style.height = '85vh';
-        expandedPreview.style.backgroundColor = 'white';
-        expandedPreview.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
-        expandedPreview.style.zIndex = '1000';
-        expandedPreview.style.padding = '20px';
-        expandedPreview.style.overflowY = 'auto';
-        
-        // Style the overlay
-        previewOverlay.style.position = 'fixed';
-        previewOverlay.style.top = '0';
-        previewOverlay.style.left = '0';
-        previewOverlay.style.width = '100%';
-        previewOverlay.style.height = '100%';
-        previewOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        previewOverlay.style.zIndex = '999';
-        
-        // Update the preview content
-        updateExpandedPreview();
+        console.log(`No subsubdecks defined for ${deckName} > ${subdeckName}`);
+        // Leave dropdown disabled with default option
     }
 }
 
-// Add event listeners for the fixed buttons when the page loads
+// Add event listener for subdeck select to update subsubdeck options
+const subdeckSelect = document.getElementById('subdeckSelect');
+if (subdeckSelect) {
+    subdeckSelect.addEventListener('change', function() {
+        const deckSelect = document.getElementById('deckSelect');
+        const selectedDeck = deckSelect ? deckSelect.value : '';
+        const selectedSubdeck = this.value;
+        
+        console.log(`Subdeck selection changed to: ${selectedSubdeck}`);
+        populateSubsubdeckDropdown(selectedDeck, selectedSubdeck);
+    });
+}
+
+// Initialize the admin form when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Set up event listeners for the close buttons
-    document.getElementById('preview-close-x').addEventListener('click', toggleExpandedPreview);
-    document.getElementById('preview-return-btn').addEventListener('click', toggleExpandedPreview);
+    console.log('DOM loaded, initializing admin form');
     
-    // Set up event listener for overlay
-    document.querySelector('.preview-overlay').addEventListener('click', toggleExpandedPreview);
+    // Initialize the admin form
+    setupAdminForm();
+    
+    // Set up any other necessary initializations
+    setupCardTypeToggle();
 });
+
+// Setup card type radio button toggling
+function setupCardTypeToggle() {
+    console.log('Setting up card type toggle');
+    
+    const cardTypeRadios = document.querySelectorAll('input[name="cardType"]');
+    if (cardTypeRadios.length === 0) {
+        console.error('Card type radio buttons not found');
+        return;
+    }
+    
+    // Add change event listeners to the radio buttons
+    cardTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const selectedType = this.value;
+            console.log('Card type changed to:', selectedType);
+            
+            // Update form UI based on selected card type
+            updateCardTypeUI(selectedType);
+        });
+    });
+    
+    // Initialize the UI for the currently selected card type
+    const selectedType = document.querySelector('input[name="cardType"]:checked')?.value || 'classic';
+    updateCardTypeUI(selectedType);
+}
+
+/**
+ * Initialize the admin form and set up event handlers
+ */
+function setupAdminForm() {
+    console.log('Setting up admin form');
+    
+    // Cache DOM elements
+    const adminModal = document.getElementById('admin-modal');
+    const adminForm = document.getElementById('add-flashcard-form');
+    const openAdminBtn = document.getElementById('open-admin-btn');
+    const deckSelect = document.getElementById('deckSelect');
+    const subdeckSelect = document.getElementById('subdeckSelect');
+    const subsubdeckSelect = document.getElementById('subsubdeckSelect');
+    
+    // Log what elements we found for debugging
+    console.log('Admin form elements:', {
+        adminModal: adminModal ? 'found' : 'missing',
+        adminForm: adminForm ? 'found' : 'missing',
+        openAdminBtn: openAdminBtn ? 'found' : 'missing',
+        deckSelect: deckSelect ? 'found' : 'missing',
+        subdeckSelect: subdeckSelect ? 'found' : 'missing',
+        subsubdeckSelect: subsubdeckSelect ? 'found' : 'missing'
+    });
+    
+    // Set up open button for admin panel
+    if (openAdminBtn) {
+        openAdminBtn.addEventListener('click', function() {
+            console.log('Opening admin panel');
+            if (adminModal) {
+                adminModal.classList.remove('hidden');
+                
+                // Initialize dropdowns when opening the modal
+                populateDeckDropdown();
+                
+                // Reset subdeck and subsubdeck dropdowns
+                if (subdeckSelect) {
+                    subdeckSelect.innerHTML = '<option value="" disabled selected>Select deck first</option>';
+                    subdeckSelect.disabled = true;
+                }
+                
+                if (subsubdeckSelect) {
+                    subsubdeckSelect.innerHTML = '<option value="" disabled selected>Select subdeck first</option>';
+                    subsubdeckSelect.disabled = true;
+                }
+            } else {
+                console.error('Admin modal element not found!');
+            }
+        });
+    }
+    
+    // Set up form submission handler
+    if (adminForm) {
+        adminForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Admin form submitted');
+            
+            // Get form values
+            const question = document.getElementById('questionInput').value.trim();
+            const deck = deckSelect ? deckSelect.value : '';
+            const subdeck = subdeckSelect ? subdeckSelect.value : '';
+            const subsubdeck = subsubdeckSelect ? subsubdeckSelect.value : '';
+            const tags = document.getElementById('tagsInput').value;
+            const cardType = document.querySelector('input[name="cardType"]:checked')?.value || 'classic';
+            
+            console.log('Form values:', { deck, subdeck, subsubdeck, cardType });
+            
+            // Validate required fields
+            if (!question || !deck || !subdeck) {
+                alert('Please fill in all required fields (question, deck, and subdeck)');
+                return;
+            }
+            
+            // Show processing state
+            const submitButton = document.getElementById('addCardSubmit');
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Processing...';
+            submitButton.disabled = true;
+            
+            // Create form data object
+            const formData = {
+                question: question,
+                deck: deck,
+                subdeck: subdeck,
+                tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+                type: cardType
+            };
+            
+            // Add subsubdeck if it exists
+            if (subsubdeck) {
+                formData.subsubdeck = subsubdeck;
+            }
+            
+            console.log('Submitting form data:', formData);
+            
+            // Submit the form data
+            fetch('/api/flashcards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Server responded with ${response.status}: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Card added successfully:', data);
+                
+                // Reset the form
+                adminForm.reset();
+                
+                // Show success message
+                alert('Flashcard added successfully!');
+                
+                // Close the modal
+                if (adminModal) {
+                    adminModal.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding card:', error);
+                alert(`Error adding card: ${error.message}`);
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            });
+        });
+    }
+    
+    // Set up deck change event
+    if (deckSelect) {
+        deckSelect.addEventListener('change', function() {
+            const selectedDeck = this.value;
+            console.log('Deck selection changed to:', selectedDeck);
+            populateSubdeckDropdown(selectedDeck);
+        });
+    }
+    
+    // Set up subdeck change event
+    if (subdeckSelect) {
+        subdeckSelect.addEventListener('change', function() {
+            const selectedDeck = deckSelect ? deckSelect.value : '';
+            const selectedSubdeck = this.value;
+            console.log('Subdeck selection changed to:', selectedSubdeck);
+            populateSubsubdeckDropdown(selectedDeck, selectedSubdeck);
+        });
+    }
+    
+    // Initialize the deck dropdown
+    populateDeckDropdown();
+}
+
+// Function to parse multiple choice questions from text input for the preview
+function parseMultipleChoiceQuestions(content) {
+    console.log('Parsing multiple choice content:', content);
+    if (!content || content.trim() === '') {
+        console.warn('No content to parse for multiple choice');
+        return { question: '', options: [], correctIndex: -1, explanation: '' };
+    }
+
+    // Split by lines and filter out empty lines
+    const lines = content.split('\n').filter(line => line.trim() !== '');
+    
+    if (lines.length < 2) {
+        console.warn('Not enough content for multiple choice question');
+        return { question: content, options: [], correctIndex: -1, explanation: '' };
+    }
+
+    // The first line is the question
+    const question = lines[0];
+    
+    // Find the index of the line with ], the "Correct:" line, and "Explanation:" line
+    let correctIndex = -1;
+    let correctLineIndex = -1;
+    let explanationLineIndex = -1;
+    
+    // First check if any option line ends with "]" (legacy format)
+    for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim().endsWith(']')) {
+            correctIndex = i - 1; // adjust for 0-based index and first line being question
+            // Remove the ] from the option text
+            lines[i] = lines[i].trim().replace(/\]$/, '');
+            break;
+        }
+    }
+    
+    // Also check for "Correct:" prefix format
+    for (let i = 0; i < lines.length; i++) {
+        const lowerLine = lines[i].toLowerCase();
+        if (lowerLine.startsWith('correct:')) {
+            correctLineIndex = i;
+        } else if (lowerLine.startsWith('explanation:') || lowerLine.startsWith('explain:')) {
+            explanationLineIndex = i;
+        }
+    }
+    
+    // Get options end index - where to stop collecting options
+    const optionsEndIndex = Math.min(
+        ...[correctLineIndex, explanationLineIndex, lines.length]
+            .filter(idx => idx !== -1)
+    );
+    
+    // Only include actual options (lines after question, before special lines)
+    const options = lines.slice(1, optionsEndIndex).map(line => {
+        // Remove any option markers like "A)", "1.", etc.
+        return line.replace(/^[A-Za-z0-9]+[\.\)]\s*/, '').trim();
+    });
+    
+    // If we didn't find a correct option with ], try to use the "Correct:" line
+    if (correctIndex === -1 && correctLineIndex !== -1) {
+        // Extract the correct answer text
+        const correctLine = lines[correctLineIndex];
+        const correctAnswer = correctLine.substring(correctLine.indexOf(':') + 1).trim();
+        
+        // Find the matching option
+        correctIndex = options.findIndex(option => 
+            option.toLowerCase() === correctAnswer.toLowerCase());
+    }
+    
+    // Get the explanation if present
+    let explanation = '';
+    if (explanationLineIndex !== -1) {
+        explanation = lines[explanationLineIndex].substring(lines[explanationLineIndex].indexOf(':') + 1).trim();
+        
+        // Add subsequent lines to explanation if they exist
+        for (let i = explanationLineIndex + 1; i < lines.length; i++) {
+            explanation += '\n' + lines[i].trim();
+        }
+    }
+    
+    console.log('Parsed question:', { question, options, correctIndex, explanation });
+    return { question, options, correctIndex, explanation };
+}
 
 // Function to update the expanded preview with all cards
 function updateExpandedPreview() {
-    const type = document.querySelector('input[name="card-type"]:checked').value;
-    const content = document.getElementById('question').value;
+    console.log('Updating expanded preview');
+    
+    // Get card type from radio buttons
+    const cardTypeInput = document.querySelector('input[name="cardType"]:checked');
+    if (!cardTypeInput) {
+        console.error('No card type selected for expanded preview!');
+        return;
+    }
+    
+    const type = cardTypeInput.value;
+    
+    // Get question text from textarea
+    const questionInput = document.getElementById('questionInput');
+    if (!questionInput) {
+        console.error('Question input element not found for expanded preview!');
+        return;
+    }
+    
+    const content = questionInput.value;
+    
+    // Get expanded preview container
     const expandedPreviewContainer = document.querySelector('.expanded-preview');
+    if (!expandedPreviewContainer) {
+        console.error('Expanded preview container not found!');
+        return;
+    }
     
     // Create main header for expanded preview
     const mainHeader = document.createElement('div');
@@ -2526,998 +2173,147 @@ function updateExpandedPreview() {
     mainHeader.style.textAlign = 'center';
     mainHeader.innerHTML = '<h1 style="font-size: 20px; margin: 0;">Card Preview</h1><p style="margin: 5px 0 0 0; font-size: 14px;">Use the X button or "Return to Admin Panel" button to go back</p>';
     
-    // Create loading indicator
-    const loadingDiv = document.createElement('div');
-    loadingDiv.style.textAlign = 'center';
-    loadingDiv.style.padding = '30px';
-    
-    const spinner = document.createElement('div');
-    spinner.style.border = '4px solid #f3f3f3';
-    spinner.style.borderTop = '4px solid #3498db';
-    spinner.style.borderRadius = '50%';
-    spinner.style.width = '30px';
-    spinner.style.height = '30px';
-    spinner.style.margin = '0 auto';
-    
-    const loadingText = document.createElement('p');
-    loadingText.style.marginTop = '10px';
-    loadingText.textContent = 'Loading card previews...';
-    
-    loadingDiv.appendChild(spinner);
-    loadingDiv.appendChild(loadingText);
-    
-    // Clear previous content and add header and loading indicator
+    // Clear previous content and add header
     expandedPreviewContainer.innerHTML = '';
     expandedPreviewContainer.appendChild(mainHeader);
-    expandedPreviewContainer.appendChild(loadingDiv);
-    expandedPreviewContainer.style.backgroundColor = 'white';
     
-    // Add animation style if it doesn't exist
-    if (!document.getElementById('spin-animation')) {
-        const style = document.createElement('style');
-        style.id = 'spin-animation';
-        style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-        document.head.appendChild(style);
+    if (!content.trim()) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.textAlign = 'center';
+        emptyDiv.style.padding = '20px';
+        emptyDiv.style.color = '#777';
+        emptyDiv.textContent = 'Enter your cards to see previews';
+        expandedPreviewContainer.appendChild(emptyDiv);
+        return;
     }
     
-    // Add spinner animation
-    spinner.style.animation = 'spin 1s linear infinite';
+    // Add a simple message for now - this is a placeholder for the full implementation
+    const previewContent = document.createElement('div');
+    previewContent.style.padding = '20px';
+    previewContent.style.margin = '10px';
+    previewContent.style.backgroundColor = '#f8f9fa';
+    previewContent.style.border = '1px solid #ddd';
+    previewContent.style.borderRadius = '5px';
     
-    // Use setTimeout to allow the loading indicator to render
-    setTimeout(() => {
-        // Clear loading indicator (but keep the header)
-        expandedPreviewContainer.innerHTML = '';
-        expandedPreviewContainer.appendChild(mainHeader);
-        
-        if (!content.trim()) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.style.textAlign = 'center';
-            emptyDiv.style.padding = '20px';
-            emptyDiv.style.color = '#777';
-            emptyDiv.textContent = 'Enter your cards to see previews';
-            expandedPreviewContainer.appendChild(emptyDiv);
-            return;
-        }
-        
-        // Add card type header
-        const headerDiv = document.createElement('div');
-        headerDiv.style.padding = '10px 0';
-        headerDiv.style.marginBottom = '15px';
-        headerDiv.style.borderBottom = '1px solid #ddd';
-        
-        if (type === 'multipleChoice') {
-            try {
-                // Parse all question blocks
-                const questionBlocks = parseMultipleChoiceQuestions(content, true);
-                
-                if (questionBlocks.length === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.style.textAlign = 'center';
-                    emptyDiv.style.padding = '20px';
-                    emptyDiv.style.color = '#777';
-                    emptyDiv.textContent = 'No valid multiple choice cards found';
-                    expandedPreviewContainer.appendChild(emptyDiv);
-                    return;
-                }
-                
-                // Add card count to header
-                headerDiv.innerHTML = `<h2 style="font-size:18px; margin:0;">Multiple Choice Cards (${questionBlocks.length})</h2>`;
-                expandedPreviewContainer.appendChild(headerDiv);
-                
-                // Create grid container
-                const gridContainer = document.createElement('div');
-                gridContainer.style.display = 'grid';
-                gridContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-                gridContainer.style.gap = '15px';
-                expandedPreviewContainer.appendChild(gridContainer);
-                
-                // Create preview cards for each block
-                questionBlocks.forEach((block, index) => {
-                    const cardDiv = document.createElement('div');
-                    cardDiv.style.backgroundColor = 'white';
-                    cardDiv.style.border = '1px solid #ddd';
-                    cardDiv.style.borderRadius = '5px';
-                    cardDiv.style.overflow = 'hidden';
-                    
-                    // Add card header with number
-                    const cardHeader = document.createElement('div');
-                    cardHeader.style.backgroundColor = '#f5f5f5';
-                    cardHeader.style.padding = '5px 10px';
-                    cardHeader.style.fontSize = '12px';
-                    cardHeader.style.borderBottom = '1px solid #ddd';
-                    cardHeader.textContent = `Card ${index + 1}`;
-                    cardDiv.appendChild(cardHeader);
-                    
-                    // Card content container
-                    const cardContent = document.createElement('div');
-                    cardContent.style.padding = '10px';
-                    
-                    // Add question
-                    const questionEl = document.createElement('h3');
-                    questionEl.style.fontSize = '14px';
-                    questionEl.style.margin = '0 0 10px 0';
-                    questionEl.textContent = block[0];
-                    cardContent.appendChild(questionEl);
-                    
-                    // Find options and correct answer
-                    let correctIndex = -1;
-                    let extraInfo = '';
-                    
-                    for (let i = 1; i < block.length; i++) {
-                        const line = block[i];
-                        
-                        if (line.startsWith('/')) {
-                            extraInfo = line.substring(1).trim();
-                        } else if (line.endsWith(']')) {
-                            correctIndex = i - 1;
-                        }
-                    }
-                    
-                    // Options container
-                    const optionsContainer = document.createElement('div');
-                    optionsContainer.style.display = 'flex';
-                    optionsContainer.style.flexDirection = 'column';
-                    optionsContainer.style.gap = '5px';
-                    
-                    // Display options
-                    const options = block.filter((line, idx) => 
-                        idx > 0 && !line.startsWith('/')
-                    );
-                    
-                    options.forEach((option, optIdx) => {
-                        const isCorrect = option.trim().endsWith(']');
-                        let cleanOption = option.replace(/\]$/, '').trim();
-                        
-                        // Create option element
-                        const optionEl = document.createElement('div');
-                        optionEl.style.padding = '5px 8px';
-                        optionEl.style.fontSize = '12px';
-                        optionEl.style.border = '1px solid #ddd';
-                        optionEl.style.borderRadius = '3px';
-                        
-                        // Style for correct answer
-                        if (isCorrect) {
-                            optionEl.style.backgroundColor = '#e3fcec';
-                            optionEl.style.borderColor = '#2ed573';
-                        }
-                        
-                        optionEl.textContent = cleanOption;
-                        optionsContainer.appendChild(optionEl);
-                    });
-                    
-                    cardContent.appendChild(optionsContainer);
-                    
-                    // Add extra info if available
-                    if (extraInfo) {
-                        const infoDiv = document.createElement('div');
-                        infoDiv.style.marginTop = '10px';
-                        infoDiv.style.padding = '5px';
-                        infoDiv.style.fontSize = '11px';
-                        infoDiv.style.backgroundColor = '#f8f8f8';
-                        infoDiv.style.borderRadius = '3px';
-                        infoDiv.innerHTML = `<strong>Extra:</strong> ${extraInfo}`;
-                        cardContent.appendChild(infoDiv);
-                    }
-                    
-                    cardDiv.appendChild(cardContent);
-                    gridContainer.appendChild(cardDiv);
-                });
-            } catch (error) {
-                const errorDiv = document.createElement('div');
-                errorDiv.style.textAlign = 'center';
-                errorDiv.style.padding = '20px';
-                errorDiv.style.color = '#777';
-                errorDiv.innerHTML = `
-                    <p>Error parsing multiple choice cards:</p>
-                    <p style="color: #e74c3c;">${error.message}</p>
-                `;
-                expandedPreviewContainer.appendChild(errorDiv);
-            }
-        } else {
-            // Classic cards
-            try {
-                // Parse all classic cards
-                const cardBlocks = parseClassicCards(content);
-                
-                if (cardBlocks.length === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.style.textAlign = 'center';
-                    emptyDiv.style.padding = '20px';
-                    emptyDiv.style.color = '#777';
-                    emptyDiv.textContent = 'No valid classic cards found';
-                    expandedPreviewContainer.appendChild(emptyDiv);
-                    return;
-                }
-                
-                // Add card count to header
-                headerDiv.innerHTML = `<h2 style="font-size:18px; margin:0;">Classic Cards (${cardBlocks.length})</h2>`;
-                expandedPreviewContainer.appendChild(headerDiv);
-                
-                // Create grid container
-                const gridContainer = document.createElement('div');
-                gridContainer.style.display = 'grid';
-                gridContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-                gridContainer.style.gap = '15px';
-                expandedPreviewContainer.appendChild(gridContainer);
-                
-                // Create preview for each card
-                cardBlocks.forEach((block, index) => {
-                    const cardDiv = document.createElement('div');
-                    cardDiv.style.backgroundColor = 'white';
-                    cardDiv.style.border = '1px solid #ddd';
-                    cardDiv.style.borderRadius = '5px';
-                    cardDiv.style.overflow = 'hidden';
-                    
-                    // Add card header with number
-                    const cardHeader = document.createElement('div');
-                    cardHeader.style.backgroundColor = '#f5f5f5';
-                    cardHeader.style.padding = '5px 10px';
-                    cardHeader.style.fontSize = '12px';
-                    cardHeader.style.borderBottom = '1px solid #ddd';
-                    cardHeader.textContent = `Card ${index + 1}`;
-                    cardDiv.appendChild(cardHeader);
-                    
-                    // Card content container
-                    const cardContent = document.createElement('div');
-                    cardContent.style.padding = '10px';
-                    
-                    let question = '';
-                    let subtitle = '';
-                    let answer = '';
-                    let extraInfo = '';
-                    
-                    // Parse card content
-                    if (block.length > 0) {
-                        question = block[0];
-                    }
-                    
-                    if (block.length > 1) {
-                        subtitle = block[1];
-                    }
-                    
-                    // Find the extraInfo line (starts with /)
-                    const extraInfoIndex = block.findIndex(line => line.startsWith('/'));
-                    
-                    if (extraInfoIndex !== -1 && extraInfoIndex >= 2) {
-                        // Everything from line 2 up to extraInfoIndex is the answer
-                        answer = block.slice(2, extraInfoIndex).join('<br>');
-                        // Remove the leading slash from extraInfo
-                        extraInfo = block[extraInfoIndex].substring(1);
-                        
-                        // If there are more lines after extraInfoIndex, add them to extraInfo
-                        if (extraInfoIndex < block.length - 1) {
-                            extraInfo += '<br>' + block.slice(extraInfoIndex + 1).join('<br>');
-                        }
-                    } else if (block.length > 2) {
-                        // No extraInfo found, everything from line 2 onward is the answer
-                        answer = block.slice(2).join('<br>');
-                    }
-                    
-                    // Add question
-                    const questionEl = document.createElement('h3');
-                    questionEl.style.fontSize = '14px';
-                    questionEl.style.margin = '0 0 5px 0';
-                    questionEl.textContent = question;
-                    cardContent.appendChild(questionEl);
-                    
-                    // Add subtitle if available
-                    if (subtitle) {
-                        const subtitleEl = document.createElement('p');
-                        subtitleEl.style.fontSize = '12px';
-                        subtitleEl.style.margin = '0 0 10px 0';
-                        subtitleEl.style.color = '#666';
-                        subtitleEl.textContent = subtitle;
-                        cardContent.appendChild(subtitleEl);
-                    }
-                    
-                    // Add separator
-                    const separator = document.createElement('hr');
-                    separator.style.margin = '8px 0';
-                    separator.style.border = 'none';
-                    separator.style.borderTop = '1px dashed #ddd';
-                    cardContent.appendChild(separator);
-                    
-                    // Add answer
-                    const answerEl = document.createElement('div');
-                    answerEl.style.fontSize = '12px';
-                    answerEl.innerHTML = answer;
-                    cardContent.appendChild(answerEl);
-                    
-                    // Add extra info if available
-                    if (extraInfo) {
-                        const infoDiv = document.createElement('div');
-                        infoDiv.style.marginTop = '10px';
-                        infoDiv.style.padding = '5px';
-                        infoDiv.style.fontSize = '11px';
-                        infoDiv.style.backgroundColor = '#f8f8f8';
-                        infoDiv.style.borderRadius = '3px';
-                        infoDiv.innerHTML = `<strong>Notes:</strong> ${extraInfo}`;
-                        cardContent.appendChild(infoDiv);
-                    }
-                    
-                    cardDiv.appendChild(cardContent);
-                    gridContainer.appendChild(cardDiv);
-                });
-            } catch (error) {
-                const errorDiv = document.createElement('div');
-                errorDiv.style.textAlign = 'center';
-                errorDiv.style.padding = '20px';
-                errorDiv.style.color = '#777';
-                errorDiv.innerHTML = `
-                    <p>Error parsing classic cards:</p>
-                    <p style="color: #e74c3c;">${error.message}</p>
-                `;
-                expandedPreviewContainer.appendChild(errorDiv);
-            }
-        }
-    }, 100);
-}
-
-// Add this near the openAdminPanel function or event listener
-document.getElementById('open-admin-btn').addEventListener('click', function() {
-    // Show the admin modal
-    document.getElementById('admin-modal').classList.remove('hidden');
-    
-    // Make sure preview areas are in correct initial state
-    const regularPreview = document.querySelector('.card-preview');
-    const expandedPreview = document.querySelector('.expanded-preview');
-    const closeXButton = document.getElementById('preview-close-x');
-    const returnButton = document.getElementById('preview-return-btn');
-    
-    // Ensure single preview is visible and expanded is hidden
-    regularPreview.style.display = 'block';
-    expandedPreview.style.display = 'none';
-    closeXButton.style.display = 'none';
-    returnButton.style.display = 'none';
-    
-    // Set correct button text
-    document.getElementById('expand-preview-btn').textContent = 'Show All Cards';
-    
-    // Initialize other admin panel elements
-    populateDeckDropdown();
-});
-
-// ... existing code ...
-// Comment out this function since we now have the table hardcoded in HTML
-/*
-function updateOverview() {
-    const overviewSection = document.getElementById('overview-section');
-    
-    // Clear the section
-    overviewSection.innerHTML = '';
-    
-    // Create table structure
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    
-    // Create header row
-    const headerRow = document.createElement('tr');
-    const deckHeader = document.createElement('th');
-    deckHeader.textContent = 'Mazo';
-    const newHeader = document.createElement('th');
-    newHeader.textContent = 'Nuevas';
-    const dueHeader = document.createElement('th');
-    dueHeader.textContent = 'Pendientes';
-    
-    // Append headers
-    headerRow.appendChild(deckHeader);
-    headerRow.appendChild(newHeader);
-    headerRow.appendChild(dueHeader);
-    thead.appendChild(headerRow);
-    
-    // Assemble table
-    table.appendChild(thead);
-    overviewSection.appendChild(table);
-    
-    // Call the existing function to populate the table body with data
-    generateOverviewTable().then(tableBody => {
-        table.appendChild(tableBody);
-        addToggleListeners();
-    }).catch(error => {
-        console.error('Error updating overview:', error);
-    });
-}
-*/
-// ... existing code ...
-
-// Function to show calendar
-function showCalendar() {
-    const mainContent = document.getElementById('main-content');
-    const overviewSection = document.getElementById('overview-section');
-    const statsContainer = document.querySelector('.stats-container');
-    const flashcardSystem = document.getElementById('flashcard-system');
-    const calendar = document.getElementById('study-calendar');
-
-    // Show main content
-    mainContent?.classList?.remove('hidden');
-    
-    // Hide other sections
-    overviewSection?.parentElement?.classList?.add('hidden');
-    statsContainer?.classList?.add('hidden');
-    flashcardSystem?.classList?.add('hidden');
-    
-    // Show calendar
-    if (calendar) {
-        calendar.classList.remove('hidden');
-        
-        // Generate calendar if it hasn't been initialized
-        if (!calendar.querySelector('.month-container')) {
-            generateCalendar();
-        }
+    if (type === 'multipleChoice') {
+        previewContent.innerHTML = `
+            <h3>Multiple Choice Card Preview</h3>
+            <p>This is a basic preview of your multiple choice card.</p>
+            <p>Question: ${content.split('\n')[0]}</p>
+            <p>In the full implementation, this would show all of your parsed cards.</p>
+        `;
+    } else {
+        previewContent.innerHTML = `
+            <h3>Classic Card Preview</h3>
+            <p>This is a basic preview of your classic card.</p>
+            <p>Question: ${content.split('\n')[0]}</p>
+            <p>In the full implementation, this would show all of your parsed cards.</p>
+        `;
     }
     
-    showStatus('Calendar');
+    expandedPreviewContainer.appendChild(previewContent);
+    console.log('Expanded preview updated');
 }
 
-// Add event listener for calendar button
-document.addEventListener('DOMContentLoaded', () => {
-    const calendarButton = document.getElementById('calendar-button');
-    if (calendarButton) {
-        calendarButton.addEventListener('click', showCalendar);
-    }
-});
-
-// ... existing code ...
-
-// Profile dropdown functionality
+// Make sure setupLivePreview is called when admin panel opens
 document.addEventListener('DOMContentLoaded', function() {
-    const profileToggle = document.getElementById('profile-toggle');
-    const profileDropdown = document.querySelector('.profile-dropdown-content');
-    const profileBtn = document.getElementById('profile-btn');
-    const logoutBtn = document.getElementById('logout');
+    console.log('DOM loaded, setting up admin panel preview');
     
-    if (profileToggle && profileDropdown) {
-        // Toggle dropdown when clicking the profile icon
-        profileToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('show');
-            
-            // Force redraw to ensure visibility
-            profileDropdown.style.display = 'none';
-            setTimeout(() => {
-                profileDropdown.style.display = profileDropdown.classList.contains('show') ? 'block' : 'none';
-            }, 0);
+    const openAdminBtn = document.getElementById('open-admin-btn');
+    if (openAdminBtn) {
+        console.log('Found open admin button, adding click listener');
+        openAdminBtn.addEventListener('click', function() {
+            console.log('Admin panel opened, setting up preview');
+            setTimeout(setupLivePreview, 300); // Allow modal to fully open
         });
-        
-        // Close dropdown when clicking elsewhere
-        document.addEventListener('click', function(e) {
-            if (!profileToggle.contains(e.target) && !profileDropdown.contains(e.target)) {
-                profileDropdown.classList.remove('show');
-            }
+    } else {
+        console.error('Open admin button not found!');
+    }
+    
+    // Also set up preview when form is reset
+    const adminForm = document.getElementById('admin-form');
+    if (adminForm) {
+        console.log('Found admin form, adding reset listener');
+        adminForm.addEventListener('reset', function() {
+            console.log('Form reset, updating preview');
+            setTimeout(updatePreview, 100);
         });
-        
-        // Handle profile button click (currently does nothing)
-        if (profileBtn) {
-            profileBtn.addEventListener('click', function() {
-                // This is left non-functional as per requirements
-                profileDropdown.classList.remove('show');
-            });
-        }
-        
-        // Ensure the logout button is visible and styled properly
-        if (logoutBtn) {
-            logoutBtn.style.display = 'block';
-            logoutBtn.style.visibility = 'visible';
-            logoutBtn.style.opacity = '1';
-        }
     }
 });
 
-// Function to parse a classic card from text input
-function parseClassicCard(text) {
-    // Split text by lines and filter out empty lines
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
-    if (lines.length < 2) {
-        throw new Error('Classic card must have at least a question and answer');
+// Debounce function to limit how often a function can be called
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Parse the question input for a classic card
+ * @param {string} content - The text content from the textarea
+ * @returns {Object} The parsed question, subtitle, answer and extraInfo
+ */
+function parseClassicCard(content) {
+    console.log('Parsing classic card content:', content);
+    if (!content || content.trim() === '') {
+        console.warn('No content to parse for classic card');
+        return { question: '', subtitle: '', answer: '', extraInfo: '' };
     }
+
+    // Split by lines and filter out empty lines
+    const lines = content.split('\n').filter(line => line.trim() !== '');
     
-    const question = lines[0];
+    if (lines.length === 0) {
+        console.warn('No content to parse for classic card');
+        return { question: '', subtitle: '', answer: '', extraInfo: '' };
+    }
+
+    // First line is always the question
+    const question = lines[0].trim();
+    
     let subtitle = '';
     let answer = '';
     let extraInfo = '';
     
-    if (lines.length === 2) {
-        // Simple question/answer format
-        answer = lines[1];
-    } else if (lines.length === 3) {
-        // Question/subtitle/answer format
-        subtitle = lines[1];
-        answer = lines[2];
-    } else {
-        // Question with subtitle and multi-line answer
-        subtitle = lines[1];
-        
-        // Look for notes (lines starting with /note or /nota)
-        const noteLines = [];
-        const answerLines = [];
-        
-        for (let i = 2; i < lines.length; i++) {
-            const line = lines[i];
-            if (line.startsWith('/note ') || line.startsWith('/nota ')) {
-                noteLines.push(line.replace(/^\/(note|nota)\s+/, ''));
-            } else {
-                answerLines.push(line);
-            }
-        }
-        
-        answer = answerLines.join('\n');
-        extraInfo = noteLines.join('\n');
-    }
-    
-    return { question, subtitle, answer, extraInfo };
-}
-
-// Function to parse a multiple choice card from text input
-function parseMultipleChoiceCard(text) {
-    // Split text by lines and filter out empty lines
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
-    if (lines.length < 3) {
-        throw new Error('Multiple choice card must have at least a question and 2 options');
-    }
-    
-    const question = lines[0];
-    const options = [];
-    let correctIndex = -1;
-    const commentLines = [];
-    
-    // Process options and find the correct one
-    for (let i = 1; i < lines.length; i++) {
-        let line = lines[i];
-        
-        // Check if this line is a comment
-        if (line.startsWith('/')) {
-            commentLines.push(line.substring(1).trim());
-            continue;
-        }
-        
-        // Check if this option is marked as correct
-        if (line.endsWith(']')) {
-            correctIndex = options.length;
-            line = line.substring(0, line.length - 1);
-        }
-        
-        options.push(line);
-    }
-    
-    if (correctIndex === -1) {
-        throw new Error('No correct option marked with ] for multiple choice card');
-    }
-    
-    if (options.length < 2) {
-        throw new Error('Multiple choice card must have at least 2 options');
-    }
-    
-    const extraInfo = commentLines.join('\n');
-    
-    return { question, options, correctIndex, extraInfo };
-}
-
-$('#addCardForm').submit(function(e) {
-    e.preventDefault();
-    
-    // Change button state to indicate processing
-    const submitButton = $('#addCardSubmit');
-    const originalText = submitButton.text();
-    submitButton.text('Processing...').prop('disabled', true);
-    
-    // Get form values
-    const question = $('#questionInput').val().trim();
-    const deck = $('#deckSelect').val().trim();
-    const subdeck = $('#subdeckInput').val().trim();
-    const subsubdeck = $('#subsubdeckInput').val().trim();
-    const tags = $('#tagsInput').val().trim().split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-    const cardType = $('input[name="cardType"]:checked').val();
-    
-    // Validate required fields
-    if (!question || !deck || !subdeck) {
-        alert('Please fill in all required fields (Question, Deck, and Subdeck)');
-        submitButton.text(originalText).prop('disabled', false);
-        return;
-    }
-    
-    try {
-        // Parse the card content based on the card type
-        let cardData;
-        
-        if (cardType === 'classic') {
-            cardData = parseClassicCard(question);
-        } else if (cardType === 'multipleChoice') {
-            cardData = parseMultipleChoiceCard(question);
+    // Check if there's a second line for subtitle
+    if (lines.length > 1) {
+        // Check if the second line starts with a slash (for extra info)
+        if (lines[1].startsWith('/')) {
+            // No subtitle, second line is extra info
+            extraInfo = lines[1].substring(1).trim();
+            
+            // Answer is everything else, excluding lines that start with slash
+            answer = lines.slice(1)
+                .filter(line => !line.startsWith('/'))
+                .join('\n');
         } else {
-            throw new Error('Invalid card type');
-        }
-        
-        // Create the form data object
-        const formData = {
-            type: cardType,
-            deck: deck,
-            subdeck: subdeck,
-            tags: tags,
-            ...cardData
-        };
-        
-        // Add subsubdeck if it exists
-        if (subsubdeck) {
-            formData.subsubdeck = subsubdeck;
-        }
-        
-        console.log('Submitting form data:', formData);
-        
-        // Submit the form data
-        fetch('/api/flashcards', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`Server responded with ${response.status}: ${text}`);
-                });
+            // Second line is subtitle
+            subtitle = lines[1].trim();
+            
+            // Find any lines that start with slash (for extra info)
+            const extraInfoLines = lines.slice(2).filter(line => line.startsWith('/'));
+            if (extraInfoLines.length > 0) {
+                // Remove the slash and join with newlines
+                extraInfo = extraInfoLines
+                    .map(line => line.substring(1).trim())
+                    .join('\n');
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Card added successfully:', data);
             
-            // Reset the form
-            $('#addCardForm')[0].reset();
-            
-            // Show success message
-            alert('Card added successfully!');
-            
-            // Close the modal
-            $('#adminModal').modal('hide');
-        })
-        .catch(error => {
-            console.error('Error adding card:', error);
-            alert(`Error adding card: ${error.message}`);
-        })
-        .finally(() => {
-            // Reset button state
-            submitButton.text(originalText).prop('disabled', false);
-        });
-    } catch (error) {
-        console.error('Error parsing card:', error);
-        alert(`Error parsing card: ${error.message}`);
-        submitButton.text(originalText).prop('disabled', false);
-    }
-});
-
-// ... existing code ...
-
-// Toggle card format help when card type changes
-$('input[name="cardType"]').change(function() {
-    const cardType = $(this).val();
-    
-    if (cardType === 'classic') {
-        $('#classicFormatHelp').show();
-        $('#multipleChoiceFormatHelp').hide();
-    } else if (cardType === 'multipleChoice') {
-        $('#classicFormatHelp').hide();
-        $('#multipleChoiceFormatHelp').show();
-    }
-});
-
-// ... existing code ...
-
-// Function to set up live preview for the question input
-function setupLivePreview() {
-    const previewContainer = $('<div>', {
-        id: 'livePreviewContainer',
-        class: 'card mb-3'
-    }).insertAfter('#questionInput');
-
-    const previewHeader = $('<div>', {
-        class: 'card-header',
-        text: 'Live Preview'
-    }).appendTo(previewContainer);
-
-    const previewBody = $('<div>', {
-        class: 'card-body',
-        id: 'livePreviewBody'
-    }).appendTo(previewContainer);
-
-    function updatePreview() {
-        const text = $('#questionInput').val();
-        const cardType = $('input[name="cardType"]:checked').val();
-        const previewBody = $('#livePreviewBody');
-        
-        previewBody.empty();
-        
-        try {
-            if (cardType === 'classic') {
-                const parsed = parseClassicCard(text);
-                
-                // Add question
-                $('<h5>', {
-                    class: 'card-title',
-                    text: parsed.question
-                }).appendTo(previewBody);
-                
-                // Add subtitle if exists
-                if (parsed.subtitle) {
-                    $('<h6>', {
-                        class: 'card-subtitle mb-2 text-muted',
-                        text: parsed.subtitle
-                    }).appendTo(previewBody);
-                }
-                
-                // Add answer with collapsible panel
-                const answerPanel = $('<div>', {
-                    class: 'mt-3'
-                }).appendTo(previewBody);
-                
-                const answerToggle = $('<button>', {
-                    class: 'btn btn-outline-primary btn-sm',
-                    text: 'Show Answer'
-                }).appendTo(answerPanel);
-                
-                const answerContent = $('<div>', {
-                    class: 'mt-2 p-2 border rounded bg-light',
-                    style: 'display: none;'
-                }).appendTo(answerPanel);
-                
-                $('<p>', {
-                    text: parsed.answer,
-                    style: 'white-space: pre-line;'
-                }).appendTo(answerContent);
-                
-                // Show extra info if it exists
-                if (parsed.extraInfo) {
-                    $('<div>', {
-                        class: 'alert alert-info mt-3',
-                        html: '<strong>Notes:</strong> ' + parsed.extraInfo
-                    }).appendTo(answerContent);
-                }
-                
-                // Set up toggle functionality
-                answerToggle.click(function() {
-                    answerContent.toggle();
-                    answerToggle.text(answerContent.is(':visible') ? 'Hide Answer' : 'Show Answer');
-                });
-                
-            } else if (cardType === 'multipleChoice') {
-                const parsed = parseMultipleChoiceCard(text);
-                
-                // Add question
-                $('<h5>', {
-                    class: 'card-title',
-                    text: parsed.question
-                }).appendTo(previewBody);
-                
-                // Add options
-                const optionsContainer = $('<div>', {
-                    class: 'mt-3'
-                }).appendTo(previewBody);
-                
-                parsed.options.forEach((option, index) => {
-                    const isCorrect = index === parsed.correctIndex;
-                    
-                    const optionDiv = $('<div>', {
-                        class: 'form-check mb-2'
-                    }).appendTo(optionsContainer);
-                    
-                    const optionInput = $('<input>', {
-                        class: 'form-check-input option-radio',
-                        type: 'radio',
-                        name: 'previewOptions',
-                        id: `previewOption${index}`,
-                        value: index
-                    }).appendTo(optionDiv);
-                    
-                    $('<label>', {
-                        class: 'form-check-label',
-                        for: `previewOption${index}`,
-                        text: option
-                    }).appendTo(optionDiv);
-                    
-                    if (isCorrect) {
-                        optionInput.data('correct', true);
-                    }
-                });
-                
-                // Add button to check answer
-                const checkButton = $('<button>', {
-                    class: 'btn btn-outline-primary btn-sm mt-2',
-                    text: 'Check Answer'
-                }).appendTo(previewBody);
-                
-                // Add result display
-                const resultDisplay = $('<div>', {
-                    class: 'mt-2',
-                    style: 'display: none;'
-                }).appendTo(previewBody);
-                
-                // Show extra info if it exists
-                if (parsed.extraInfo) {
-                    $('<div>', {
-                        class: 'alert alert-info mt-3',
-                        html: '<strong>Notes:</strong> ' + parsed.extraInfo
-                    }).appendTo(resultDisplay);
-                }
-                
-                // Set up check functionality
-                checkButton.click(function() {
-                    const selectedOption = $('input[name="previewOptions"]:checked');
-                    
-                    if (selectedOption.length === 0) {
-                        alert('Please select an option first');
-                        return;
-                    }
-                    
-                    resultDisplay.show();
-                    
-                    if (selectedOption.data('correct')) {
-                        resultDisplay.html('<div class="alert alert-success">Correct!</div>');
-                    } else {
-                        const correctIndex = parsed.correctIndex;
-                        resultDisplay.html(`<div class="alert alert-danger">Incorrect! The correct answer is: ${parsed.options[correctIndex]}</div>`);
-                    }
-                    
-                    // Show extra info if it exists
-                    if (parsed.extraInfo) {
-                        $('<div>', {
-                            class: 'alert alert-info mt-3',
-                            html: '<strong>Notes:</strong> ' + parsed.extraInfo
-                        }).appendTo(resultDisplay);
-                    }
-                });
+            // Answer is everything after subtitle, excluding lines that start with slash
+            if (lines.length > 2) {
+                answer = lines.slice(2)
+                    .filter(line => !line.startsWith('/'))
+                    .join('\n');
             }
-        } catch (error) {
-            // If there's an error in parsing, show format help
-            previewBody.html(`<div class="alert alert-warning">
-                <p><strong>Format error:</strong> ${error.message}</p>
-                <p>Please check the Card Format Help section below for correct formatting.</p>
-            </div>`);
         }
     }
     
-    // Update preview when input changes, with debounce
-    const debouncedUpdate = debounce(updatePreview, 500);
-    $('#questionInput').on('input', debouncedUpdate);
-    $('input[name="cardType"]').change(updatePreview);
-    
-    // Initial update
-    updatePreview();
-}
-
-// Debounce helper function
-function debounce(func, wait) {
-    let timeout;
-    return function() {
-        const context = this;
-        const args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            func.apply(context, args);
-        }, wait);
-    };
-}
-
-// ... existing code ...
-
-// Initialize the admin panel when document is ready
-$(document).ready(function() {
-    console.log('Admin panel initializing');
-    
-    // Populate deck select dropdown
-    populateDeckSelect();
-    
-    // Set up event handlers for the admin form
-    setupAdminForm();
-    
-    // Set up live preview for card creation
-    setupLivePreview();
-    
-    // Add any other admin panel initialization here
-});
-
-// Function to set up admin form event handlers
-function setupAdminForm() {
-    // Admin panel modal open/close events
-    $('#openAdminModal').click(function() {
-        $('#adminModal').modal('show');
-    });
-    
-    $('#adminModal').on('hidden.bs.modal', function() {
-        $('#addCardForm')[0].reset();
-    });
-    
-    // Set up cascading dropdown for deck/subdeck/subsubdeck
-    $('#deckSelect').change(function() {
-        updateSubdeckInput($(this).val());
-    });
-    
-    $('#subdeckInput').on('input', function() {
-        updateSubsubdeckInput($('#deckSelect').val(), $(this).val());
-    });
-}
-
-// Function to populate the deck select dropdown
-function populateDeckSelect() {
-    const decks = [
-        'Microbiología',
-        'Patología',
-        'Semiología',
-        'Farmacología',
-        'Terapéutica 1',
-        'Medicina Interna 1',
-        'Revalida',
-        'MIR'
-    ];
-    
-    const $deckSelect = $('#deckSelect');
-    decks.forEach(deck => {
-        $deckSelect.append(`<option value="${deck}">${deck}</option>`);
-    });
-}
-
-// Function to update the subdeck input based on the selected deck
-function updateSubdeckInput(deckName) {
-    console.log('Updating subdeck options for deck:', deckName);
-    
-    // Clear current options
-    $('#subdeckOptions').empty();
-    $('#subdeckInput').val('');
-    
-    if (!deckName) return;
-    
-    // Predefined subdecks for each deck
-    const subdecks = {
-        'Microbiología': ['Bacterias', 'Hongos', 'Parásitos', 'Virus'],
-        'Patología': ['Metabolopatías', 'Inflamación', 'Neoplasias', 'Cardiovascular', 'Respiratorio', 'Digestivo', 'Aparato urinario', 'Aparato reproductor', 'Piel', 'Huesos y articulaciones', 'Sistema endocrino', 'Otros'],
-        'Semiología': ['Historía clínica', 'Piel y faneras', 'Cabeza y cuello', 'Respiratorio', 'Cardiovascular', 'Digestivo', 'Urinario', 'Neurología', 'Osteoarticular'],
-        'Farmacología': ['ERA1', 'ERA2'],
-        'Terapéutica 1': ['ERA1', 'ERA2', 'ERA3'],
-        'Medicina Interna 1': ['Neumonología', 'Cardiovascular', 'Tubo Digestivo', 'Neurología', 'Anexos'],
-        'Revalida': ['Bling', 'Blang', 'Blong'],
-        'MIR': ['Bling', 'Blang', 'Blong']
-    };
-    
-    // Add options to the datalist
-    if (subdecks[deckName]) {
-        const $datalist = $('#subdeckOptions');
-        subdecks[deckName].forEach(subdeck => {
-            $datalist.append(`<option value="${subdeck}">`);
-        });
-        
-        // Update label to guide user
-        const $label = $('label[for="subdeckInput"]');
-        $label.text('Subdeck: (select from list or type new)');
-    }
-}
-
-// Function to update the subsubdeck input based on the selected deck and subdeck
-function updateSubsubdeckInput(deckName, subdeckName) {
-    console.log('Updating subsubdeck options for:', deckName, subdeckName);
-    
-    // Clear current options
-    $('#subsubdeckOptions').empty();
-    $('#subsubdeckInput').val('');
-    
-    if (!deckName || !subdeckName) return;
-    
-    // Predefined subsubdecks for certain deck/subdeck combinations
-    const subsubdecks = {
-        'Patología': {
-            'Respiratorio': ['Neumonía', 'Asma y Epoc', 'Cáncer de Pulmón', 'Otros']
-        }
-    };
-    
-    // Add options to the datalist if they exist
-    if (subsubdecks[deckName] && subsubdecks[deckName][subdeckName]) {
-        const $datalist = $('#subsubdeckOptions');
-        subsubdecks[deckName][subdeckName].forEach(subsubdeck => {
-            $datalist.append(`<option value="${subsubdeck}">`);
-        });
-        
-        // Update label to guide user
-        const $label = $('label[for="subsubdeckInput"]');
-        $label.text('Subsubdeck: (select from list or type new)');
-    }
+    console.log('Parsed classic card:', { question, subtitle, answer, extraInfo });
+    return { question, subtitle, answer, extraInfo };
 }

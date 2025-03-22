@@ -1,5 +1,192 @@
 // Main dynamic deck handling script - CSP compliant version
 
+// Add rate limiting mechanism
+window.lastRequestTime = 0;
+window.requestQueue = [];
+window.processingQueue = false;
+window.rateLimitStatus = {
+    isRateLimited: false,
+    retryAfter: 0,
+    consecutiveErrors: 0
+};
+
+// Use localStorage to track when the last page load happened
+const REFRESH_COOLDOWN_KEY = 'last_page_refresh_time';
+const REFRESH_COOLDOWN_MS = 3000; // 3 seconds between refreshes
+
+// Create status notification
+function showStatusNotification(message, isError = false) {
+    // Remove any existing notification
+    const existingNotification = document.getElementById('status-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.id = 'status-notification';
+    notification.style.position = 'fixed';
+    notification.style.top = '10px';
+    notification.style.left = '50%';
+    notification.style.transform = 'translateX(-50%)';
+    notification.style.padding = '10px 20px';
+    notification.style.borderRadius = '5px';
+    notification.style.zIndex = '9999';
+    notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    notification.style.backgroundColor = isError ? '#f44336' : '#2196F3';
+    notification.style.color = 'white';
+    notification.style.fontWeight = 'bold';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds unless it's an error
+    if (!isError) {
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+}
+
+/**
+ * Throttled fetch function with retry capability
+ * @param {string} url - The URL to fetch
+ * @param {number} retryCount - Current retry attempt (internal use)
+ * @returns {Promise} - The fetch promise
+ */
+async function throttledFetch(url, retryCount = 0) {
+    // If we're currently rate limited, notify user and delay
+    if (window.rateLimitStatus.isRateLimited) {
+        const waitTime = Math.max(1000, window.rateLimitStatus.retryAfter);
+        if (retryCount === 0) {
+            showStatusNotification(`Rate limited. Waiting ${Math.round(waitTime/1000)} seconds before retrying...`, true);
+        }
+        await new Promise(r => setTimeout(r, waitTime));
+        window.rateLimitStatus.isRateLimited = false;
+    }
+
+    return new Promise((resolve, reject) => {
+        // Add request to queue with retry info
+        window.requestQueue.push({
+            url,
+            resolve,
+            reject,
+            retryCount
+        });
+        
+        // Start processing queue if not already processing
+        if (!window.processingQueue) {
+            processRequestQueue();
+        }
+    });
+}
+
+/**
+ * Process the request queue with delays between requests
+ */
+async function processRequestQueue() {
+    window.processingQueue = true;
+    
+    while (window.requestQueue.length > 0) {
+        // If we're currently rate limited, pause processing
+        if (window.rateLimitStatus.isRateLimited) {
+            const waitTime = Math.max(2000, window.rateLimitStatus.retryAfter);
+            await new Promise(r => setTimeout(r, waitTime));
+            window.rateLimitStatus.isRateLimited = false;
+        }
+        
+        const now = Date.now();
+        const timeSinceLastRequest = now - window.lastRequestTime;
+        
+        // Exponential backoff delay based on consecutive errors
+        const baseDelay = 500 + (Math.pow(2, window.rateLimitStatus.consecutiveErrors) * 100);
+        const delay = Math.min(baseDelay, 5000); // Cap at 5 seconds
+        
+        // Ensure minimum delay between requests
+        if (timeSinceLastRequest < delay) {
+            await new Promise(r => setTimeout(r, delay - timeSinceLastRequest));
+        }
+        
+        // Process the next request
+        const request = window.requestQueue.shift();
+        window.lastRequestTime = Date.now();
+        
+        try {
+            // Add random delay variation to prevent synchronized requests
+            await new Promise(r => setTimeout(r, Math.random() * 100));
+            
+            // Show notification for first-time requests only
+            if (request.retryCount === 0 && window.requestQueue.length === 0) {
+                showStatusNotification("Loading data...");
+            }
+            
+            const response = await fetch(request.url);
+            
+            if (response.status === 429) {
+                // Handle rate limiting
+                window.rateLimitStatus.isRateLimited = true;
+                window.rateLimitStatus.consecutiveErrors++;
+                
+                // Get retry-after header or use exponential backoff
+                const retryAfter = response.headers.get('retry-after');
+                window.rateLimitStatus.retryAfter = retryAfter ? parseInt(retryAfter) * 1000 : 2000 * window.rateLimitStatus.consecutiveErrors;
+                
+                // Retry the request with incremented retry count
+                if (request.retryCount < 3) {
+                    logMessage(`Rate limited (${response.status}). Retrying in ${window.rateLimitStatus.retryAfter}ms...`, 'warn');
+                    showStatusNotification(`Rate limited. Retrying in ${Math.round(window.rateLimitStatus.retryAfter/1000)} seconds...`, true);
+                    
+                    // Put back in queue with incremented retry count
+                    window.requestQueue.unshift({
+                        ...request,
+                        retryCount: request.retryCount + 1
+                    });
+                    
+                    // Wait before continuing
+                    await new Promise(r => setTimeout(r, window.rateLimitStatus.retryAfter));
+                    continue;
+                } else {
+                    logMessage(`Max retries reached for ${request.url}`, 'error');
+                    showStatusNotification("Too many requests. Please try again later.", true);
+                    request.reject(new Error('Rate limited - max retries reached'));
+                }
+            } else {
+                // Reset consecutive error counter on success
+                window.rateLimitStatus.consecutiveErrors = 0;
+                request.resolve(response);
+                
+                // Clear any error notifications on success
+                const errorNotification = document.getElementById('status-notification');
+                if (errorNotification && errorNotification.textContent.includes('Rate limited')) {
+                    errorNotification.remove();
+                }
+            }
+        } catch (error) {
+            window.rateLimitStatus.consecutiveErrors++;
+            logMessage(`Fetch error: ${error.message}`, 'error');
+            
+            // Retry on network errors
+            if (error.name === 'TypeError' && request.retryCount < 3) {
+                logMessage(`Network error. Retrying (${request.retryCount + 1}/3)...`, 'warn');
+                
+                // Put back in queue with incremented retry count
+                window.requestQueue.unshift({
+                    ...request,
+                    retryCount: request.retryCount + 1
+                });
+                
+                // Wait before continuing
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
+            } else {
+                request.reject(error);
+            }
+        }
+    }
+    
+    window.processingQueue = false;
+}
+
 // Ensure decks data is globally accessible without redeclaring the variable
 (function() {
     // If window.globalDecks doesn't exist yet, create it
@@ -361,6 +548,12 @@ window.renderSubdecks = function(deckName, subdecks) {
             
             const cardCounts = document.createElement('div');
             cardCounts.className = 'card-counts';
+            cardCounts.style.margin = '5px 0';
+            cardCounts.style.display = 'flex';
+            cardCounts.style.alignItems = 'center';
+            cardCounts.style.justifyContent = 'center';
+            
+            // Remove play button code completely from subdecks
             
             const newCards = document.createElement('span');
             newCards.className = 'new-cards';
@@ -370,6 +563,7 @@ window.renderSubdecks = function(deckName, subdecks) {
             dueCards.className = 'due-cards';
             dueCards.textContent = '0';
             
+            // Add components in the correct order - no play button
             cardCounts.appendChild(newCards);
             cardCounts.appendChild(dueCards);
             
@@ -449,41 +643,11 @@ window.renderSubsubdecks = function(deckName, subdeckName, subsubdecks) {
         deckTitle.innerHTML = `${deckName} <span style="color:#666; font-size: 0.9em;">›</span> <span style="color:#777;">${subdeckName}</span>`;
     }
     
-    // Create a back button to go back to main subdecks
-    const backRow = document.createElement('div');
-    backRow.className = 'back-navigation';
-    backRow.style.gridColumn = '1 / -1';
-    backRow.style.margin = '0 0 20px 0';
-    
-    const backButton = document.createElement('button');
-    backButton.className = 'back-btn';
-    backButton.innerHTML = `<i class="fas fa-arrow-left"></i> Volver a ${deckName}`;
-    backButton.style.padding = '8px 16px';
-    backButton.style.backgroundColor = '#f0f0f0';
-    backButton.style.border = 'none';
-    backButton.style.borderRadius = '4px';
-    backButton.style.cursor = 'pointer';
-    backButton.style.display = 'inline-flex';
-    backButton.style.alignItems = 'center';
-    backButton.style.fontWeight = 'bold';
-    
-    backButton.addEventListener('click', function() {
-        logMessage(`Back button clicked, returning to ${deckName} subdecks`);
-        // Reset the title
-        if (deckTitle) {
-            deckTitle.textContent = deckName;
-        }
-        
-        // Re-fetch the subdecks for the parent deck
-        const subdecks = window.globalDecks[deckName] || [];
-        window.renderSubdecks(deckName, subdecks);
-    });
-    
-    backRow.appendChild(backButton);
-    
     // Clear the grid
     grid.innerHTML = '';
-    grid.appendChild(backRow);
+    
+    // We won't create a new back button since there's already one in the page
+    // The existing back-to-dashboard button is sufficient
     
     // Add subsubdeck blocks
     logMessage(`Adding ${subsubdecks.length} subsubdeck blocks`);
@@ -537,6 +701,42 @@ window.renderSubsubdecks = function(deckName, subdeckName, subsubdecks) {
             const cardCounts = document.createElement('div');
             cardCounts.className = 'card-counts';
             cardCounts.style.margin = '5px 0';
+            cardCounts.style.display = 'flex';
+            cardCounts.style.alignItems = 'center';
+            cardCounts.style.justifyContent = 'center';
+            cardCounts.style.position = 'relative'; // Keep position:relative for subsubdecks
+            
+            // Create play button with absolute positioning for subsubdecks
+            const playButton = document.createElement('button');
+            playButton.className = 'play-button';
+            playButton.style.background = 'none';
+            playButton.style.border = 'none';
+            playButton.style.color = '#000000';
+            playButton.style.fontSize = '14px';
+            playButton.style.cursor = 'pointer';
+            playButton.style.padding = '0';
+            playButton.style.display = 'inline-flex';
+            playButton.style.alignItems = 'center';
+            playButton.style.justifyContent = 'center';
+            playButton.style.position = 'absolute'; // Keep position absolutely for subsubdecks
+            playButton.style.left = '-50px'; // Position to the left of the numbers
+            playButton.style.top = '50%'; // Center vertically
+            playButton.style.transform = 'translateY(-50%)'; // Center vertically
+            playButton.title = 'Comenzar a estudiar';
+            
+            const playIcon = document.createElement('i');
+            playIcon.className = 'fas fa-play-circle';
+            playIcon.style.fontSize = '18px';
+            
+            playButton.appendChild(playIcon);
+            
+            // Add play button click event (navigate to study page)
+            playButton.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent block click event
+                
+                logMessage(`Play button clicked for ${subsubdeck}, navigating to study page`);
+                window.location.href = `/study?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeckName)}&subsubdeck=${encodeURIComponent(subsubdeck)}&mode=study`;
+            });
             
             const newCards = document.createElement('span');
             newCards.className = 'new-cards';
@@ -546,6 +746,8 @@ window.renderSubsubdecks = function(deckName, subdeckName, subsubdecks) {
             dueCards.className = 'due-cards';
             dueCards.textContent = '0';
             
+            // Add play button BEFORE the numbers but positioned absolutely to not affect layout
+            cardCounts.appendChild(playButton);
             cardCounts.appendChild(newCards);
             cardCounts.appendChild(dueCards);
             
@@ -615,7 +817,7 @@ window.renderSubsubdecks = function(deckName, subdeckName, subsubdecks) {
                 subdeckName, 
                 subsubdeck, 
                 'classic', 
-                'Flashcards Interactivos', 
+                'Interactivos', 
                 'fas fa-clone'
             );
             
@@ -625,7 +827,7 @@ window.renderSubsubdecks = function(deckName, subdeckName, subsubdecks) {
                 subdeckName, 
                 subsubdeck, 
                 'multipleChoice', 
-                'Flashcards Choice', 
+                'Choice', 
                 'fas fa-list-ul'
             );
             
@@ -737,6 +939,8 @@ function createCardTypeOption(deckName, subdeckName, subsubdeck, type, label, ic
     const countsDiv = document.createElement('div');
     countsDiv.className = 'card-counts';
     countsDiv.style.marginLeft = 'auto';
+    countsDiv.style.display = 'flex';
+    countsDiv.style.alignItems = 'center';
     
     const newCards = document.createElement('span');
     newCards.className = 'new-cards';
@@ -756,7 +960,7 @@ function createCardTypeOption(deckName, subdeckName, subsubdeck, type, label, ic
     option.appendChild(labelDiv);
     option.appendChild(countsDiv);
     
-    // Add click event
+    // Add click event for the entire option
     option.addEventListener('click', function() {
         logMessage(`Clicked on ${type} cards for ${subsubdeck}, navigating to study page`);
         let url = `/study?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeckName)}&type=${encodeURIComponent(type)}`;
@@ -784,11 +988,9 @@ async function updateCardTypeOptionCounts(deckName, subdeckName, subsubdeck) {
         const classicUrl = `/api/flashcards/count?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeckName)}&subsubdeck=${encodeURIComponent(subsubdeck)}&type=classic`;
         const choiceUrl = `/api/flashcards/count?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeckName)}&subsubdeck=${encodeURIComponent(subsubdeck)}&type=multipleChoice`;
         
-        // Fetch both counts in parallel
-        const [classicResponse, choiceResponse] = await Promise.all([
-            fetch(classicUrl),
-            fetch(choiceUrl)
-        ]);
+        // Fetch both counts in sequence (not parallel) to avoid too many requests
+        const classicResponse = await throttledFetch(classicUrl);
+        const choiceResponse = await throttledFetch(choiceUrl);
         
         // Process classic cards response
         if (classicResponse.ok) {
@@ -842,7 +1044,8 @@ async function updateSubsubdeckCardCounts(deckName, subdeckName, subsubdecks) {
             const url = `/api/flashcards/count?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeckName)}&subsubdeck=${encodeURIComponent(subsubdeck)}`;
             logMessage(`Fetching count from: ${url}`);
             
-            const response = await fetch(url);
+            // Use throttled fetch instead of direct fetch
+            const response = await throttledFetch(url);
             
             if (!response.ok) {
                 logMessage(`Failed to get counts for ${subsubdeck}: ${response.status}`, 'warn');
@@ -903,6 +1106,28 @@ async function updateSubsubdeckCardCounts(deckName, subdeckName, subsubdecks) {
 document.addEventListener('DOMContentLoaded', async () => {
     logMessage('🚀 dynamic-deck.js loaded and running');
     
+    // Clear any previous rate limit status to ensure fresh start
+    localStorage.removeItem('rate_limit_status');
+    
+    // Check if we need to pause before loading data (to avoid too many requests on refresh)
+    const lastRefreshTime = localStorage.getItem(REFRESH_COOLDOWN_KEY);
+    const now = Date.now();
+    const timeSinceLastRefresh = lastRefreshTime ? now - parseInt(lastRefreshTime) : Infinity;
+    
+    // If the user refreshed too quickly, wait before loading data
+    if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
+        const waitTime = REFRESH_COOLDOWN_MS - timeSinceLastRefresh;
+        logMessage(`Page was refreshed too quickly. Waiting ${waitTime}ms before loading data...`);
+        showStatusNotification(`Waiting ${Math.round(waitTime/1000)} seconds to prevent rate limiting...`);
+        await new Promise(r => setTimeout(r, waitTime));
+    }
+    
+    // Update the last refresh time
+    localStorage.setItem(REFRESH_COOLDOWN_KEY, now.toString());
+    
+    // Show initial loading message
+    showStatusNotification("Loading dashboard data...");
+    
     try {
         // Set up back button functionality
         const backButton = document.getElementById('back-to-dashboard');
@@ -924,23 +1149,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     try {
-        // Initialize sidebar toggle functionality
+        // Initialize sidebar toggle functionality - FIXED
         const sidebarToggle = document.getElementById('sidebar-toggle');
+        logMessage(`Found sidebar-toggle: ${sidebarToggle ? 'Yes' : 'No'}`);
+        
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
+            // Remove any existing event listeners first
+            sidebarToggle.replaceWith(sidebarToggle.cloneNode(true));
+            
+            // Get the fresh element
+            const newToggle = document.getElementById('sidebar-toggle');
+            
+            // Add event listener with all elements explicitly fetched
+            newToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 const sidebar = document.getElementById('sidebar');
                 const topNav = document.getElementById('top-nav');
                 const mainContent = document.getElementById('main-content');
                 
                 logMessage("Toggling sidebar...");
+                logMessage(`Elements found - sidebar: ${!!sidebar}, topNav: ${!!topNav}, mainContent: ${!!mainContent}`);
                 
-                sidebar.classList.toggle('collapsed');
-                topNav.classList.toggle('collapsed');
-                mainContent.classList.toggle('full-width');
+                if (sidebar) sidebar.classList.toggle('collapsed');
+                if (topNav) topNav.classList.toggle('collapsed');
+                if (mainContent) mainContent.classList.toggle('full-width');
             });
-            logMessage("✅ Sidebar toggle initialized");
+            
+            // Also add the event to its parent button if it exists
+            const toggleButton = sidebarToggle.closest('button') || sidebarToggle.parentElement;
+            if (toggleButton && toggleButton !== sidebarToggle) {
+                toggleButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const sidebar = document.getElementById('sidebar');
+                    const topNav = document.getElementById('top-nav');
+                    const mainContent = document.getElementById('main-content');
+                    
+                    logMessage("Toggling sidebar from parent button...");
+                    
+                    if (sidebar) sidebar.classList.toggle('collapsed');
+                    if (topNav) topNav.classList.toggle('collapsed');
+                    if (mainContent) mainContent.classList.toggle('full-width');
+                });
+            }
+            
+            logMessage("✅ Sidebar toggle initialized with improved handler");
         } else {
-            logMessage("❌ Could not find sidebar-toggle button", 'warn');
+            // Try alternative selectors
+            const altToggle = document.querySelector('.sidebar-toggle') || 
+                             document.querySelector('[data-toggle="sidebar"]') ||
+                             document.querySelector('.toggle-sidebar');
+            
+            if (altToggle) {
+                altToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const sidebar = document.getElementById('sidebar');
+                    const topNav = document.getElementById('top-nav');
+                    const mainContent = document.getElementById('main-content');
+                    
+                    logMessage("Toggling sidebar using alternative selector...");
+                    
+                    if (sidebar) sidebar.classList.toggle('collapsed');
+                    if (topNav) topNav.classList.toggle('collapsed');
+                    if (mainContent) mainContent.classList.toggle('full-width');
+                });
+                logMessage("✅ Sidebar toggle initialized with alternative selector");
+            } else {
+                logMessage("❌ Could not find sidebar-toggle button with any selector", 'warn');
+            }
         }
     } catch (err) {
         logMessage(`❌ Error setting up sidebar toggle: ${err.message}`, 'error');
@@ -1026,7 +1305,8 @@ async function updateCardCounts(deckName, subdecks) {
             const url = `/api/flashcards/count?deck=${encodeURIComponent(deckName)}&subdeck=${encodeURIComponent(subdeck)}`;
             logMessage('Fetching count from: ' + url);
             
-            const response = await fetch(url);
+            // Use throttled fetch instead of direct fetch
+            const response = await throttledFetch(url);
             
             if (!response.ok) {
                 logMessage(`Failed to get counts for ${subdeck}: ${response.status}`, 'warn');
