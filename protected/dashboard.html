@@ -33,10 +33,19 @@
         <div class="logo">Med Memory</div>
         <div class="nav-buttons">
             <span id="username-display" class="username-display"></span>
-            <button id="overview-button">General</button>
+            <button id="overview-button">
+                <i class="fas fa-home btn-icon"></i>
+                <span class="btn-text">Home</span>
+            </button>
             <button id="test-dynamic-deck-btn" style="background: #fd5e53; color: white; padding: 5px 10px; border: none; border-radius: 4px; margin-right: 10px; cursor: pointer;">Test Dynamic Deck</button>
-            <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
-            <button id="ranking-button">Ranking</button>
+            <button id="faq-button" aria-label="Frequently Asked Questions">
+                <i class="fas fa-question-circle btn-icon"></i>
+                <span class="btn-text">Ayuda</span>
+            </button>
+            <button id="ranking-button">
+                <i class="fas fa-trophy btn-icon"></i>
+                <span class="btn-text">Ranking</span>
+            </button>
             <div class="profile-dropdown">
                 <button class="profile-icon" id="profile-toggle">
                     <i class="fas fa-user"></i>
@@ -48,6 +57,9 @@
             </div>
         </div>
     </div>
+
+<!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay"></div>
 
 <!-- Sidebar Section -->
 <div id="sidebar">
@@ -527,6 +539,39 @@ Explanation: Additional details (optional)"></textarea>
         document.addEventListener('DOMContentLoaded', function() {
             const adminModal = document.getElementById('admin-modal');
             const adminModalContent = document.querySelector('.admin-modal-content');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const sidebarOverlay = document.querySelector('.sidebar-overlay');
+            
+            // Mobile sidebar toggle functionality
+            if (sidebarToggle && sidebar && mainContent && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-active');
+                    sidebarOverlay.classList.toggle('active');
+                    
+                    // Only add sidebar-active class to main content on larger screens
+                    if (window.innerWidth > 576) {
+                        mainContent.classList.toggle('sidebar-active');
+                    }
+                });
+                
+                // Close sidebar when clicking on the overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('mobile-active');
+                    sidebarOverlay.classList.remove('active');
+                    mainContent.classList.remove('sidebar-active');
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('mobile-active');
+                        sidebarOverlay.classList.remove('active');
+                        mainContent.classList.remove('sidebar-active');
+                    }
+                });
+            }
             
             if (adminModal && adminModalContent) {
                 adminModal.addEventListener('click', function(event) {
