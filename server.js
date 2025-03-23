@@ -104,6 +104,14 @@ app.use(cors({
 // Serve static files
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// Add middleware to log static file requests
+app.use((req, res, next) => {
+  if (req.path.includes('.css') || req.path.includes('.js')) {
+    console.log(`Serving static file: ${req.path}`);
+  }
+  next();
+});
+
 // Body parsing
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -212,7 +220,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/dashboard.html', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'protected', 'dashboard.html'));
+  res.redirect('/dashboard');
 });
 
 app.use('/protected', express.static(path.join(process.cwd(), 'protected')));
