@@ -7,58 +7,10 @@
     <link rel="stylesheet" href="/css/dashboard-style.css">
     <link rel="stylesheet" href="/css/profile-dropdown.css">
     <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
+    <link rel="stylesheet" href="/css/study-page.css">
+    <!-- Add debug styling to match subdeck pages -->
     <style>
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .breadcrumb-item {
-            font-size: 16px;
-            color: #333;
-            text-decoration: none;
-        }
-        
-        .breadcrumb-separator {
-            margin: 0 10px;
-            color: #6c757d;
-        }
-        
-        .active-breadcrumb {
-            color: #007bff;
-            font-weight: bold;
-        }
-        
-        .error-message {
-            text-align: center;
-            padding: 2rem;
-            margin: 1rem auto;
-            max-width: 600px;
-            background-color: #fff3cd;
-            color: #856404;
-            border-radius: 4px;
-        }
-        
-        .success-message {
-            text-align: center;
-            padding: 1rem;
-            margin: 1rem auto;
-            max-width: 600px;
-            background-color: #d4edda;
-            color: #155724;
-            border-radius: 4px;
-        }
-        
-        .flashcard-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
+        /* Debug panel styling */
         #debug-info {
             display: none;
             background: #f8f9fa;
@@ -73,6 +25,17 @@
             max-height: 300px;
             overflow: auto;
         }
+        
+        /* Debug button styling */
+        #debug-button {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: none !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            margin-right: 5px !important;
+            font-weight: bold !important;
+        }
     </style>
 </head>
 <body>
@@ -84,17 +47,17 @@
         <div class="logo">Med Memory</div>
         <div class="nav-buttons">
             <span id="username-display"></span>
-            <button id="overview-button">General</button>
-            <button id="debug-button" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; font-weight: bold;">Debug</button>
+            <button id="overview-button">Home</button>
+            <button id="debug-button">Debug</button>
             <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
             <button id="ranking-button">Ranking</button>
             <div class="profile-dropdown">
                 <button class="profile-icon" id="profile-toggle">
                     <i class="fas fa-user"></i>
                 </button>
-                <div class="profile-dropdown-content" style="min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); background-color: white; border-radius: 6px;">
-                    <button class="dropdown-item" id="profile-btn" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Perfil</button>
-                    <button class="dropdown-item" id="logout" style="display: block; width: 100%; padding: 10px 15px; text-align: left; border: none; color: #34495e; background: none; font-size: 14px; cursor: pointer;">Cerrar sesión</button>
+                <div class="profile-dropdown-content">
+                    <button class="dropdown-item" id="profile-btn">Perfil</button>
+                    <button class="dropdown-item" id="logout">Cerrar sesión</button>
                 </div>
             </div>
         </div>
@@ -119,188 +82,99 @@
         </div>
     </div>
 
+    <!-- Message Elements -->
+    <div id="error-message" class="hidden">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error</h3>
+        <p>Ha ocurrido un error al cargar las tarjetas.</p>
+    </div>
+
+    <div id="no-cards-message" class="hidden">
+        <i class="fas fa-info-circle"></i>
+        <h3>No hay tarjetas</h3>
+        <p>No se encontraron tarjetas para los criterios seleccionados.</p>
+    </div>
+
     <!-- Main Content Section -->
-    <div id="main-content">
-        <div id="debug-info"></div>
-        
-        <div class="breadcrumb">
-            <a href="/dashboard.html" class="breadcrumb-item">Dashboard</a>
-            <span class="breadcrumb-separator">›</span>
-            <span id="deck-crumb" class="breadcrumb-item"></span>
-            <span id="subdeck-separator" class="breadcrumb-separator" style="display: none;">›</span>
-            <span id="subdeck-crumb" class="breadcrumb-item"></span>
-            <span id="subsubdeck-separator" class="breadcrumb-separator" style="display: none;">›</span>
-            <span id="subsubdeck-crumb" class="breadcrumb-item active-breadcrumb"></span>
+    <div id="main-content" class="hidden">
+        <!-- Debug Panel -->
+        <div id="debug-info">
+            <!-- Debug info will be displayed here -->
         </div>
         
-        <div class="flashcard-container">
+        <!-- Title container with back button -->
+        <div class="title-container">
+            <button id="back-button" class="nav-btn back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="page-title">Loading...</h1>
+        </div>
+        
+        
+        <!-- Flashcard System - Reorganized to match patologiaera1 -->
+        <div id="flashcard-system">
+            <div class="card-pair">
+                <!-- Question Card -->
+                <div class="card question">
+                    <div class="card-content">
+                        <h3 id="card-front">Question</h3>
+                        <p class="subtitle" id="card-subtitle">Subtitle</p>
+                        <p class="question-look">[...]</p>
+                        <div id="extra-content" class="hidden"></div>
+                    </div>
+                    <div id="choice-options"></div>
+                </div>
+
+                <!-- Answer Card (Hidden by Default) -->
+                <div class="card answer hidden">
+                    <div class="card-content">
+                        <h3 id="card-back">Question</h3>
+                        <p class="subtitle" id="answer-subtitle">Subtitle</p>
+                        <p class="answer-text" id="answer-text">Answer</p>
+                        <div id="answer-extra" class="hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Review Controls -->
+                <div id="review-actions">
+                    <button id="skip-button">Saltar</button>
+                    <button id="revisar-button">Revisar</button>
+                </div>
+            </div>
+
+            <!-- SRS Controls -->
+            <div class="srs-controls hidden">
+                <div class="srs-option">
+                    <button class="difficulty denuevo">De nuevo</button>
+                    <span class="interval">< 1 min</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty díficil">Difícil</button>
+                    <span class="interval">1 día</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty bueno">Bueno</button>
+                    <span class="interval">3 días</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty fácil">Fácil</button>
+                    <span class="interval">5 días</span>
+                </div>
+            </div>
+            
             <!-- Card Status -->
             <div id="card-status">
                 <span id="status"></span>
-            </div>
-            
-            <!-- Flashcard System will be dynamically populated -->
-            <div id="flashcard-system">
-                <div class="question hidden">
-                    <!-- Question content will be inserted here -->
-                </div>
-                
-                <div class="answer hidden">
-                    <!-- Answer content will be inserted here -->
-                </div>
-                
-                <div id="review-actions">
-                    <button id="skip-button" class="action-btn">Saltar</button>
-                    <button id="revisar-button" class="action-btn primary">Revisar</button>
-                </div>
-                
-                <div class="srs-controls hidden">
-                    <button class="denuevo">De nuevo</button>
-                    <button class="díficil">Difícil</button>
-                    <button class="bueno">Bueno</button>
-                    <button class="fácil">Fácil</button>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- IMPORTANT: Load scripts in the correct order -->
-    <script src="/js/console-capture.js"></script> 
+    <script src="/js/console-capture.js"></script>
     <script src="/js/dashboard-script.js"></script>
     <script src="/js/debug-button.js"></script>
     <script src="/js/dynamic-deck.js"></script>
     <script src="/js/profile-dropdown.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Parse URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const deck = urlParams.get('deck');
-            const subdeck = urlParams.get('subdeck');
-            const subsubdeck = urlParams.get('subsubdeck');
-            
-            console.log(`Study page loaded with deck: ${deck}, subdeck: ${subdeck}, subsubdeck: ${subsubdeck}`);
-            
-            // Update breadcrumb navigation
-            const deckCrumb = document.getElementById('deck-crumb');
-            const subdeckCrumb = document.getElementById('subdeck-crumb');
-            const subsubdeckCrumb = document.getElementById('subsubdeck-crumb');
-            const subdeckSeparator = document.getElementById('subdeck-separator');
-            const subsubdeckSeparator = document.getElementById('subsubdeck-separator');
-            
-            // Set deck name
-            if (deck) {
-                deckCrumb.textContent = deck;
-                document.title = `${deck} - Med Memory`;
-                
-                // Make deck crumb a link if we have a subdeck
-                if (subdeck) {
-                    deckCrumb.innerHTML = `<a href="/deck/${encodeURIComponent(deck)}" class="breadcrumb-item">${deck}</a>`;
-                    subdeckCrumb.textContent = subdeck;
-                    subdeckSeparator.style.display = 'inline';
-                    
-                    // Handle subsubdeck if present
-                    if (subsubdeck) {
-                        subdeckCrumb.innerHTML = `<a href="/study?deck=${encodeURIComponent(deck)}&subdeck=${encodeURIComponent(subdeck)}" class="breadcrumb-item">${subdeck}</a>`;
-                        subsubdeckCrumb.textContent = subsubdeck;
-                        subsubdeckSeparator.style.display = 'inline';
-                        document.title = `${subsubdeck} - ${subdeck} - Med Memory`;
-                    } else {
-                        subdeckCrumb.classList.add('active-breadcrumb');
-                        subsubdeckCrumb.style.display = 'none';
-                        document.title = `${subdeck} - ${deck} - Med Memory`;
-                    }
-                } else {
-                    // Only deck, no subdeck
-                    deckCrumb.classList.add('active-breadcrumb');
-                    subdeckCrumb.style.display = 'none';
-                    subsubdeckCrumb.style.display = 'none';
-                }
-            }
-            
-            // Initialize flashcards
-            if (deck) {
-                // Set up API request
-                const params = new URLSearchParams();
-                params.set('deck', deck);
-                if (subdeck) params.set('subdeck', subdeck);
-                if (subsubdeck) params.set('subsubdeck', subsubdeck);
-                
-                console.log(`Loading cards with: ${params.toString()}`);
-                
-                // Preferred method using the shared initializeCardsFromUrl function
-                if (typeof initializeCardsFromUrl === 'function') {
-                    initializeCardsFromUrl(params.toString());
-                } else {
-                    console.error('initializeCardsFromUrl function not found. Please check dashboard-script.js');
-                    
-                    // Fallback to direct API call
-                    fetch(`/api/flashcards?${params.toString()}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(`Loaded ${data.length} cards`);
-                            if (data.length > 0) {
-                                window.flashcards = data;
-                                window.currentCardIndex = -1;
-                                loadNextCard();
-                                showMainContent();
-                            } else {
-                                showNoCardsMessage();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error loading cards:', error);
-                            showErrorMessage();
-                        });
-                }
-            }
-            
-            // Function to show error message
-            function showErrorMessage() {
-                const flashcardSystem = document.getElementById('flashcard-system');
-                flashcardSystem.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Error cargando tarjetas</h3>
-                        <p>Lo sentimos, ha ocurrido un error al cargar las tarjetas. Por favor, inténtalo de nuevo más tarde.</p>
-                    </div>
-                `;
-            }
-            
-            // Function to show no cards message
-            function showNoCardsMessage() {
-                const flashcardSystem = document.getElementById('flashcard-system');
-                flashcardSystem.innerHTML = `
-                    <div class="error-message" style="background-color: #e2e3e5; color: #383d41;">
-                        <i class="fas fa-info-circle"></i>
-                        <h3>No hay tarjetas disponibles</h3>
-                        <p>No se encontraron tarjetas para esta selección. Por favor, selecciona otro mazo o crea nuevas tarjetas para este mazo.</p>
-                    </div>
-                `;
-            }
-            
-            // Handle sidebar toggle
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', () => {
-                    const sidebar = document.getElementById('sidebar');
-                    const topNav = document.getElementById('top-nav');
-                    const mainContent = document.getElementById('main-content');
-                    
-                    sidebar.classList.toggle('collapsed');
-                    topNav.classList.toggle('collapsed');
-                    mainContent.classList.toggle('full-width');
-                });
-            }
-            
-            // Add direct click handler to the logout button
-            const logoutBtn = document.getElementById('logout');
-            if (logoutBtn) {
-                logoutBtn.onclick = function() {
-                    console.log('Logout clicked');
-                    window.location.href = '/logout';
-                };
-            }
-        });
-    </script>
+    <script src="/js/study-page.js"></script>
 </body>
 </html> 

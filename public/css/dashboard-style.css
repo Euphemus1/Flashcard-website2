@@ -48,10 +48,13 @@ body {
 #top-nav .nav-buttons {
     display: flex;
     gap: 1rem;
+    align-items: center;
 }
 
 #top-nav #overview-button,
-#top-nav #faq-button {
+#top-nav #faq-button,
+#top-nav #ranking-button,
+#top-nav #contact-button {
     background: none;
     border: none;
     color: white;
@@ -60,11 +63,90 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 6px;
     transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Hide icons by default on desktop */
+#top-nav .btn-icon {
+    display: none;
+    font-size: 1.2rem;
 }
 
 #top-nav #overview-button:hover,
-#top-nav #faq-button:hover {
+#top-nav #faq-button:hover,
+#top-nav #ranking-button:hover,
+#top-nav #contact-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive navigation styles */
+@media (max-width: 1024px) {
+    #top-nav .logo {
+        font-size: 1.3rem;
+    }
+    
+    #top-nav .nav-buttons {
+        gap: 0.5rem;
+    }
+    
+    #username-display {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    #top-nav {
+        padding: 0.8rem;
+    }
+    
+    #top-nav #overview-button,
+    #top-nav #faq-button,
+    #top-nav #ranking-button,
+    #top-nav #contact-button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    #test-dynamic-deck-btn {
+        display: none !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #top-nav .logo {
+        font-size: 1.2rem;
+    }
+    
+    #top-nav #overview-button .btn-text,
+    #top-nav #faq-button .btn-text,
+    #top-nav #ranking-button .btn-text,
+    #top-nav #contact-button .btn-text {
+        display: none;
+    }
+    
+    #top-nav .btn-icon {
+        display: inline-block;
+    }
+    
+    #top-nav #overview-button,
+    #top-nav #faq-button,
+    #top-nav #ranking-button,
+    #top-nav #contact-button {
+        padding: 0.5rem;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 400px) {
+    #top-nav .logo {
+        font-size: 1rem;
+    }
+    
+    #top-nav {
+        padding: 0.6rem;
+    }
 }
 
 /* Title container for dynamic deck pages */
@@ -359,8 +441,56 @@ body {
     display: grid;
     grid-template-columns: 300px 1fr 300px;
     gap: 2rem;
-    margin-left: 8rem;
+    margin-left: auto;
+    margin-right: auto;
     align-items: stretch;
+    justify-content: center;
+}
+
+/* Media queries for responsive stats container */
+@media (max-width: 1400px) {
+    .stats-container {
+        grid-template-columns: 250px 1fr 250px;
+        gap: 1.5rem;
+        padding: 0 2rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .stats-container {
+        width: 90%;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .notes-column {
+        grid-column: span 2;
+        max-width: 100%;
+    }
+    
+    .main-content-column {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 992px) {
+    .stats-container {
+        width: 95%;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        width: 100%;
+        padding: 0 1rem;
+    }
+    
+    #stats-panel, .main-content-column, .notes-column {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 .main-content-column {
@@ -370,7 +500,13 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center; 
-    margin-left: 5rem;
+    margin-left: 0;
+}
+
+@media (max-width: 992px) {
+    .main-content-column {
+        margin-left: 0;
+    }
 }
 
 #stats-panel {
@@ -381,6 +517,13 @@ body {
     width: 300px;
     flex-shrink: 0;
     height: fit-content;
+}
+
+@media (max-width: 992px) {
+    #stats-panel {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 #stats-panel h2 {
@@ -449,6 +592,31 @@ body {
     overflow-x: auto;
 }
 
+/* Add these new styles for responsive tables */
+@media (max-width: 768px) {
+    #overview-section {
+        padding: 15px;
+    }
+    
+    #overview-section table {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #overview-section {
+        padding: 10px;
+    }
+    
+    #overview-section table {
+        font-size: 0.8rem;
+    }
+    
+    #overview-section th, #overview-section td {
+        padding: 6px 8px;
+    }
+}
+
 #overview-section table {
     width: 100%;
     border-collapse: collapse;
@@ -492,8 +660,12 @@ body {
 /* New notes column styling */
 .notes-column {
     flex: 0 0 300px;
-    margin-left: 10rem;
-    width: 100%;
+}
+
+@media (max-width: 992px) {
+    .notes-column {
+        flex: 1 1 100%;
+    }
 }
 
 .notes-section {
@@ -516,18 +688,24 @@ body {
 }
 
 .notes-textarea {
-    flex: 1;
     width: 100%;
-    padding: 1rem;
+    height: 100%;
+    min-height: 200px;
     border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    resize: none;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px;
+    border-radius: 4px;
+    padding: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    font-size: 0.95rem;
     line-height: 1.5;
-    min-height: 350px;
-    background: #f8f9fa;
-    transition: all 0.3s ease;
+    color: #333;
+    transition: border-color 0.2s ease;
+}
+
+@media (max-width: 480px) {
+    .notes-textarea {
+        min-height: 150px;
+    }
 }
 
 .notes-textarea:focus {
@@ -845,86 +1023,7 @@ p.question-look, .answer-text {
     line-height: 1.5;
 }
 
-/* ============================ Loggout button ======================== */
 
-/* Loggout button looks */
-#logout {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-}
-
-#logout:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-} 
-
-/* Profile dropdown styles */
-.profile-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.profile-icon {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-}
-
-.profile-icon:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.profile-dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background-color: white;
-    min-width: 160px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
-    z-index: 1001;
-    margin-top: 5px;
-}
-
-.profile-dropdown-content.show {
-    display: block;
-}
-
-.dropdown-item {
-    display: block;
-    width: 100%;
-    padding: 10px 15px;
-    text-align: left;
-    border: none;
-    background: none;
-    color: #34495e;
-    font-size: 1rem;
-    font-weight: normal;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    opacity: 1;
-    visibility: visible;
-}
-
-.dropdown-item:hover {
-    background-color: #f5f5f5;
-}
 
 /* Add to existing FAQ styles */
 #contact-button {
@@ -1029,7 +1128,7 @@ p.question-look, .answer-text {
 
 /* Calendar container */
 #study-calendar {
-    padding: 20px;
+    padding: 10px 10px 22px 10px;
     white-space: wrap;
     background: #08a0e640;
     border-radius: 15px;
@@ -1042,6 +1141,7 @@ p.question-look, .answer-text {
     display: inline-block;
     width: 100px;
     margin-right: 10px;
+    margin-left: 10px;
     vertical-align: top;
 }
 
@@ -1998,4 +2098,71 @@ button.choice.wrong::after,
 
 #ranking-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Additional responsive adjustments for sidebar and main content */
+@media (max-width: 992px) {
+    #sidebar {
+        width: 220px;
+    }
+    
+    #top-nav {
+        left: 220px;
+        width: calc(100% - 220px);
+    }
+    
+    #main-content {
+        margin-left: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        width: 200px;
+        transform: translateX(-100%);
+    }
+    
+    #sidebar.mobile-active {
+        transform: translateX(0);
+    }
+    
+    #top-nav {
+        left: 0;
+        width: 100%;
+    }
+    
+    #main-content {
+        margin-left: 0;
+    }
+    
+    #main-content.sidebar-active {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    #sidebar {
+        width: 80%;
+        max-width: 280px;
+    }
+    
+    #main-content.sidebar-active {
+        margin-left: 0;
+    }
+    
+    /* Add overlay when sidebar is active on mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
 }

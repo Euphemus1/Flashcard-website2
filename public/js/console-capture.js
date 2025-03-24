@@ -20,6 +20,12 @@
         console.error = function() {
             originalConsole.error.apply(console, arguments);
             updateDebugPanel('error', arguments);
+            
+            // Automatically show debug panel on error
+            const debugInfo = document.getElementById('debug-info');
+            if (debugInfo) {
+                debugInfo.style.display = 'block';
+            }
         };
 
         console.warn = function() {
@@ -41,7 +47,7 @@
                     const arg = args[i];
                     if (typeof arg === 'object') {
                         try {
-                            message += JSON.stringify(arg) + ' ';
+                            message += JSON.stringify(arg, null, 2) + ' ';
                         } catch (e) {
                             message += '[Object] ';
                         }
@@ -53,20 +59,42 @@
                 // Create the log entry
                 const logEntry = document.createElement('div');
                 logEntry.className = `console-${type}`;
-                logEntry.textContent = `[${timestamp}] ${message}`;
+                logEntry.style.fontFamily = 'monospace';
+                logEntry.style.padding = '3px 5px';
+                logEntry.style.marginBottom = '2px';
+                logEntry.style.borderLeft = `4px solid ${type === 'error' ? '#dc3545' : type === 'warn' ? '#ffc107' : '#6c757d'}`;
                 
-                // Style based on type
+                // Format timestamp
+                const timeSpan = document.createElement('span');
+                timeSpan.style.color = '#6c757d';
+                timeSpan.textContent = `[${timestamp}] `;
+                
+                // Format message
+                const messageSpan = document.createElement('span');
                 if (type === 'error') {
-                    logEntry.style.color = '#dc3545';
+                    messageSpan.style.color = '#dc3545';
+                    messageSpan.style.fontWeight = 'bold';
                 } else if (type === 'warn') {
-                    logEntry.style.color = '#ffc107';
+                    messageSpan.style.color = '#ffc107';
+                } else {
+                    messageSpan.style.color = '#333';
                 }
+                messageSpan.textContent = message;
+                
+                // Assemble log entry
+                logEntry.appendChild(timeSpan);
+                logEntry.appendChild(messageSpan);
                 
                 // Add to debug panel
                 debugInfo.appendChild(logEntry);
                 
                 // Scroll to bottom
                 debugInfo.scrollTop = debugInfo.scrollHeight;
+                
+                // If not already visible, show the debug panel
+                if (type === 'error' && debugInfo.style.display === 'none') {
+                    debugInfo.style.display = 'block';
+                }
             }
         } catch (e) {
             // Fall back to original console if we encounter an error

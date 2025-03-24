@@ -1,0 +1,216 @@
+/* Flashcard System Section */
+#flashcard-system {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.card-pair {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.question {
+    border-left: 5px solid #429edb;
+}
+
+.answer {
+    border-left: 5px solid #FF6B6B;
+}
+
+h3 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+p.subtitle {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+}
+
+p.question-look, .answer-text {
+    color: #4400fd;
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Add to dashboard-style.css */
+.notes {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-left: 3px solid #2ed573;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.notes strong {
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.preview-question .subtitle {
+    color: #666;
+    font-size: 0.9em;
+    margin: 10px 0;
+    font-style: italic;
+    border-left: 3px solid #429edd;
+    padding-left: 15px;
+}
+
+/* ===== Skip and Review Controls ===== */
+#review-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+#skip-button, #revisar-button {
+    width: 48%;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#skip-button {
+    background-color: #e67e22;
+    color: white;
+}
+
+#skip-button:hover {
+    background-color: #d35400;
+    transform: translateY(-2px);
+}
+
+#revisar-button {
+    background-color: #429edb;
+    color: white;
+}
+
+#revisar-button:hover {
+    background-color: #1e90ff;
+    transform: translateY(-2px);
+}
+
+/* Choice Card Review Actions Styling - Added for full width skip button */
+.card-pair.choice-card #review-actions {
+    display: block; /* Stack elements vertically */
+    width: 100%;
+}
+
+.card-pair.choice-card #skip-button {
+    width: 100%; /* Make skip button take full width for choice cards */
+    margin-top: 1rem;
+    padding: 12px;
+    text-align: center;
+}
+
+/* For the "Seguir" state after finding the correct answer */
+.card-pair.choice-card #skip-button.seguir-button {
+    background-color: #3498db;
+    font-weight: bold;
+}
+
+/* Hide the revisar button for choice cards */
+.card-pair.choice-card #revisar-button {
+    display: none;
+}
+
+/* Review Options */
+.srs-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.srs-controls.hidden {
+    display: none !important;
+}
+
+.srs-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.difficulty {
+    width: 100%;
+    padding: 0.8rem 0.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.difficulty:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.interval {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 0.3rem;
+}
+
+.denuevo { background: #ff4757; }
+.díficil { background: #ffa502; }
+.bueno { background: #2ed573; }
+.fácil { background: #1e90ff; }
+
+/* Card Status */
+#card-status {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #2c3e50;
+    text-align: center;
+    width: 100%;
+}
+
+#status {
+    font-style: italic;
+    color: #2c3e50;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    display: block;
+}

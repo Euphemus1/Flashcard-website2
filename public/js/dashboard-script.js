@@ -19,6 +19,9 @@
 //            }
 //        ];
 
+// Global variables
+let globalCardData = [];
+
 // Define global variables
 let currentDeck = 'Microbiología';
 let flashcards = []; // Initialize empty array for flashcards
@@ -61,15 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Setup deck button navigation
     setupDeckButtonNavigation();
-    
-    // Add event listener for test dynamic deck button
-    const testDynamicDeckBtn = document.getElementById('test-dynamic-deck-btn');
-    if (testDynamicDeckBtn) {
-        testDynamicDeckBtn.addEventListener('click', () => {
-            console.log('Test button clicked - navigating to Microbiología dynamic deck page');
-            window.location.href = '/deck/Microbiología';
-        });
-    }
     
     // Add contact button functionality
     document.getElementById('contact-button')?.addEventListener('click', showContact);
@@ -181,8 +175,8 @@ function showMainContent() {
 
 // Add event listener for the overview button
 document.getElementById('overview-button')?.addEventListener('click', () => {
-    if (!window.location.pathname.includes('dashboard.html')) {
-        window.location.href = '/dashboard.html';
+    if (!window.location.pathname.includes('dashboard')) {
+        window.location.href = '/dashboard';
     } else {
         showOverview();
     }
@@ -255,250 +249,155 @@ function shuffleArray(array) {
 }
 
 function loadNextCard() {
-    // Check if flashcards array is empty or undefined
-    if (!flashcards || flashcards.length === 0) {
-        console.warn('No flashcards available to load');
-        
-        // Display a message to the user
-        const questionCard = document.querySelector('.question');
-        const answerCard = document.querySelector('.answer');
-        
-        if (questionCard) {
-            questionCard.innerHTML = `
-                <h3>No Flashcards Available</h3>
-                <p>Please select a deck with flashcards or add new flashcards to this deck.</p>
-            `;
-        }
-        
-        if (answerCard) {
-            answerCard.innerHTML = `
-                <p>No answer available</p>
-            `;
-        }
-        
+    console.log("loadNextCard called");
+    
+    // Check if we have loaded cards and if there are cards to display
+    // Use window.globalCardData for cross-script compatibility
+    if (!window.globalCardData || window.globalCardData.length === 0) {
+        console.error("No cards available to load");
+        showNoCardsMessage("No hay tarjetas disponibles para estudiar");
         return;
     }
     
-    currentCardIndex = (currentCardIndex + 1) % flashcards.length;
-    const currentCard = flashcards[currentCardIndex];
-
-    // Enhanced logging for debugging
-    console.log("Loading card:", currentCard);
-    
-    // FIX: Validate correctIndex - if it's -1 or invalid, set it to 0 as fallback
-    if (currentCard.type === 'multipleChoice') {
-        if (currentCard.correctIndex === -1 || 
-            currentCard.correctIndex === undefined || 
-            currentCard.correctIndex === null || 
-            currentCard.correctIndex >= currentCard.options.length) {
-            
-            console.warn(`Card ${currentCard._id} has invalid correctIndex (${currentCard.correctIndex}), setting to 0 as fallback`);
-            currentCard.correctIndex = 0;
-        }
-    }
-    
-    // Get card elements
-    const questionCard = document.querySelector('.question');
-    const answerCard = document.querySelector('.answer');
-    const reviewActions = document.getElementById('review-actions');
-    const srsControls = document.querySelector('.srs-controls');
-    const skipButton = document.getElementById('skip-button');
-    const cardPair = document.querySelector('.card-pair');
-
-    // Reset card visibility
-    questionCard.classList.remove('hidden');
-    if (answerCard) answerCard.classList.add('hidden');
-    if (srsControls) srsControls.classList.add('hidden');
-    if (reviewActions) reviewActions.classList.remove('hidden');
-
-    if (currentCard.type === 'multipleChoice') {
-        // Handle choice card
-        const cardFront = document.getElementById('card-front');
-        const choiceOptions = document.getElementById('choice-options');
-        
-        // Add choice-card class to the card-pair element
-        if (cardPair) {
-            cardPair.classList.add('choice-card');
-        }
-        
-        // Reset the skip button text and remove seguir-button class if it exists
-        if (skipButton) {
-            skipButton.textContent = 'Saltar';
-            skipButton.classList.remove('seguir-button');
-        }
-        
-        if (cardFront && choiceOptions) {
-            // Clear previous content
-            cardFront.textContent = currentCard.question;
-            choiceOptions.innerHTML = '';
-            
-            console.log('Loading choice card:', currentCard.question);
-            console.log('Card Options Array:', JSON.stringify(currentCard.options));
-            console.log('Card correctIndex (RAW):', currentCard.correctIndex, typeof currentCard.correctIndex);
-            console.log('Card full data:', JSON.stringify(currentCard));
-            
-            // Validate the current card has options
-            if (!currentCard.options || !Array.isArray(currentCard.options) || currentCard.options.length === 0) {
-                console.error("Card has no valid options array:", currentCard);
-                return;
-            }
-            
-            // Get the correct answer index from the card data
-            const correctIndex = currentCard.correctIndex;
-            console.log('DEBUG [loadNextCard]: Card data:', {
-                question: currentCard.question,
-                correctIndex: correctIndex,
-                typeOfCorrectIndex: typeof correctIndex,
-                options: currentCard.options,
-                _id: currentCard._id
-            });
-            
-            // Add detailed logging about the card and options
-            console.log('======== CARD DEBUG IN LOAD NEXT CARD ========');
-            console.log('Card question:', currentCard.question);
-            console.log('Card type:', currentCard.type);
-            console.log('Card options:', currentCard.options);
-            console.log('Card correctIndex (raw):', currentCard.correctIndex, typeof currentCard.correctIndex);
-            console.log('Card correctIndex (as number):', Number(correctIndex), typeof Number(correctIndex));
-            
-            if (correctIndex !== undefined && currentCard.options && currentCard.options.length > 0) {
-                console.log('Correct option text should be:', currentCard.options[Number(correctIndex)]);
-            }
-            
-            // Create shuffled options with tracked original indices
-            const optionsWithIndices = currentCard.options.map((option, index) => ({
-                option,
-                originalIndex: index,
-                isCorrect: index === Number(correctIndex)
-            }));
-            
-            console.log('Options with indices (before shuffle):', JSON.stringify(optionsWithIndices));
-            
-            // Shuffle the options
-            const shuffledOptions = shuffleArray(optionsWithIndices);
-            
-            console.log('Shuffled options (after shuffle):', JSON.stringify(shuffledOptions));
-            console.log('======== END CARD DEBUG ========');
-            
-            // Create and add choice buttons
-            shuffledOptions.forEach((item, displayIndex) => {
-                // Extract original option and index
-                const option = item.option;
-                const originalIndex = item.originalIndex;
-                const isCorrect = item.isCorrect;
-                
-                // Create button
-                const choiceButton = document.createElement('button');
-                
-                // Set clean visual text (without the ] marker)
-                const displayText = option.replace(/\]$/, '').trim();
-                
-                // Clean up the display text - remove anything after a slash
-                let cleanDisplayText = displayText;
-                const slashIndex = displayText.indexOf('/');
-                if (slashIndex !== -1) {
-                    cleanDisplayText = displayText.substring(0, slashIndex).trim();
-                }
-                
-                // Set basic styling
-                choiceButton.className = 'choice';
-                choiceButton.style.width = '100%';
-                choiceButton.style.padding = '12px 20px';
-                choiceButton.style.margin = '8px 0';
-                choiceButton.style.border = '2px solid #3498db';
-                choiceButton.style.borderRadius = '8px';
-                choiceButton.style.backgroundColor = '#fff';
-                choiceButton.style.color = '#2c3e50';
-                choiceButton.style.fontSize = '16px';
-                choiceButton.style.cursor = 'pointer';
-                choiceButton.style.position = 'relative';
-                
-                // Set the display text (without ] and without anything after /)
-                choiceButton.textContent = cleanDisplayText;
-                choiceButton.disabled = false;
-                
-                // Add data attributes to track both original index and correctness
-                choiceButton.dataset.originalIndex = originalIndex.toString();
-                choiceButton.dataset.isCorrect = isCorrect.toString();
-                
-                // DEBUG START
-                console.log(`DEBUG [Button ${displayIndex}]:`, {
-                    text: cleanDisplayText,
-                    originalIndex: originalIndex,
-                    isCorrect: isCorrect,
-                    isCorrectCheck: originalIndex === Number(correctIndex)
-                });
-                // DEBUG END
-                
-                // Add event listener - pass the original index as a number to maintain correct answer tracking
-                choiceButton.addEventListener('click', () => handleChoiceSelection(Number(originalIndex)));
-                
-                // Log if this is the correct option
-                if (originalIndex === correctIndex) {
-                    console.log(`Option ${displayIndex} (original ${originalIndex}) is correct:`, option);
-                }
-                
-                // Add button to container
-                choiceOptions.appendChild(choiceButton);
-            });
-        }
-    } else {
-        // Handle classic card
-        const cardFront = document.getElementById('card-front');
-        const cardSubtitle = document.getElementById('card-subtitle');
-        const choiceOptions = document.getElementById('choice-options');
-        
-        // Clear any existing choice options from previous cards
-        if (choiceOptions) {
-            choiceOptions.innerHTML = '';
-        }
-        
-        // Remove choice-card class from the card-pair element
-        if (cardPair) {
-            cardPair.classList.remove('choice-card');
-        }
-        
-        // Reset the skip button text and remove seguir-button class if it exists
-        if (skipButton) {
-            skipButton.textContent = 'Saltar';
-            skipButton.classList.remove('seguir-button');
-        }
-        
-        if (cardFront) {
-            cardFront.textContent = currentCard.question;
-            
-            if (cardSubtitle) {
-                if (currentCard.subtitle) {
-                    cardSubtitle.textContent = currentCard.subtitle;
-                    cardSubtitle.classList.remove('hidden');
-                } else {
-                    cardSubtitle.classList.add('hidden');
-                }
-            }
-        }
-
+    try {
+        // Reset UI elements
+        const answerCard = document.querySelector(".card.answer");
         if (answerCard) {
-            const answerContent = answerCard.querySelector('.card-content');
-            if (answerContent) {
-                answerContent.innerHTML = `
-                    <h3>${currentCard.question}</h3>
-                    ${currentCard.subtitle ? `<p class="subtitle">${currentCard.subtitle}</p>` : ''}
-                    <div class="answer-text">${currentCard.answer.replace(/\n/g, '<br>')}</div>
-                    ${currentCard.extraInfo ? `
-                        <div class="notes">
-                            <strong>Notas:</strong>
-                            ${currentCard.extraInfo.replace(/\n/g, '<br>')}
-                        </div>
-                    ` : ''}
-                `;
+            answerCard.classList.add("hidden");
+            console.log("Hidden answer card");
+        }
+        
+        const srsControls = document.querySelector(".srs-controls");
+        if (srsControls) {
+            srsControls.style.display = "none";
+            console.log("Hidden SRS controls");
+        }
+        
+        const reviewButton = document.getElementById("revisar-button");
+        if (reviewButton) {
+            reviewButton.style.display = "inline-block";
+            console.log("Showing review button");
+        }
+        
+        // Get the current card index from window object or default to 0
+        const currentIndex = window.currentCardIndex || 0;
+        
+        // Get the next card using window.globalCardData
+        const card = window.globalCardData[currentIndex];
+        console.log("Card being loaded:", card, "Index:", currentIndex);
+        
+        // Update the card content
+        const questionTitle = document.getElementById("question-title");
+        const questionSubtitle = document.getElementById("question-subtitle");
+        const questionText = document.getElementById("question-text");
+        const answerText = document.getElementById("answer-text");
+        
+        console.log("DOM Elements found:", {
+            questionTitle: !!questionTitle,
+            questionSubtitle: !!questionSubtitle,
+            questionText: !!questionText,
+            answerText: !!answerText
+        });
+        
+        // Handle classic card display (patologia-era1 style)
+        if (questionTitle) {
+            // For classic cards, title is the question
+            questionTitle.textContent = card.question || "Sin pregunta";
+            console.log("Set question title:", card.question);
+        }
+        
+        if (questionSubtitle) {
+            // Use subtitle if available
+            if (card.subtitle) {
+                questionSubtitle.textContent = card.subtitle;
+                questionSubtitle.style.display = "block";
+                console.log("Set question subtitle:", card.subtitle);
+            } else {
+                questionSubtitle.style.display = "none";
             }
         }
+        
+        if (questionText) {
+            // Set question text if available, otherwise hide it
+            if (card.questionText) {
+                questionText.innerHTML = card.questionText;
+                questionText.style.display = "block";
+                console.log("Set question text:", card.questionText);
+            } else {
+                questionText.style.display = "none";
+            }
+        }
+        
+        if (answerText) {
+            // For classic cards, answer is HTML content
+            answerText.innerHTML = card.answer || "Sin respuesta";
+            console.log("Set answer text");
+        }
+        
+        // Handle multiple choice if present
+        const choiceOptionsContainer = document.getElementById("choice-options");
+        if (choiceOptionsContainer) {
+            choiceOptionsContainer.innerHTML = "";
+            
+            if (card.choices && card.choices.length > 0) {
+                choiceOptionsContainer.style.display = "block";
+                console.log("Adding choice options:", card.choices);
+                
+                card.choices.forEach((choice, index) => {
+                    const choiceButton = document.createElement("button");
+                    choiceButton.className = "choice-option";
+                    choiceButton.textContent = choice;
+                    choiceButton.setAttribute("data-index", index);
+                    choiceButton.addEventListener("click", function() {
+                        // Mark as selected
+                        document.querySelectorAll(".choice-option").forEach(btn => {
+                            btn.classList.remove("selected");
+                        });
+                        this.classList.add("selected");
+                    });
+                    choiceOptionsContainer.appendChild(choiceButton);
+                });
+            } else {
+                choiceOptionsContainer.style.display = "none";
+            }
+        }
+        
+        // Show card status (e.g., "Card 1 of 10")
+        const cardStatus = document.getElementById("card-status");
+        if (cardStatus) {
+            cardStatus.innerHTML = `<span>Tarjeta ${currentIndex + 1} de ${window.globalCardData.length}</span>`;
+        }
+        
+        // Ensure question card is visible with patologia-era1 styling
+        const questionCard = document.querySelector(".card.question");
+        if (questionCard) {
+            questionCard.style.display = "block";
+            console.log("Showing question card");
+            
+            // Make sure we have patologia-era1 styling
+            questionCard.style.borderTop = "6px solid #3498db";
+            questionCard.style.borderRadius = "12px";
+            questionCard.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
+        }
+        
+        // Apply patologia-era1 styling to answer card too
+        if (answerCard) {
+            answerCard.style.borderTop = "6px solid #2ecc71";
+            answerCard.style.borderRadius = "12px";
+            answerCard.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
+        }
+        
+        // Show the main content
+        showMainContent();
+        console.log("Card loaded successfully");
+        
+        // Update the index for next time
+        window.currentCardIndex = (currentIndex + 1) % window.globalCardData.length;
+        
+    } catch (error) {
+        console.error("Error loading next card:", error);
+        showErrorMessage("Error al cargar la tarjeta: " + error.message);
     }
-
-    // Ensure skip button has the correct event handler
-    updateSkipButtonHandler();
-
-    showStatus(currentCard.interval > 1 ? 'Para repasar' : 'Tarjeta nueva');
 }
 
 function switchDeck(deckName) {
@@ -1186,28 +1085,10 @@ function updatePreview() {
                     const choiceButton = document.createElement('button');
                     choiceButton.className = 'choice';
                     choiceButton.textContent = option;
-                    choiceButton.style.position = 'relative';
-                    choiceButton.style.paddingRight = '30px';
                     
-                    // Mark the correct answer - always show a checkmark indicator
+                    // Store correct answer information without visual indication
                     if (index === parsedQuestion.correctIndex) {
                         choiceButton.dataset.correct = 'true';
-                        
-                        // Make the correct answer visually identifiable
-                        const correctIndicator = document.createElement('span');
-                        correctIndicator.style.color = '#4caf50';
-                        correctIndicator.style.fontSize = '16px';
-                        correctIndicator.style.fontWeight = 'bold';
-                        correctIndicator.style.position = 'absolute';
-                        correctIndicator.style.right = '10px';
-                        correctIndicator.style.top = '50%';
-                        correctIndicator.style.transform = 'translateY(-50%)';
-                        correctIndicator.innerHTML = '✓';
-                        choiceButton.appendChild(correctIndicator);
-                        
-                        // Add a subtle background to indicate this is correct
-                        choiceButton.style.backgroundColor = '#e8f5e9';
-                        choiceButton.style.borderLeft = '3px solid #4caf50';
                     }
                     
                     choiceOptions.appendChild(choiceButton);
@@ -1231,16 +1112,10 @@ function updatePreview() {
                         // Reset all buttons
                         previewContainer.querySelectorAll('.choice').forEach(btn => {
                             btn.classList.remove('correct', 'wrong');
-                            
-                            // Preserve the checkmark and styling on correct answer
-                            if (!btn.dataset.correct) {
-                                btn.style.backgroundColor = '';
-                                btn.style.color = '';
-                                btn.style.borderLeft = '';
-                            } else {
-                                btn.style.backgroundColor = '#e8f5e9';
-                                btn.style.borderLeft = '3px solid #4caf50';
-                            }
+                            btn.style.backgroundColor = '';
+                            btn.style.color = '';
+                            btn.style.borderLeft = '';
+                            btn.style.fontWeight = '';
                         });
                         
                         // Show the button as correct or wrong
@@ -1249,13 +1124,20 @@ function updatePreview() {
                             this.style.backgroundColor = '#4caf50';
                             this.style.color = 'white';
                             this.style.borderLeft = '3px solid #2e7d32';
+                            this.style.fontWeight = 'bold';
+                            
+                            // Add checkmark to indicate correct answer after clicking
+                            const correctIndicator = document.createElement('span');
+                            correctIndicator.style.marginLeft = '8px';
+                            correctIndicator.innerHTML = '✓';
+                            this.appendChild(correctIndicator);
                         } else {
                             this.classList.add('wrong');
                             this.style.backgroundColor = '#f44336';
                             this.style.color = 'white';
                             this.style.borderLeft = '3px solid #d32f2f';
                             
-                            // Highlight the correct answer even more
+                            // Show the correct answer
                             const correctButton = previewContainer.querySelector('[data-correct="true"]');
                             if (correctButton) {
                                 correctButton.classList.add('correct');
@@ -1263,6 +1145,12 @@ function updatePreview() {
                                 correctButton.style.color = 'white';
                                 correctButton.style.borderLeft = '3px solid #2e7d32';
                                 correctButton.style.fontWeight = 'bold';
+                                
+                                // Add checkmark to correct answer after wrong choice
+                                const correctIndicator = document.createElement('span');
+                                correctIndicator.style.marginLeft = '8px';
+                                correctIndicator.innerHTML = '✓';
+                                correctButton.appendChild(correctIndicator);
                             }
                         }
                     });
@@ -1967,21 +1855,58 @@ function setupAdminForm() {
             submitButton.textContent = 'Processing...';
             submitButton.disabled = true;
             
-            // Create form data object
-            const formData = {
-                question: question,
-                deck: deck,
-                subdeck: subdeck,
-                tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-                type: cardType
+            try {
+                // Parse the question input based on card type
+                let formData = {};
+                
+                if (cardType === 'classic') {
+                    const { question: parsedQuestion, subtitle, answer, extraInfo } = parseClassicCard(question);
+                    formData = {
+                        type: 'classic',
+                        question: parsedQuestion,
+                        subtitle: subtitle || '',
+                        answer,
+                        extraInfo: extraInfo || '',
+                        deck,
+                        subdeck,
+                        tags: tags ? tags.split(',').map(tag => tag.trim()) : []
             };
             
             // Add subsubdeck if it exists
             if (subsubdeck) {
                 formData.subsubdeck = subsubdeck;
             }
-            
-            console.log('Submitting form data:', formData);
+                } else if (cardType === 'multipleChoice') {
+                    const { question: parsedQuestion, options, correctIndex, explanation } = parseMultipleChoiceQuestions(question);
+                    
+                    // Validate that we have options and a correct answer
+                    if (!options || options.length < 2) {
+                        throw new Error('Multiple choice cards must have at least 2 options.');
+                    }
+                    
+                    if (correctIndex === -1) {
+                        throw new Error('Please specify a correct answer using "Correct: [option text]"');
+                    }
+                    
+                    formData = {
+                        type: 'multipleChoice',
+                        question: parsedQuestion,
+                        options,
+                        correctIndex,
+                        answer: options[correctIndex], // Set the answer to the correct option
+                        extraInfo: explanation || '',
+                        deck,
+                        subdeck,
+                        tags: tags ? tags.split(',').map(tag => tag.trim()) : []
+                    };
+                    
+                    // Add subsubdeck if it exists
+                    if (subsubdeck) {
+                        formData.subsubdeck = subsubdeck;
+                    }
+                }
+                
+                console.log('Parsed form data to be submitted:', formData);
             
             // Submit the form data
             fetch('/api/flashcards', {
@@ -2022,6 +1947,12 @@ function setupAdminForm() {
                 submitButton.textContent = originalButtonText;
                 submitButton.disabled = false;
             });
+            } catch (error) {
+                console.error('Error processing form:', error);
+                alert(`Error: ${error.message}`);
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
         });
     }
     
@@ -2317,3 +2248,99 @@ function parseClassicCard(content) {
     console.log('Parsed classic card:', { question, subtitle, answer, extraInfo });
     return { question, subtitle, answer, extraInfo };
 }
+
+/**
+ * Initializes cards based on URL parameters
+ * @param {string} deck - Deck name
+ * @param {string} subdeck - Subdeck name (optional)
+ * @param {string} subsubdeck - Subsubdeck name (optional) 
+ * @param {string} mode - Study mode (normal, spaced, etc.)
+ */
+function initializeCardsFromUrl(deck, subdeck, subsubdeck, mode = 'normal') {
+    console.log(`Initializing cards with: deck=${deck}, subdeck=${subdeck}, subsubdeck=${subsubdeck}, mode=${mode}`);
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (deck) params.set('deck', deck);
+    if (subdeck) params.set('subdeck', subdeck);
+    if (subsubdeck) params.set('subsubdeck', subsubdeck);
+    if (mode) params.set('mode', mode);
+    
+    // Update breadcrumb navigation
+    updateBreadcrumb(deck, subdeck, subsubdeck);
+    
+    // Call the API to get cards
+    fetch(`/api/flashcards?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to load cards: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(`Loaded ${data.length} cards from API:`, data);
+            
+            // Store cards in global variable - IMPORTANT: attach to window object
+            window.globalCardData = data;
+            window.currentCardIndex = 0;
+            
+            if (data.length > 0) {
+                // Load the first card
+                loadNextCard();
+            } else {
+                console.log("No cards found for these criteria");
+                showNoCardsMessage("No se encontraron tarjetas para los criterios seleccionados.");
+            }
+        })
+        .catch(error => {
+            console.error("Error loading cards:", error);
+            showErrorMessage(`Error al cargar las tarjetas: ${error.message}`);
+        });
+}
+
+/**
+ * Updates the breadcrumb navigation with deck, subdeck, and subsubdeck
+ */
+function updateBreadcrumb(deck, subdeck, subsubdeck) {
+    const deckCrumb = document.getElementById('deck-crumb');
+    const subdeckCrumb = document.getElementById('subdeck-crumb');
+    const subsubdeckCrumb = document.getElementById('subsubdeck-crumb');
+    const subdeckSeparator = document.getElementById('subdeck-separator');
+    const subsubdeckSeparator = document.getElementById('subsubdeck-separator');
+    
+    if (!deckCrumb) return;
+    
+    // Set deck name
+    if (deck) {
+        deckCrumb.textContent = deck;
+        document.title = `${deck} - Med Memory`;
+        
+        // Make deck crumb a link if we have a subdeck
+        if (subdeck) {
+            deckCrumb.innerHTML = `<a href="/deck/${encodeURIComponent(deck)}" class="breadcrumb-item">${deck}</a>`;
+            subdeckCrumb.textContent = subdeck;
+            subdeckSeparator.style.display = 'inline';
+            
+            // Handle subsubdeck if present
+            if (subsubdeck) {
+                subdeckCrumb.innerHTML = `<a href="/study?deck=${encodeURIComponent(deck)}&subdeck=${encodeURIComponent(subdeck)}" class="breadcrumb-item">${subdeck}</a>`;
+                subsubdeckCrumb.textContent = subsubdeck;
+                subsubdeckSeparator.style.display = 'inline';
+                document.title = `${subsubdeck} - ${subdeck} - Med Memory`;
+            } else {
+                subdeckCrumb.classList.add('active-breadcrumb');
+                subsubdeckCrumb.style.display = 'none';
+                document.title = `${subdeck} - ${deck} - Med Memory`;
+            }
+        } else {
+            // Only deck, no subdeck
+            deckCrumb.classList.add('active-breadcrumb');
+            subdeckCrumb.style.display = 'none';
+            subsubdeckCrumb.style.display = 'none';
+        }
+    }
+}
+
+// Expose function to global scope
+window.initializeCardsFromUrl = initializeCardsFromUrl;
+window.initializeCardsFromUrl = initializeCardsFromUrl;

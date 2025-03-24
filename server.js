@@ -492,6 +492,14 @@ app.get('/api/flashcards/count', async (req, res) => {
   try {
     const { deck, subdeck, subsubdeck, type } = req.query;
     
+    // Debug logging
+    console.log(`📊 API CARD COUNT REQUEST for:`, { 
+      deck, 
+      subdeck, 
+      subsubdeck, 
+      type 
+    });
+    
     // Build query based on provided parameters
     const query = {};
     if (deck) query.deck = deck;
@@ -499,16 +507,47 @@ app.get('/api/flashcards/count', async (req, res) => {
     if (subsubdeck) query.subsubdeck = subsubdeck;
     if (type) query.type = type;
     
+    console.log(`📊 MongoDB query for count: ${JSON.stringify(query)}`);
+    
+    // Get all matching cards to inspect them
+    console.log(`📊 DEBUG: Getting actual cards for inspection...`);
+    const actualCards = await Flashcard.find(query).lean();
+    console.log(`📊 DEBUG: Found ${actualCards.length} matching cards in total`);
+    
+    if (actualCards.length > 0) {
+      console.log(`📊 DEBUG: CARD DETAILS for ${subdeck || ''} > ${subsubdeck || ''}:`);
+      actualCards.forEach((card, index) => {
+        console.log(`📊 Card ${index + 1}:`, {
+          id: card._id,
+          question: card.question,
+          type: card.type,
+          deck: card.deck,
+          subdeck: card.subdeck,
+          subsubdeck: card.subsubdeck,
+          hasLastReview: !!card.lastReview
+        });
+      });
+    }
+    
     // Count new cards
     const newCardsQuery = { ...query, lastReview: { $exists: false } };
+    console.log(`📊 New cards query: ${JSON.stringify(newCardsQuery)}`);
     const newCards = await Flashcard.countDocuments(newCardsQuery);
+    console.log(`📊 New cards count result: ${newCards}`);
 
     // Count due cards
     const dueCardsQuery = { ...query, lastReview: { $lte: Date.now() } };
+    console.log(`📊 Due cards query: ${JSON.stringify(dueCardsQuery)}`);
     const dueCards = await Flashcard.countDocuments(dueCardsQuery);
+    console.log(`📊 Due cards count result: ${dueCards}`);
 
+    // Debug response
+    console.log(`📊 API CARD COUNT RESPONSE for ${subdeck || ''} > ${subsubdeck || ''}: `, { newCards, dueCards });
+    
+    // Return response
     res.json({ newCards, dueCards });
   } catch (error) {
+    console.error(`📊 ERROR in /api/flashcards/count: ${error.message}`);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -538,6 +577,149 @@ app.get('/study', (req, res) => {
   } catch (error) {
     console.error(`Error serving study page: ${error.message}`);
     res.status(500).send(`Server error: ${error.message}`);
+  }
+});
+
+// Add a debug endpoint to get all cards for a specific deck/subdeck/subsubdeck combination
+app.get('/api/debug/cards', async (req, res) => {
+  try {
+    const { deck, subdeck, subsubdeck } = req.query;
+    
+    console.log(`📊 DEBUG: Querying all cards for:`, { deck, subdeck, subsubdeck });
+    
+    const query = {};
+    if (deck) query.deck = deck;
+    if (subdeck) query.subdeck = subdeck;
+    if (subsubdeck) query.subsubdeck = subsubdeck;
+    
+    console.log(`📊 DEBUG: MongoDB query: ${JSON.stringify(query)}`);
+    
+    // Get all matching cards
+    const cards = await Flashcard.find(query).lean();
+    
+    console.log(`📊 DEBUG: Found ${cards.length} cards`);
+    
+    // Group cards by type
+    const cardsByType = {};
+    for (const card of cards) {
+      const type = card.type || 'unknown';
+      if (!cardsByType[type]) cardsByType[type] = [];
+      cardsByType[type].push(card);
+    }
+    
+    console.log(`📊 DEBUG: Cards by type:`, 
+      Object.keys(cardsByType).map(type => ({ type, count: cardsByType[type].length }))
+    );
+    
+    // Send the results
+    res.json({
+      query,
+      totalCount: cards.length,
+      typeBreakdown: Object.keys(cardsByType).map(type => ({ type, count: cardsByType[type].length })),
+      cards: cards.map(card => ({
+        _id: card._id,
+        question: card.question,
+        type: card.type,
+        deck: card.deck,
+        subdeck: card.subdeck,
+        subsubdeck: card.subsubdeck
+      }))
+    });
+  } catch (error) {
+    console.error(`📊 DEBUG ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Special debug endpoint for Neumonía
+app.get('/api/debug/neumonia', async (req, res) => {
+  try {
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Checking all cards related to Neumonía`);
+    
+    // Check for cards with exact subsubdeck "Neumonía"
+    const exactMatch = await Flashcard.find({
+      subsubdeck: "Neumonía"
+    }).lean();
+    
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Found ${exactMatch.length} cards with exact subsubdeck "Neumonía"`);
+    
+    // Check for cards with subsubdeck containing "neumon" (case insensitive)
+    const partialMatches = await Flashcard.find({
+      subsubdeck: { $regex: /neumon/i }
+    }).lean();
+    
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Found ${partialMatches.length} cards with subsubdeck containing "neumon"`);
+    
+    // Also check for any cards containing neumon in any field
+    const textMatches = await Flashcard.find({
+      $or: [
+        { question: { $regex: /neumon/i } },
+        { answer: { $regex: /neumon/i } },
+        { deck: { $regex: /neumon/i } },
+        { subdeck: { $regex: /neumon/i } }
+      ]
+    }).lean();
+    
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Found ${textMatches.length} cards with "neumon" in any field`);
+    
+    // Check a specific combination
+    const specificQuery = await Flashcard.find({
+      deck: "Patología",
+      subdeck: "Respiratorio",
+      subsubdeck: "Neumonía"
+    }).lean();
+    
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Found ${specificQuery.length} cards with exact Patología > Respiratorio > Neumonía path`);
+    
+    // Log normalized Neumonía naming
+    console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Normalized subsubdeck name variations found in database:`);
+    const variations = await Flashcard.distinct('subsubdeck', {
+      subsubdeck: { $regex: /neumon/i }
+    });
+    
+    variations.forEach((variant, i) => {
+      console.log(`🔍 NEUMONÍA SPECIAL DEBUG: Variation ${i+1}: "${variant}"`);
+    });
+    
+    // Send response
+    res.json({
+      exactMatch: exactMatch.map(card => ({
+        id: card._id,
+        question: card.question,
+        deck: card.deck,
+        subdeck: card.subdeck,
+        subsubdeck: card.subsubdeck,
+        type: card.type
+      })),
+      partialMatches: partialMatches.map(card => ({
+        id: card._id,
+        question: card.question,
+        deck: card.deck,
+        subdeck: card.subdeck,
+        subsubdeck: card.subsubdeck,
+        type: card.type
+      })),
+      textMatches: textMatches.map(card => ({
+        id: card._id,
+        question: card.question,
+        deck: card.deck,
+        subdeck: card.subdeck,
+        subsubdeck: card.subsubdeck,
+        type: card.type
+      })),
+      specificQuery: specificQuery.map(card => ({
+        id: card._id,
+        question: card.question,
+        deck: card.deck,
+        subdeck: card.subdeck,
+        subsubdeck: card.subsubdeck,
+        type: card.type
+      })),
+      variations: variations
+    });
+  } catch (error) {
+    console.error(`🔍 NEUMONÍA SPECIAL DEBUG ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

@@ -24,6 +24,13 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/*
+style="min-width: 160px; 
+box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+background-color: white; 
+border-radius: 6px;"
+*/
+
 .profile-dropdown-content {
     display: none;
     position: absolute;
@@ -37,36 +44,65 @@
     margin-top: 5px;
 }
 
+
+
 .profile-dropdown-content.show {
     display: block;
 }
 
+
+/* profile
+display: block; 
+width: 100%; 
+padding: 10px 15px; 
+text-align: left; 
+border: none; 
+color: #34495e; 
+background: none; 
+font-size: 14px; 
+cursor: pointer;
+*/ 
+
 .dropdown-item {
-    display: block !important;
-    width: 100% !important;
-    padding: 10px 15px !important;
-    text-align: left !important;
-    border: none !important;
-    background: none !important;
-    color: #34495e !important;
-    font-size: 1rem !important;
-    font-weight: normal !important;
-    cursor: pointer !important;
-    transition: background-color 0.3s ease !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+    display: block;
+    width: 100%;
+    border-radius: 6px 6px 0px 0px;
+    padding: 10px 15px;
+    text-align: left;
+    border: none;
+    background-color: white;
+    color: #34495e;
+    font-size: 1rem;
+    font-weight: normal;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    opacity: 1;
+    visibility: visible;
 }
 
 .dropdown-item:hover {
-    background-color: #f5f5f5 !important;
+    background-color: #1b90cf !important;
 }
 
 /* Ensure the logout button is properly styled */
 #logout {
-    display: block !important;
-    color: #34495e !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: none !important;
-    font-size: 1rem !important;
+    display: block;
+    color: #34495e;
+    visibility: visible;
+    border-radius: 0 0 6px 6px;
+    opacity: 1;
+    font-size: 1rem;
 } 
+
+/* logout
+style="display: block; 
+width: 100%; 
+padding: 10px 15px; 
+text-align: left; 
+border: none; 
+color: #34495e; 
+background: none; 
+font-size: 14px; 
+cursor: pointer;"
+*/
+
