@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.length > 0) {
                 // Display the first card
                 displayChoiceCard();
+                updateCardStatus();
                 return true;
             } else {
                 console.log("No choice flashcards found");
@@ -153,6 +154,85 @@ function displayChoiceCard() {
     const card = window.globalCardData[currentIndex];
     console.log("Displaying choice flashcard:", card);
     
+    // Add custom styles for choice options if not already added
+    if (!document.getElementById('choice-options-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'choice-options-styles';
+        styles.textContent = `
+            #main-content {
+                visibility: visible !important;
+                display: block !important;
+            }
+            .card-pair.choice-card {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .title-container {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            #choice-options {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-top: 20px;
+                width: 100%;
+            }
+            .choice-option {
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+                cursor: pointer;
+                text-align: left;
+                font-size: 16px;
+                transition: background-color 0.2s;
+                position: relative;
+            }
+            .choice-option:hover {
+                background-color: #f0f0f0;
+            }
+            .choice-option.selected {
+                background-color: #d4edda;
+                border-color: #c3e6cb;
+                font-weight: bold;
+            }
+            .choice-option.selected:after {
+                content: "✓";
+                position: absolute;
+                right: 15px;
+                color: #28a745;
+            }
+            .srs-controls {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+                transition: opacity 0.3s;
+            }
+            .srs-controls.hidden {
+                display: none;
+                opacity: 0;
+            }
+            .srs-controls.visible {
+                display: flex;
+                opacity: 1;
+            }
+            #card-status {
+                margin-top: 20px;
+                text-align: center;
+                color: #666;
+                font-size: 14px;
+            }
+            #flashcard-system {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+    
     // Set question card content
     const cardFront = document.getElementById("card-front");
     if (cardFront) {
@@ -164,20 +244,47 @@ function displayChoiceCard() {
     if (choiceOptionsContainer) {
         choiceOptionsContainer.innerHTML = "";  // Clear existing options
         
-        if (card.choices && card.choices.length > 0) {
-            console.log("Adding choice options:", card.choices);
+        // Check if we have options in the card data
+        if (card.options && Array.isArray(card.options) && card.options.length > 0) {
+            console.log("Adding choice options:", card.options);
             
-            card.choices.forEach((choice, index) => {
+            card.options.forEach((option, index) => {
                 const choiceButton = document.createElement("button");
                 choiceButton.className = "choice-option";
-                choiceButton.textContent = choice;
+                choiceButton.textContent = option;
                 choiceButton.setAttribute("data-index", index);
+                
+                // Mark the correct answer for debugging (will be visible in console only)
+                if (index === card.correctIndex) {
+                    console.log(`Option ${index} is the correct answer: ${option}`);
+                }
+                
                 choiceButton.addEventListener("click", function() {
                     // Mark as selected
                     document.querySelectorAll(".choice-option").forEach(btn => {
                         btn.classList.remove("selected");
                     });
                     this.classList.add("selected");
+                    
+                    // Check if the answer is correct
+                    const selectedIndex = parseInt(this.getAttribute("data-index"), 10);
+                    const isCorrect = selectedIndex === card.correctIndex;
+                    
+                    // Show answer feedback
+                    if (isCorrect) {
+                        this.style.backgroundColor = "#d4edda"; // Green for correct
+                        console.log("Correct answer selected!");
+                    } else {
+                        this.style.backgroundColor = "#f8d7da"; // Red for incorrect
+                        console.log("Incorrect answer selected. The correct answer is:", card.options[card.correctIndex]);
+                        
+                        // Highlight the correct answer
+                        const correctButton = document.querySelector(`.choice-option[data-index="${card.correctIndex}"]`);
+                        if (correctButton) {
+                            correctButton.style.backgroundColor = "#d4edda";
+                            correctButton.style.borderColor = "#c3e6cb";
+                        }
+                    }
                     
                     // Show SRS controls when a choice is selected
                     const srsControls = document.querySelector(".srs-controls");
@@ -188,11 +295,39 @@ function displayChoiceCard() {
                 });
                 choiceOptionsContainer.appendChild(choiceButton);
             });
+        } else {
+            console.error("No options found for choice flashcard:", card);
+            const errorMessage = document.createElement("p");
+            errorMessage.textContent = "Esta tarjeta no tiene opciones.";
+            errorMessage.style.color = "red";
+            choiceOptionsContainer.appendChild(errorMessage);
         }
     }
     
+    // Add a class to the card-pair to style it as a choice card
+    const cardPair = document.querySelector(".card-pair");
+    if (cardPair) {
+        cardPair.classList.add("choice-card");
+    }
+    
+    // Update the status display
+    updateCardStatus();
+    
     // Update card index for next time
     window.currentCardIndex = (currentIndex + 1) % window.globalCardData.length;
+}
+
+/**
+ * Updates the card status display
+ */
+function updateCardStatus() {
+    const statusElement = document.getElementById("status");
+    if (statusElement) {
+        const totalCards = window.globalCardData ? window.globalCardData.length : 0;
+        // Add 1 to currentCardIndex for display since it's 0-based but we want to show 1-based numbering
+        const displayIndex = (window.currentCardIndex || 0) + 1;
+        statusElement.textContent = `Tarjeta ${displayIndex} de ${totalCards}`;
+    }
 }
 
 /**
@@ -208,8 +343,19 @@ function loadNextChoiceCard() {
         srsControls.classList.remove("visible");
     }
     
+    // Clear any selected or highlighted options
+    const choiceOptions = document.querySelectorAll(".choice-option");
+    choiceOptions.forEach(option => {
+        option.classList.remove("selected");
+        option.style.backgroundColor = "";
+        option.style.borderColor = "";
+    });
+    
     // Display the next card
     displayChoiceCard();
+    
+    // Update status
+    updateCardStatus();
 }
 
 /**
