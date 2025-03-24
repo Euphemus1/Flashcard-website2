@@ -487,7 +487,7 @@ document.querySelectorAll('.global-currency-toggle .toggle-option').forEach(butt
         });
 
         // Update slider
-        slider.style.transform = currency === 'BRL' ? 'translateX(100%)' : 'translateX(0)';
+        slider.style.transform = currency === 'BRL' ? 'translateX(45px)' : 'translateX(0)';
             getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
     });
 });

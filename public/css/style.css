@@ -524,12 +524,13 @@ nav {
 .global-currency-toggle .toggle-container {
     background: var(--duration-btn-bg);
     border-radius: 20px;
-    padding: 2px;
+    padding: 0; /* Remove padding completely */
     width: 90px;
     height: 32px;
     position: relative;
-    display: flex; /* Add this */
-    align-items: center; /* Add this */
+    display: flex;
+    align-items: center;
+    overflow: hidden; /* Ensure slider doesn't overflow */
 }
 
 .global-currency-toggle .toggle-option {
@@ -543,23 +544,23 @@ nav {
     color: var(--secondary-color);
     transition: all 0.3s ease;
     font-weight: bold;
-    display: flex; /* Add this */
-    align-items: center; /* Add this */
-    justify-content: center; /* Add this */
-    height: 100%; /* Add this */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 .global-currency-toggle .slider {
     position: absolute;
-    width: 45px;
-    height: 32px;
+    width: 45px; /* Exactly half of container width */
+    height: 100%; /* Take up full height */
     background: #2ed573;
     border-radius: 20px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1;
-    display: flex; /* Add this */
-    align-items: center; /* Add this */
-    justify-content: center; /* Add this */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* For mobile responsiveness */
@@ -571,7 +572,7 @@ nav {
     
     .global-currency-toggle .slider {
         width: 38px;
-        height: 22px;
+        /* Remove the fixed height here since we're using 100% */
     }
     
     .global-currency-toggle .toggle-option {
@@ -1756,4 +1757,22 @@ p.question-look, p.answer-text {
 
 [data-theme="dark"] .wavej {
     --nav-gradient: linear-gradient(90deg, #1a7a8a, #0f1f26); /* Darker gradient */
+}
+
+/* Fix the global currency toggle for dark mode */
+[data-theme="dark"] .global-currency-toggle .toggle-container {
+    background: #222;
+    border: 1px solid #333;
+}
+
+[data-theme="dark"] .global-currency-toggle .toggle-option {
+    color: #aaa;
+}
+
+[data-theme="dark"] .global-currency-toggle .toggle-option.active {
+    color: #fff;
+}
+
+[data-theme="dark"] .global-currency-toggle .slider {
+    background: #1a7a8a;
 }
