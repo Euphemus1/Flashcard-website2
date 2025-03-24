@@ -455,12 +455,19 @@ app.get('/api/flashcards', async (req, res) => {
     if (req.query.subsubdeck) {
       query.subsubdeck = req.query.subsubdeck.trim();
     }
+    
+    // Add support for type if provided (classic or multipleChoice)
+    if (req.query.type) {
+      query.type = req.query.type.trim();
+    }
 
     // Clean query parameters
     Object.keys(query).forEach(key => {
       if (!query[key]) delete query[key];
       else query[key] = query[key].trim();
     });
+
+    console.log(`API flashcards request with query:`, query);
 
     // Fetch cards with lean() for better performance
     const flashcards = await Flashcard.find(query)
@@ -563,8 +570,44 @@ app.get('/api/health-check', (req, res) => {
 
 // Add a route for the study page with deck, subdeck, and subsubdeck parameters
 app.get('/study', (req, res) => {
-  console.log(`Serving study page with params:`, req.query);
-  const fullPath = path.join(__dirname, 'protected', 'study-page.html');
+  console.log(`Study page route with params:`, req.query);
+  
+  // Determine which page to redirect to based on type parameter
+  const { type } = req.query;
+  
+  if (type === 'multipleChoice') {
+    // Redirect to choice flashcard page
+    console.log(`Redirecting to choice flashcard page due to multipleChoice type parameter`);
+    const redirectUrl = `/choice-flashcard?${new URLSearchParams(req.query).toString()}`;
+    return res.redirect(redirectUrl);
+  } else if (type === 'classic' || !type) {
+    // Redirect to classic flashcard page (default if no type specified)
+    console.log(`Redirecting to classic flashcard page due to classic or no type parameter`);
+    const redirectUrl = `/classic-flashcard?${new URLSearchParams(req.query).toString()}`;
+    return res.redirect(redirectUrl);
+  } else {
+    // If we get here, it's an unknown type - serve the old study page for backward compatibility
+    console.log(`Serving original study page due to unknown type: ${type}`);
+    const fullPath = path.join(__dirname, 'protected', 'study-page.html');
+    
+    try {
+      if (fs.existsSync(fullPath)) {
+        res.sendFile(fullPath);
+      } else {
+        console.error(`File not found: ${fullPath}`);
+        res.status(404).send(`Study page template file not found. Please check server logs.`);
+      }
+    } catch (error) {
+      console.error(`Error serving study page: ${error.message}`);
+      res.status(500).send(`Server error: ${error.message}`);
+    }
+  }
+});
+
+// Add routes for the classic and choice flashcard pages
+app.get('/classic-flashcard', (req, res) => {
+  console.log(`Serving classic flashcard page with params:`, req.query);
+  const fullPath = path.join(__dirname, 'protected', 'classic-flashcard.html');
   console.log(`Attempting to serve file at: ${fullPath}`);
   
   try {
@@ -572,10 +615,28 @@ app.get('/study', (req, res) => {
       res.sendFile(fullPath);
     } else {
       console.error(`File not found: ${fullPath}`);
-      res.status(404).send(`Study page template file not found. Please check server logs.`);
+      res.status(404).send(`Classic flashcard template file not found. Please check server logs.`);
     }
   } catch (error) {
-    console.error(`Error serving study page: ${error.message}`);
+    console.error(`Error serving classic flashcard page: ${error.message}`);
+    res.status(500).send(`Server error: ${error.message}`);
+  }
+});
+
+app.get('/choice-flashcard', (req, res) => {
+  console.log(`Serving choice flashcard page with params:`, req.query);
+  const fullPath = path.join(__dirname, 'protected', 'choice-flashcard.html');
+  console.log(`Attempting to serve file at: ${fullPath}`);
+  
+  try {
+    if (fs.existsSync(fullPath)) {
+      res.sendFile(fullPath);
+    } else {
+      console.error(`File not found: ${fullPath}`);
+      res.status(404).send(`Choice flashcard template file not found. Please check server logs.`);
+    }
+  } catch (error) {
+    console.error(`Error serving choice flashcard page: ${error.message}`);
     res.status(500).send(`Server error: ${error.message}`);
   }
 });

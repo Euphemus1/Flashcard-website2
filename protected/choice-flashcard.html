@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choice Flashcards - Med Memory</title>
+    <link rel="stylesheet" href="/css/dashboard-style.css">
+    <link rel="stylesheet" href="/css/profile-dropdown.css">
+    <link rel="stylesheet" href="/css/fontawesome-free-6.7.2-web/css/all.min.css">
+    <style>
+        /* Debug panel styling */
+        #debug-info {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        /* Debug button styling */
+        #debug-button {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: none !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            margin-right: 5px !important;
+            font-weight: bold !important;
+        }
+
+ 
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div id="top-nav">
+        <button id="sidebar-toggle" class="nav-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">Med Memory</div>
+        <div class="nav-buttons">
+            <span id="username-display"></span>
+            <button id="overview-button">Home</button>
+            <button id="debug-button">Debug</button>
+            <button id="faq-button" aria-label="Frequently Asked Questions">Ayuda</button>
+            <button id="ranking-button">Ranking</button>
+            <div class="profile-dropdown">
+                <button class="profile-icon" id="profile-toggle">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="profile-dropdown-content">
+                    <button class="dropdown-item" id="profile-btn">Perfil</button>
+                    <button class="dropdown-item" id="logout">Cerrar sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div id="sidebar">
+        <h2>Mis Mazos</h2>
+        <ul id="deck-list">
+            <!-- Will be dynamically populated -->
+        </ul>
+        <div class="sidebar-footer">
+            <a href="https://wa.me/+55479tg5tg24336792" target="_blank" class="social-icon">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="https://instgghtrgtragram.com/medmemory.ar" target="_blank" class="social-icon">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="mailto:medmem89uyuyyuory@outlook.com" class="social-icon">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Message Elements -->
+    <div id="error-message" class="hidden">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error</h3>
+        <p>Ha ocurrido un error al cargar las tarjetas.</p>
+    </div>
+
+    <div id="no-cards-message" class="hidden">
+        <i class="fas fa-info-circle"></i>
+        <h3>No hay tarjetas</h3>
+        <p>No se encontraron tarjetas para los criterios seleccionados.</p>
+    </div>
+
+    <!-- Main Content Section -->
+    <div id="main-content" class="hidden">
+        <!-- Debug Panel -->
+        <div id="debug-info">
+            <!-- Debug info will be displayed here -->
+        </div>
+        
+        <!-- Title container with back button -->
+        <div class="title-container">
+            <button id="back-button" class="nav-btn back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="page-title">Loading...</h1>
+        </div>
+        
+        <!-- Choice Flashcard System -->
+        <div id="flashcard-system">
+            <div class="card-pair choice-card">
+                <!-- Question Card -->
+                <div class="card question">
+                    <div class="card-content">
+                        <h3 id="card-front">Question</h3>
+                        <div id="choice-options"></div>
+                    </div>
+                </div>
+
+                <!-- Review Controls -->
+                <div id="review-actions">
+                    <button id="skip-button">Saltar</button>
+                </div>
+            </div>
+
+            <!-- SRS Controls -->
+            <div class="srs-controls hidden">
+                <div class="srs-option">
+                    <button class="difficulty denuevo">De nuevo</button>
+                    <span class="interval">1d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty díficil">Díficil</button>
+                    <span class="interval">2d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty bueno">Bueno</button>
+                    <span class="interval">4d</span>
+                </div>
+                <div class="srs-option">
+                    <button class="difficulty fácil">Fácil</button>
+                    <span class="interval">8d</span>
+                </div>
+            </div>
+            
+            <!-- Card Status -->
+            <div id="card-status">
+                <span id="status"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORTANT: Load scripts in the correct order -->
+    <script src="/js/console-capture.js"></script>
+    <script src="/js/dashboard-script.js"></script>
+    <script src="/js/debug-button.js"></script>
+    <script src="/js/dynamic-deck.js"></script>
+    <script src="/js/profile-dropdown.js"></script>
+    <script src="/js/choice-flashcard.js"></script>
+</body>
+</html> 

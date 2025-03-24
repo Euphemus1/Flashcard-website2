@@ -13,6 +13,81 @@ document.addEventListener("DOMContentLoaded", function() {
         .title-container { display: flex; align-items: center; margin-bottom: 20px; }
         .back-btn { background: none; border: none; font-size: 1.5rem; color: #007bff; cursor: pointer; margin-right: 15px; }
         #page-title { margin: 0; font-size: 1.8rem; }
+        
+        /* Choice styling similar to patologiaera2 */
+        #choice-options {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .choice-option {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background-color: #fff;
+            color: #2c3e50;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .choice-option:hover {
+            background-color: #ebf5fb;
+            border-color: #2980b9;
+        }
+        
+        .choice-option.selected {
+            background-color: #2ed573;
+            border-color: #2ed573;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .choice-option.selected::after {
+            content: "✓";
+            position: absolute;
+            right: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* Extra styles for choice card */
+        .card-pair.choice-card #review-actions {
+            display: block;
+            width: 100%;
+        }
+        
+        .card-pair.choice-card #skip-button {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .card-pair.choice-card #revisar-button {
+            display: none;
+        }
+        
+        .card-pair.choice-card .card.question {
+            border-left: 5px solid #429edb;
+        }
+        
+        .card-pair.choice-card .srs-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            width: 100%;
+        }
+        
+        .card-pair.choice-card .srs-controls.visible {
+            display: grid;
+        }
     `;
     document.head.appendChild(style);
     
@@ -21,12 +96,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const deckParam = urlParams.get('deck');
     const subdeckParam = urlParams.get('subdeck');
     const subsubdeckParam = urlParams.get('subsubdeck');
+    const typeParam = urlParams.get('type'); // Get type parameter for all decks
     const modeParam = urlParams.get('mode') || 'normal';
     
     console.log("Study page loaded, URL Parameters:", {
         deck: deckParam,
         subdeck: subdeckParam,
         subsubdeck: subsubdeckParam,
+        type: typeParam,
         mode: modeParam
     });
     
@@ -38,6 +115,10 @@ document.addEventListener("DOMContentLoaded", function() {
             if (deck) params.set('deck', deck);
             if (subdeck) params.set('subdeck', subdeck);
             if (subsubdeck) params.set('subsubdeck', subsubdeck);
+            
+            // Get the type parameter from URL (classic or multipleChoice)
+            const typeParam = urlParams.get('type');
+            if (typeParam) params.set('type', typeParam);
             
             console.log(`Directly fetching cards from API with params: ${params.toString()}`);
             
@@ -125,6 +206,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // Custom initialization for EPOC subsubdeck
     if (deckParam === "Patología" && subdeckParam === "Respiratorio" && subsubdeckParam === "EPOC") {
         console.log("EPOC subsubdeck detected, using direct API loading");
+        // Get the type parameter as well (classic or multipleChoice)
+        const typeParam = urlParams.get('type');
+        console.log(`EPOC subsubdeck with type: ${typeParam || 'not specified'}`);
         window.loadCardsFromAPI(deckParam, subdeckParam, subsubdeckParam);
     } else {
         // Check if initializeCardsFromUrl function exists
@@ -638,22 +722,92 @@ function displayCardFromGlobal() {
         answerText.textContent = card.answer || "No answer provided";
     }
     
+    // Get the card-pair element to modify its class based on card type
+    const cardPair = document.querySelector(".card-pair");
+    
     // If this is a multiple-choice card, show options if applicable
-    if (card.type === 'multipleChoice' && card.options && card.options.length > 0) {
+    if (card.type === 'multipleChoice' && card.choices && card.choices.length > 0) {
+        // Apply the choice-card class to the card-pair for styling
+        if (cardPair) {
+            cardPair.classList.add("choice-card");
+        }
+        
+        // Show choices in the choice-options container (similar to patologiaera2 page)
+        const choiceOptionsContainer = document.getElementById("choice-options");
+        if (choiceOptionsContainer) {
+            choiceOptionsContainer.innerHTML = "";  // Clear existing options
+            choiceOptionsContainer.style.display = "block";
+            console.log("Adding choice options:", card.choices);
+            
+            card.choices.forEach((choice, index) => {
+                const choiceButton = document.createElement("button");
+                choiceButton.className = "choice-option";
+                choiceButton.textContent = choice;
+                choiceButton.setAttribute("data-index", index);
+                choiceButton.addEventListener("click", function() {
+                    // Mark as selected
+                    document.querySelectorAll(".choice-option").forEach(btn => {
+                        btn.classList.remove("selected");
+                    });
+                    this.classList.add("selected");
+                    
+                    // Show SRS controls when a choice is selected
+                    const srsControls = document.querySelector(".srs-controls");
+                    if (srsControls) {
+                        srsControls.classList.remove("hidden");
+                        srsControls.classList.add("visible");
+                    }
+                });
+                choiceOptionsContainer.appendChild(choiceButton);
+            });
+        }
+        
+        // Hide normal question content for multiple choice
         const questionLook = document.querySelector(".question-look");
         if (questionLook) {
-            let optionsHtml = '<ul class="options-list">';
-            card.options.forEach((option, index) => {
-                optionsHtml += `<li>${option}</li>`;
-            });
-            optionsHtml += '</ul>';
-            questionLook.innerHTML = optionsHtml;
+            questionLook.style.display = "none";
+        }
+        
+        // Hide the revisar button for choice cards
+        const revisarButton = document.getElementById("revisar-button");
+        if (revisarButton) {
+            revisarButton.style.display = "none";
+        }
+        
+        // Update the skip button to take full width
+        const skipButton = document.getElementById("skip-button");
+        if (skipButton) {
+            skipButton.style.width = "100%";
         }
     } else {
-        // For classic cards, just show placeholder or any custom content
+        // For classic cards, remove choice-card class if present
+        if (cardPair) {
+            cardPair.classList.remove("choice-card");
+        }
+        
+        // For classic cards, hide choice options and show normal content
+        const choiceOptionsContainer = document.getElementById("choice-options");
+        if (choiceOptionsContainer) {
+            choiceOptionsContainer.style.display = "none";
+        }
+        
+        // Show normal question content
         const questionLook = document.querySelector(".question-look");
         if (questionLook) {
             questionLook.textContent = "...";
+            questionLook.style.display = "block";
+        }
+        
+        // Show the revisar button for classic cards
+        const revisarButton = document.getElementById("revisar-button");
+        if (revisarButton) {
+            revisarButton.style.display = "";
+        }
+        
+        // Reset the skip button width
+        const skipButton = document.getElementById("skip-button");
+        if (skipButton) {
+            skipButton.style.width = "48%";
         }
     }
     

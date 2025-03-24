@@ -124,6 +124,8 @@ p.question-look, .answer-text {
     transform: translateY(-2px);
 }
 
+/* =================== Choice Card Review Actions Styling ================= */ 
+
 /* Choice Card Review Actions Styling - Added for full width skip button */
 .card-pair.choice-card #review-actions {
     display: block; /* Stack elements vertically */
