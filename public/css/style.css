@@ -35,20 +35,23 @@
 
 /* Dark mode colors */
 [data-theme="dark"] {
-    --bg-color: #121212;
-    --text-color: #f5f5f5;
-    --card-bg: #1e1e1e;
-    --card-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    --secondary-text: #aaaaaa;
-    --border-color: #333333;
-    --basic-header-bg: #2c99b2; /* Darker blue for basic header */
-    --premium-header-bg: #822dcc; /* Darker purple for premium header */
-    --pricing-section-bg: #121212; /* Dark background for pricing section */
+    --primary-color: #2c99b2; /* Darker blue */
+    --secondary-color: #b0cad5; /* Lighter version of original secondary */
+    --accent-color: #ff4f4f; /* Slightly darker accent color */
+    --bg-color: #0a0a0a; /* Much darker background */
+    --text-color: #f5f5f5; /* Light text */
+    --card-bg: #171717; /* Darker card background */
+    --card-shadow: 0 4px 8px rgba(255,255,255,0.05); /* Subtle inverted shadow */
+    --nav-gradient: linear-gradient(90deg, #1a7a8a, #0f1f26); /* Darker gradient */
+    --secondary-text: #aaaaaa; /* Lighter secondary text */
+    --border-color: #333333; /* Darker border */
+    --basic-header-bg: #1a7a8a; /* Even darker blue for basic header */
+    --premium-header-bg: #6b24a9; /* Even darker purple for premium header */
+    --pricing-section-bg: #0a0a0a; /* Darker background for pricing section */
     --price-text: #e0e0e0; /* Lighter text for price */
-    --duration-btn-bg: #333; /* Darker background for duration buttons */
-    --duration-btn-active-bg: #2c99b2; /* Darker active button */
-    --duration-btn-hover: #444; /* Hover color for buttons */
-    /* Keep the same accent and primary/secondary colors */
+    --duration-btn-bg: #222; /* Darker background for duration buttons */
+    --duration-btn-active-bg: #1a7a8a; /* Darker active button */
+    --duration-btn-hover: #333; /* Hover color for buttons */
 }
 
 * {
@@ -156,14 +159,13 @@ nav {
 }
 
 /* When dark mode is active */
-[data-theme="dark"] .theme-toggle .fa-sun {
-    opacity: 0;
-    transform: translateY(-20px);
+[data-theme="dark"] .theme-toggle {
+    background: rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="dark"] .theme-toggle .fa-moon {
-    opacity: 1;
-    transform: translateY(0);
+[data-theme="dark"] .theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
 }
 
 .nav-btn {
@@ -788,7 +790,7 @@ nav {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.7);
     z-index: 2000;
 }
 
@@ -1469,6 +1471,87 @@ p.question-look, p.answer-text {
     z-index: 100;
 }
 
+/* Dark mode success message background */
+[data-theme="dark"] .success-message {
+    background: rgba(15, 15, 15, 0.97);
+}
+
+[data-theme="dark"] .success-message .message-content h3,
+[data-theme="dark"] .success-message .message-content p {
+    color: #f5f5f5; /* Light text for success message in dark mode */
+}
+
+/* Dark mode choice hover color */
+[data-theme="dark"] .choice:hover {
+    background: #1a7a8a;
+}
+
+/* Dark mode explanation text */
+[data-theme="dark"] .explanation-text {
+    background: rgba(44, 153, 178, 0.2); /* Semi-transparent primary color */
+}
+
+/* Fix about section text in dark mode */
+[data-theme="dark"] .about-content p {
+    color: #f5f5f5;
+}
+
+/* Fix section title in dark mode */
+[data-theme="dark"] .section-title {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Fix dark mode choice hover */
+[data-theme="dark"] .choice:hover {
+    background: #1a7a8a;
+}
+
+/* Improve dark mode currency values */
+[data-theme="dark"] .price-container[data-currency="ARS"] .price-value::before,
+[data-theme="dark"] .price-container[data-currency="BRL"] .price-value::before {
+    color: #aaa;
+}
+
+[data-theme="dark"] .decimal-part {
+    color: #777;
+}
+
+/* Restore dark mode styles that were lost */
+[data-theme="dark"] .denuevo { background: #c42d2e; }
+[data-theme="dark"] .díficil { background: #d26911; }
+[data-theme="dark"] .bueno { background: #1e8f4e; }
+[data-theme="dark"] .fácil { background: #0771bd; }
+
+[data-theme="dark"] .choice {
+    background: #191919;
+    border-color: #333;
+}
+
+[data-theme="dark"] .about-section {
+    background: linear-gradient(90deg, #1a7a8a, #6b24a9);
+}
+
+[data-theme="dark"] .flashcard-system-section {
+    background: linear-gradient(90deg, #1a7a8a, #6b24a9);
+}
+
+[data-theme="dark"] .pricing-section {
+    background: linear-gradient(90deg, #1a7a8a, #6b24a9);
+}
+
+[data-theme="dark"] .contact-section {
+    background: linear-gradient(90deg, #1a7a8a, #0f1f26);
+}
+
+[data-theme="dark"] .carousel-section {
+    background: linear-gradient(90deg, #1a7a8a, #0f1f26);
+}
+
+[data-theme="dark"] nav {
+    background: linear-gradient(90deg, #1a7a8a, #0f1f26);
+}
+
 /* Responsive Fixes */
 @media (max-width: 1024px) {
     .classic-container {
@@ -1552,9 +1635,9 @@ p.question-look, p.answer-text {
     /* Ensure the mask covers the full element */
     -webkit-mask-size: cover;
     mask-size: cover;
-  }
+}
 
-  /* Wave using a CSS gradient and an SVG mask */
+/* Wave using a CSS gradient and an SVG mask */
 .wavef {
     position: absolute;
     top: 0;
@@ -1570,9 +1653,9 @@ p.question-look, p.answer-text {
     /* Ensure the mask covers the full element */
     -webkit-mask-size: cover;
     mask-size: cover;
-  }
+}
 
-  .wavej {
+.wavej {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -1587,4 +1670,90 @@ p.question-look, p.answer-text {
     /* Ensure the mask covers the full element */
     -webkit-mask-size: cover;
     mask-size: cover;
-  }
+}
+
+/* Additional dark mode styles */
+[data-theme="dark"] .theme-toggle .fa-sun {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+[data-theme="dark"] .theme-toggle .fa-moon {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+[data-theme="dark"] .checkmark {
+    color: #35d47d;
+}
+
+[data-theme="dark"] .choice.correct {
+    background: #26a65b;
+}
+
+[data-theme="dark"] .choice.wrong {
+    background: #e74c3c;
+}
+
+[data-theme="dark"] .card.question {
+    border-left: 4px solid #1a7a8a;
+}
+
+[data-theme="dark"] .card.answer {
+    border-left: 4px solid #6b24a9;
+}
+
+[data-theme="dark"] .card-content h3 {
+    color: #f8f8f8;
+}
+
+[data-theme="dark"] .revisar-btn {
+    background: #1a7a8a;
+}
+
+[data-theme="dark"] .revisar-btn:hover {
+    background: #146d7c;
+}
+
+[data-theme="dark"] .deck-btn {
+    border: 1px solid #1a7a8a;
+    color: #1a7a8a;
+}
+
+[data-theme="dark"] .deck-btn:hover {
+    background: rgba(26, 122, 138, 0.15);
+}
+
+[data-theme="dark"] .section-title {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .drug-tag {
+    background: #1a7a8a;
+}
+
+[data-theme="dark"] .price-value {
+    color: #1a7a8a;
+}
+
+[data-theme="dark"] .plan-container.premium .price-value {
+    color: #6b24a9;
+}
+
+[data-theme="dark"] .scrollbar-thumb {
+    background-color: #333;
+}
+
+/* Fix dark mode wave elements */
+[data-theme="dark"] .wave {
+    background: linear-gradient(90deg, #1a7a8a, #6b24a9) !important;
+}
+
+[data-theme="dark"] .wavef {
+    --nav-gradient: linear-gradient(90deg, #1a7a8a, #0f1f26); /* Darker gradient */
+}
+
+[data-theme="dark"] .wavej {
+    --nav-gradient: linear-gradient(90deg, #1a7a8a, #0f1f26); /* Darker gradient */
+}
