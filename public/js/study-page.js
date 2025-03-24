@@ -510,14 +510,17 @@ function setupBackButton(deck, subdeck, subsubdeck) {
     if (!backButton) return;
     
     backButton.addEventListener('click', function() {
+        console.log(`Back button clicked with deck=${deck}, subdeck=${subdeck}, subsubdeck=${subsubdeck}`);
+        
         // Determine where to go back to
         if (subsubdeck && subdeck) {
-            // If we're viewing a subsubdeck, go back to subdeck
-            window.location.href = `/study?deck=${encodeURIComponent(deck)}&subdeck=${encodeURIComponent(subdeck)}`;
+            // If we're viewing a subsubdeck (like EPOC), go back to subdeck VIEW page
+            // Not another study page - go to the actual subdeck page
+            console.log(`Navigating from subsubdeck (${subsubdeck}) to subdeck page: ${deck}/${subdeck}`);
+            window.location.href = `/deck/${encodeURIComponent(deck)}?subdeck=${encodeURIComponent(subdeck)}`;
         } else if (subdeck) {
-            // If we're viewing a subdeck, go back to deck
-            console.log(`Navigating back to deck: ${deck}`);
-            // Make sure we're properly encoding the deck name
+            // If we're viewing a subdeck (like Respiratorio), go back to deck page
+            console.log(`Navigating from subdeck (${subdeck}) to deck page: ${deck}`);
             window.location.href = `/deck/${encodeURIComponent(deck)}`;
         } else {
             // If we're viewing a deck, go back to dashboard
