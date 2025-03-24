@@ -8,6 +8,7 @@
     --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
     --nav-gradient: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     --secondary-text: #666;
+    --nextcolor: #a13cff;
     --border-color: #e0e0e0;
 }
 
@@ -195,8 +196,10 @@ nav {
 }
 
 .carousel-section {
-    padding: 6rem 2rem 4rem;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 10rem 2rem 6rem;
+    background: var(--nav-gradient);    
+    position: relative;
+    border: none;
 }
 
 .carousel-container {
@@ -284,9 +287,12 @@ nav {
 }
 
 .about-section {
-    padding: 4rem 2rem;
-    background: var(--bg-color);
+    padding: 2rem 2rem;
+    background: linear-gradient(90deg, var(--primary-color), #feb47b);
     text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .about-content {
@@ -295,22 +301,27 @@ nav {
     line-height: 1.6;
     color: var(--text-color);
     font-size: 1.1rem;
+    z-index: 1;
 }
 
 .about-content p {
     margin-bottom: 1.5rem;
+    z-index: 1;
+    color: rgb(0, 0, 0)
 }
 
 .deck-section {
     padding: 4rem 2rem;
-    background: var(--bg-color);
+    background: var(--nav-gradient);
+    position: relative;
 }
 
 .section-title {
     text-align: center;
     font-size: 2.5rem;
-    color: var(--secondary-color);
+    color: rgb(0, 0, 0);
     margin-bottom: 3rem;
+    z-index: 1;
 }
 
 .deck-grid {
@@ -360,8 +371,9 @@ nav {
 
 .pricing-section {
     padding: 4rem 2rem;
-    background: var(--pricing-section-bg);
+    background: linear-gradient(90deg, var(--primary-color), #feb47b);
     scroll-margin-top: 70px;
+    position: relative;
 }
 
 .pricing-plans {
@@ -708,8 +720,9 @@ nav {
 
 .contact-section {
     padding: 4rem 2rem;
-    background: var(--bg-color);
+    background: var(--nav-gradient);
     scroll-margin-top: 70px;
+    position: relative;
 }
 
 .contact-grid {
@@ -834,9 +847,22 @@ nav {
 
 /* Flashcard System Section */
 .flashcard-system-section {
-    padding: 6rem 2rem 4rem;
-    background: var(--bg-color);
+    padding-top: none;
+    padding-left: 6rem;
+    padding-right: 6rem;
+    padding-bottom: 1px;
+    background: linear-gradient(90deg, var(--primary-color), #feb47b);
     scroll-margin-top: 70px;
+    position: relative;
+}
+
+/* Additional padding only for the CLÁSICO section */
+.clasico-section {
+    padding-top: 4rem;
+}
+
+.choice-container {
+    padding-top: 2rem !important;
 }
 
 .flashcard-system {
@@ -1509,3 +1535,56 @@ p.question-look, p.answer-text {
 .instruction-tip {
     margin-top: auto;
 }
+
+/* Wave using a CSS gradient and an SVG mask */
+.wave {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px; /* Adjust height as needed */
+    background: linear-gradient(90deg, var(--primary-color), #feb47b);
+    
+    /* Use the wave SVG as a mask. Adjust positioning with no-repeat bottom if needed */
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    
+    /* Ensure the mask covers the full element */
+    -webkit-mask-size: cover;
+    mask-size: cover;
+  }
+
+  /* Wave using a CSS gradient and an SVG mask */
+.wavef {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px; /* Adjust height as needed */
+    background: var(--nav-gradient);
+
+    /* Use the wave SVG as a mask. Adjust positioning with no-repeat bottom if needed */
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    
+    /* Ensure the mask covers the full element */
+    -webkit-mask-size: cover;
+    mask-size: cover;
+  }
+
+  .wavej {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 120px; /* Adjust height as needed */
+    background: var(--nav-gradient);
+
+    /* Use the wave SVG as a mask. Adjust positioning with no-repeat bottom if needed */
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='white'/></svg>") no-repeat bottom;
+    
+    /* Ensure the mask covers the full element */
+    -webkit-mask-size: cover;
+    mask-size: cover;
+  }
