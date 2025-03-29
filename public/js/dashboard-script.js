@@ -118,6 +118,9 @@ function setupDeckButtonNavigation() {
                     } else {
                         subdeckList.style.display = 'block';
                         plusSymbol.textContent = '-';
+                        
+                        // After displaying subdeck list, set up event listeners for subdecks
+                        setupSubdeckButtonListeners(subdeckList, deckNameSpan.textContent.trim());
                     }
                 }
             }
@@ -133,6 +136,37 @@ function setupDeckButtonNavigation() {
             navigateToDeckPage(deckName);
         });
     });
+    
+    // Setup subdeck listeners for any already-expanded subdeck lists
+    document.querySelectorAll('.subdeck-list').forEach(subdeckList => {
+        const deckButton = subdeckList.previousElementSibling;
+        const deckName = deckButton.querySelector('.deck-name')?.textContent.trim();
+        if (deckName && subdeckList.style.display === 'block') {
+            setupSubdeckButtonListeners(subdeckList, deckName);
+        }
+    });
+}
+
+// Function to set up event listeners for subdeck buttons
+function setupSubdeckButtonListeners(subdeckList, deckName) {
+    if (!subdeckList || !deckName) return;
+    
+    const subdeckButtons = subdeckList.querySelectorAll('li button');
+    subdeckButtons.forEach(button => {
+        // Remove existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        // Add click event to navigate to subdeck page
+        newButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const subdeckName = this.textContent.trim();
+            console.log('Clicked on subdeck:', subdeckName, 'in deck:', deckName);
+            navigateToSubdeckPage(deckName, subdeckName);
+        });
+    });
 }
 
 // Function to navigate to a dynamic deck page
@@ -141,6 +175,16 @@ function navigateToDeckPage(deckName) {
     
     // Navigate to the dynamic deck page
     const url = `/deck/${encodeURIComponent(deckName)}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
+}
+
+// Function to navigate to a subdeck page
+function navigateToSubdeckPage(deckName, subdeckName) {
+    console.log('Navigating to subdeck page for:', subdeckName, 'in deck:', deckName);
+    
+    // Navigate to the subdeck page
+    const url = `/deck/${encodeURIComponent(deckName)}?subdeck=${encodeURIComponent(subdeckName)}`;
     console.log('Redirecting to:', url);
     window.location.href = url;
 }
